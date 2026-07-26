@@ -227,19 +227,19 @@
 
     function renderLogin(message = '') {
         revokeProtectedUrls();
-        document.title = 'Ingresar · Gestión Apícola';
+        document.title = 'Ingresar · Mellifera Technology';
         document.body.className = 'auth-page';
         app.className = '';
         const apiDisplay = state.apiUrl || 'Todavía no configurado';
         app.innerHTML = `
             <main class="auth-card">
                 <div class="auth-brand">
-                    <div class="auth-bee">🐝</div>
-                    <div><h1>Gestión Apícola</h1><p>Ingreso privado al proyecto</p></div>
+                    <div class="auth-bee">🌾</div>
+                    <div><h1>Mellifera Technology</h1><p>Ingreso privado a sistemas de gestión</p></div>
                 </div>
                 ${message ? `<div class="alert alert-danger">${h(message)}</div>` : ''}
                 <form class="auth-form" data-form="login" autocomplete="on">
-                    <label class="field"><span>Usuario</span><input type="text" name="username" maxlength="80" required autofocus autocomplete="username" placeholder="Chiara o Felipe"></label>
+                    <label class="field"><span>Usuario</span><input type="text" name="username" maxlength="80" required autofocus autocomplete="username" placeholder="Usuario"></label>
                     <label class="field"><span>Contraseña</span><div class="password-input-wrap"><input id="login-password" type="password" name="password" required autocomplete="current-password"><button type="button" class="password-toggle" data-password-toggle="login-password">Ver</button></div></label>
                     <button class="btn btn-primary btn-block btn-large" type="submit">Ingresar</button>
                 </form>
@@ -637,6 +637,7 @@
                 if (!state.apiUrl) throw new Error('Abra “Configurar conexión con Laragon” e ingrese la dirección pública.');
                 const result = await api('login', { method: 'POST', noAuth: true, data: { username: form.elements.username.value, password: form.elements.password.value } });
                 saveSession(result.token, result.user);
+                if ((result.user.app_code || 'apicultura') === 'ganaderia') { window.location.href = 'ganaderia.html'; return; }
                 if (!location.hash || location.hash === '#/') location.hash = '#/dashboard'; else await route();
             } else if (type === 'hive-filter') {
                 const fd = new FormData(form); go('/hives', Object.fromEntries(fd.entries()));
@@ -748,6 +749,7 @@
             const result = await api('me');
             state.user = result.user;
             localStorage.setItem(STORAGE.user, JSON.stringify(state.user));
+            if ((state.user.app_code || 'apicultura') === 'ganaderia') { window.location.href = 'ganaderia.html'; return; }
             if (!location.hash) location.hash = '#/dashboard'; else await route();
         } catch (_) {
             clearSession();
