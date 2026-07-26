@@ -88,9 +88,14 @@
     function toast(message, type = 'success') {
         const element = document.createElement('div');
         element.className = `toast-message ${type}`;
+        element.setAttribute('role', 'status');
         element.textContent = message;
         toastStack.appendChild(element);
-        setTimeout(() => element.remove(), 4300);
+        requestAnimationFrame(() => element.classList.add('is-visible'));
+        setTimeout(() => {
+            element.classList.add('is-leaving');
+            setTimeout(() => element.remove(), 240);
+        }, 4050);
     }
 
     async function api(action, options = {}) {
@@ -223,6 +228,35 @@
     function initCommonUi() {
         const sidebar = document.getElementById('sidebar');
         document.querySelector('[data-toggle-sidebar]')?.addEventListener('click', () => sidebar?.classList.toggle('open'));
+        initPolishEffects();
+    }
+
+    function revealQueenHistory(scroll = false) {
+        const panel = document.querySelector('[data-queen-history]');
+        if (!panel) return;
+        panel.hidden = false;
+        document.querySelectorAll('[data-command="queen-history-toggle"]').forEach(button => button.setAttribute('aria-expanded', 'true'));
+        if (scroll) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'center' }), 30);
+    }
+
+    function initPolishEffects() {
+        document.querySelector('.content')?.classList.add('page-enter');
+        document.querySelectorAll('.btn, .icon-button, .dashboard-card, .entity-card, .kanban-card').forEach(element => {
+            if (element.dataset.rippleReady) return;
+            element.dataset.rippleReady = '1';
+            element.addEventListener('pointerdown', event => {
+                if (element.matches(':disabled')) return;
+                const rect = element.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                ripple.className = 'ui-ripple';
+                const size = Math.max(rect.width, rect.height) * 1.35;
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+                ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+                element.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 620);
+            });
+        });
     }
 
     function renderLogin(message = '') {
@@ -278,10 +312,23 @@
         const materials = data.stats.materials || {};
         const purchases = data.stats.purchase_plans || {};
         const accounting = data.stats.accounting || {};
+        const banner = data.banner || {};
         shell({
             title: 'Inicio', subtitle: 'Resumen general del proyecto apícola', active: 'dashboard',
             actions: '<a class="btn btn-primary" href="#/activity-edit">+ Nueva actividad</a>',
             content: `
+                <section class="apiculture-hero-banner panel ${Number(banner.has_file) ? 'has-photo' : ''}">
+                    ${Number(banner.has_file) ? `<img class="protected-image" data-protected-image="1" data-file-type="apiculture_banner" data-id="1" alt="${h(banner.caption || 'Vista general del apiario')}">` : '<div class="apiculture-hero-placeholder"><span>✦</span><strong>Su apiario, en una sola mirada</strong><small>Agregue una fotografía para personalizar el inicio.</small></div>'}
+                    <div class="apiculture-hero-overlay">
+                        <div><span class="eyebrow">GESTIÓN APÍCOLA</span><h2>${h(banner.caption || 'Vista general del apiario')}</h2><p>Un espacio visual para reconocer el proyecto apenas ingresa.</p></div>
+                        <form class="hero-upload-form" data-form="apiculture-banner-upload" enctype="multipart/form-data">
+                            <input type="file" name="banner" accept="image/jpeg,image/png,image/webp" required>
+                            <input type="text" name="caption" maxlength="255" value="${h(banner.caption || '')}" placeholder="Título opcional">
+                            <button class="btn btn-primary" type="submit">${Number(banner.has_file) ? 'Cambiar imagen' : 'Agregar imagen'}</button>
+                            ${Number(banner.has_file) ? '<button class="btn btn-ghost" type="button" data-command="apiculture-banner-delete">Quitar</button>' : ''}
+                        </form>
+                    </div>
+                </section>
                 <section class="balance-strip">
                     <div class="balance-strip-title"><span>Saldo por persona</span><small>Ingresos menos egresos, desde el comienzo del proyecto</small></div>
                     ${(data.balances || []).map(balance => `<div class="person-balance ${Number(balance.balance_ars) < 0 ? 'negative' : 'positive'}"><strong>${h(balance.name)}</strong><span>${moneyARS(balance.balance_ars)}</span><small>${moneyUSD(balance.balance_usd)}</small></div>`).join('')}
@@ -293,11 +340,12 @@
                     <a class="dashboard-card card-purchases" href="#/purchases"><div class="dashboard-card-icon">▤</div><div><span>Compras pendientes</span><strong>${Number(purchases.total || 0)}</strong><small>Total planificado: ${moneyARS(purchases.amount)}</small></div></a>
                     <a class="dashboard-card card-accounting" href="#/accounting"><div class="dashboard-card-icon">$</div><div><span>Contabilidad</span><strong>${Number(accounting.total || 0)}</strong><small>Balance histórico: ${moneyARS(accounting.balance)}</small></div></a>
                 </section>
-                <section class="panel">
+                <section class="panel animated-panel">
                     <div class="panel-header"><div><h2>Próximas actividades</h2><p>Las más urgentes o próximas a vencer</p></div><a class="btn btn-secondary" href="#/activities">Abrir tablero</a></div>
                     ${(data.recent_activities || []).length ? `<div class="compact-list">${data.recent_activities.map(activity => `<a href="#/activity-edit/${activity.id}" class="compact-item"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.hive_name || 'Sin colmena')}${activity.label_name ? ` · ${h(activity.label_name)}` : ''}</small></div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></a>`).join('')}</div>` : emptyState('✓', 'No hay actividades abiertas', 'Puede crear la primera desde el botón superior.')}
                 </section>`
         });
+        hydrateProtectedImages();
     }
 
     async function renderHives(params) {
@@ -314,32 +362,55 @@
                     <select name="status"><option value="">Todos los estados</option><option value="activa" ${status === 'activa' ? 'selected' : ''}>Activa</option><option value="observacion" ${status === 'observacion' ? 'selected' : ''}>En observación</option><option value="inactiva" ${status === 'inactiva' ? 'selected' : ''}>Inactiva</option><option value="baja" ${status === 'baja' ? 'selected' : ''}>Baja</option></select>
                     <button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-ghost" href="#/hives">Limpiar</a>
                 </form>
-                ${(data.hives || []).length ? `<section class="card-grid">${data.hives.map(hive => `<article class="entity-card"><div class="entity-card-top"><span class="hive-illustration">⬡</span><span class="badge status-${h(hive.status)}">${capitalize(hive.status)}</span></div><h2>${h(hive.name)}</h2><div class="entity-meta"><span><b>Creada:</b> ${formatDate(hive.creation_date)}</span><span><b>Reina:</b> ${hive.queen_year ? h(hive.queen_year) : 'Sin indicar'}</span></div><div class="entity-counters"><span><strong>${Number(hive.open_activities || 0)}</strong> actividades</span><span><strong>${Number(hive.notes_count || 0)}</strong> observaciones</span><span><strong>${Number(hive.photos_count || 0)}</strong> archivos</span></div><div class="entity-actions"><a class="btn btn-primary" href="#/hive/${hive.id}">Abrir ficha</a><a class="btn btn-ghost" href="#/hive-edit/${hive.id}">Editar</a></div></article>`).join('')}</section>` : `<div class="empty-state panel"><div>▦</div><h3>No hay colmenas</h3><p>Cree la primera ficha para comenzar.</p><a class="btn btn-primary" href="#/hive-edit">Crear colmena</a></div>`}`
+                ${(data.hives || []).length ? `<section class="card-grid">${data.hives.map(hive => `<article class="entity-card hive-visual-card">
+                    <div class="hive-card-cover ${hive.cover_photo_id ? 'has-photo' : ''}">
+                        ${hive.cover_photo_id ? `<img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${hive.cover_photo_id}" alt="${h(hive.name)}">` : '<div class="hive-card-placeholder"><span>⬡</span><small>Sin banner</small></div>'}
+                        <span class="badge status-${h(hive.status)}">${capitalize(hive.status)}</span>
+                    </div>
+                    <div class="hive-card-body"><h2>${h(hive.name)}</h2><div class="entity-meta"><span><b>Creada:</b> ${formatDate(hive.creation_date)}</span><span><b>Reina:</b> ${hive.queen_year ? h(hive.queen_year) : 'Sin indicar'}</span></div><div class="entity-counters"><span><strong>${Number(hive.open_activities || 0)}</strong> actividades</span><span><strong>${Number(hive.notes_count || 0)}</strong> observaciones</span><span><strong>${Number(hive.photos_count || 0)}</strong> archivos</span></div><div class="entity-actions"><a class="btn btn-primary" href="#/hive/${hive.id}">Abrir ficha</a><a class="btn btn-ghost" href="#/hive-edit/${hive.id}">Editar</a></div></div>
+                </article>`).join('')}</section>` : `<div class="empty-state panel"><div>▦</div><h3>No hay colmenas</h3><p>Cree la primera ficha para comenzar.</p><a class="btn btn-primary" href="#/hive-edit">Crear colmena</a></div>`}`
         });
+        hydrateProtectedImages();
     }
 
     async function renderHive(id) {
         loading('Abriendo la ficha…');
         const data = await api('hive', { params: { id } });
         const hive = data.hive;
+        const photos = data.photos || [];
+        const queens = data.queens || [];
+        const cover = photos.find(photo => Number(photo.is_cover));
         const openActivities = (data.activities || []).filter(item => !Number(item.is_closed));
         const historyActivities = (data.activities || []).filter(item => Number(item.is_closed));
         shell({
             title: hive.name, subtitle: 'Ficha completa de la colmena', active: 'hives',
             actions: `<a class="btn btn-secondary" href="#/hive-edit/${hive.id}">Editar</a><a class="btn btn-ghost" href="#/hives">Volver</a>`,
             content: `
-                <section class="hive-summary panel"><div class="hive-big-icon">⬡</div><div class="hive-summary-main"><span class="badge status-${h(hive.status)}">${capitalize(hive.status)}</span><h2>${h(hive.name)}</h2><p>Creada el ${formatDate(hive.creation_date)}</p></div><div class="hive-summary-stat"><small>Año de la reina</small><strong>${hive.queen_year || '—'}</strong></div><div class="hive-summary-stat"><small>Actividades abiertas</small><strong>${openActivities.length}</strong></div><div class="hive-summary-stat"><small>Materiales en uso</small><strong>${(data.materials || []).length}</strong></div></section>
+                <section class="hive-profile-hero panel ${cover ? 'has-photo' : ''}">
+                    ${cover ? `<img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${cover.id}" alt="Banner de ${h(hive.name)}">` : '<div class="hive-profile-placeholder">⬡</div>'}
+                    <div class="hive-profile-shade"></div>
+                    <div class="hive-profile-content"><div class="hive-summary-main"><span class="badge status-${h(hive.status)}">${capitalize(hive.status)}</span><h2>${h(hive.name)}</h2><p>Creada el ${formatDate(hive.creation_date)}</p></div>
+                        <button class="hive-summary-stat queen-stat-button" type="button" data-command="queen-history-toggle" aria-expanded="false"><small>Año de la reina</small><strong>${hive.queen_year || '—'}</strong><span>Ver historial</span></button>
+                        <div class="hive-summary-stat"><small>Actividades abiertas</small><strong>${openActivities.length}</strong></div>
+                        <div class="hive-summary-stat"><small>Materiales en uso</small><strong>${(data.materials || []).length}</strong></div>
+                    </div>
+                </section>
+                <section class="panel queen-history-panel" data-queen-history hidden>
+                    <div class="panel-header"><div><span class="eyebrow">TRAZABILIDAD</span><h2>Historial de reinas</h2><p>Cada cambio queda registrado sin perder las reinas anteriores.</p></div><button class="icon-button" type="button" data-command="queen-history-toggle" aria-label="Cerrar">×</button></div>
+                    <form class="queen-entry-form" data-form="hive-queen-save"><input type="hidden" name="hive_id" value="${hive.id}"><label class="field"><span>Fecha del cambio</span><input type="date" name="change_date" value="${today()}" required></label><label class="field"><span>Año de la nueva reina</span><input type="number" name="queen_year" min="1990" max="${new Date().getFullYear()+1}" value="${new Date().getFullYear()}" required></label><label class="field queen-notes"><span>Observaciones</span><input type="text" name="notes" maxlength="500" placeholder="Origen, color, genética o detalle opcional"></label><button class="btn btn-primary" type="submit">+ Agregar reina</button></form>
+                    ${queens.length ? `<div class="queen-timeline">${queens.map((queen,index) => `<article class="queen-history-item ${index===0?'current':''}"><div class="queen-year-medal">${h(queen.queen_year)}</div><div><strong>${index===0?'Reina actual':'Reina anterior'}</strong><span>Cambio registrado el ${formatDate(queen.change_date)}</span>${queen.notes ? `<p>${h(queen.notes)}</p>` : ''}<small>Cargado ${formatDateTime(queen.created_at)}</small></div><button class="icon-button danger" type="button" data-command="hive-queen-delete" data-id="${queen.id}" data-hive-id="${hive.id}" title="Eliminar registro">×</button></article>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay reinas registradas.</p>'}
+                </section>
                 <div class="detail-grid">
-                    <section class="panel span-2"><div class="panel-header"><div><h2>Observaciones</h2><p>Puede agregar todas las que necesite</p></div></div>
+                    <section class="panel span-2 animated-panel"><div class="panel-header"><div><h2>Observaciones</h2><p>Puede agregar todas las que necesite</p></div></div>
                         <form class="inline-entry-form" data-form="hive-note-save"><input type="hidden" name="hive_id" value="${hive.id}"><input type="date" name="note_date" value="${today()}" required><textarea name="note" rows="2" required placeholder="Escriba una observación nueva"></textarea><button class="btn btn-primary" type="submit">+ Agregar</button></form>
                         ${(data.notes || []).length ? `<div class="timeline">${data.notes.map(note => `<div class="timeline-item"><div class="timeline-date">${formatDate(note.note_date)}</div><div class="timeline-content"><p>${nl2br(note.note)}</p><small>Cargada ${formatDateTime(note.created_at)}</small></div><button class="icon-button danger" data-command="hive-note-delete" data-id="${note.id}" data-hive-id="${hive.id}" title="Eliminar">×</button></div>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay observaciones.</p>'}
                     </section>
-                    <section class="panel"><div class="panel-header"><div><h2>Materiales en uso</h2><p>Asignados a esta colmena</p></div><a class="btn btn-small btn-secondary" href="#/materials">Administrar</a></div>${(data.materials || []).length ? `<div class="simple-list">${data.materials.map(material => `<div><span>⬡</span><strong>${h(material.name)}</strong></div>`).join('')}</div>` : '<p class="muted empty-line">No tiene materiales asignados.</p>'}</section>
-                    <section class="panel span-2"><div class="panel-header"><div><h2>Actividades abiertas</h2><p>Trabajo pendiente en esta colmena</p></div><a class="btn btn-small btn-primary" href="#/activity-edit?hive_id=${hive.id}">+ Actividad</a></div>${openActivities.length ? `<div class="compact-list">${openActivities.map(activity => `<a class="compact-item" href="#/activity-edit/${activity.id}"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.status_name)}${activity.label_name ? ` · ${h(activity.label_name)}` : ''}</small></div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></a>`).join('')}</div>` : '<p class="muted empty-line">No hay actividades abiertas.</p>'}</section>
-                    <section class="panel"><div class="panel-header"><div><h2>Historial</h2><p>Actividades terminadas</p></div></div>${historyActivities.length ? `<div class="history-list">${historyActivities.map(activity => `<a href="#/activity-edit/${activity.id}"><strong>${h(activity.title)}</strong><small>${formatDateTime(activity.completed_at)}</small></a>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay actividades terminadas.</p>'}</section>
-                    <section class="panel span-3"><div class="panel-header"><div><h2>Fotografías y archivos</h2><p>JPG, PNG, WEBP o PDF hasta 10 MB</p></div></div>
+                    <section class="panel animated-panel"><div class="panel-header"><div><h2>Materiales en uso</h2><p>Asignados a esta colmena</p></div><a class="btn btn-small btn-secondary" href="#/materials">Administrar</a></div>${(data.materials || []).length ? `<div class="simple-list">${data.materials.map(material => `<div><span>⬡</span><strong>${h(material.name)}</strong></div>`).join('')}</div>` : '<p class="muted empty-line">No tiene materiales asignados.</p>'}</section>
+                    <section class="panel span-2 animated-panel"><div class="panel-header"><div><h2>Actividades abiertas</h2><p>Trabajo pendiente en esta colmena</p></div><a class="btn btn-small btn-primary" href="#/activity-edit?hive_id=${hive.id}">+ Actividad</a></div>${openActivities.length ? `<div class="compact-list">${openActivities.map(activity => `<a class="compact-item" href="#/activity-edit/${activity.id}"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.status_name)}${activity.label_name ? ` · ${h(activity.label_name)}` : ''}</small></div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></a>`).join('')}</div>` : '<p class="muted empty-line">No hay actividades abiertas.</p>'}</section>
+                    <section class="panel animated-panel"><div class="panel-header"><div><h2>Historial</h2><p>Actividades terminadas</p></div></div>${historyActivities.length ? `<div class="history-list">${historyActivities.map(activity => `<a href="#/activity-edit/${activity.id}"><strong>${h(activity.title)}</strong><small>${formatDateTime(activity.completed_at)}</small></a>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay actividades terminadas.</p>'}</section>
+                    <section class="panel span-3 animated-panel"><div class="panel-header"><div><h2>Fotografías y archivos</h2><p>Seleccione una fotografía como banner de la colmena</p></div></div>
                         <form class="upload-form" data-form="hive-photo-upload" enctype="multipart/form-data"><input type="hidden" name="hive_id" value="${hive.id}"><input type="file" name="photo" accept="image/jpeg,image/png,image/webp,application/pdf" required><input type="text" name="caption" placeholder="Descripción opcional"><button class="btn btn-primary" type="submit">Subir archivo</button></form>
-                        ${(data.photos || []).length ? `<div class="media-grid">${data.photos.map(photo => `<article class="media-card"><button class="file-button" data-command="open-file" data-file-type="hive" data-id="${photo.id}" data-name="${h(photo.original_name)}">${String(photo.mime_type).startsWith('image/') ? `<img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${photo.id}" alt="${h(photo.caption || photo.original_name)}">` : '<div class="pdf-preview">PDF</div>'}<strong>${h(photo.caption || photo.original_name)}</strong><small>${formatDateTime(photo.uploaded_at)}</small></button><button class="icon-button danger" data-command="hive-photo-delete" data-id="${photo.id}" data-hive-id="${hive.id}">×</button></article>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay fotografías ni documentos.</p>'}
+                        ${photos.length ? `<div class="media-grid">${photos.map(photo => `<article class="media-card ${Number(photo.is_cover)?'is-cover':''}">${Number(photo.is_cover)?'<span class="cover-ribbon">Banner actual</span>':''}<button class="file-button" data-command="open-file" data-file-type="hive" data-id="${photo.id}" data-name="${h(photo.original_name)}">${String(photo.mime_type).startsWith('image/') ? `<img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${photo.id}" alt="${h(photo.caption || photo.original_name)}">` : '<div class="pdf-preview">PDF</div>'}<strong>${h(photo.caption || photo.original_name)}</strong><small>${formatDateTime(photo.uploaded_at)}</small></button><div class="media-card-actions">${String(photo.mime_type).startsWith('image/') && !Number(photo.is_cover) ? `<button class="btn btn-small btn-secondary" type="button" data-command="hive-photo-cover" data-id="${photo.id}" data-hive-id="${hive.id}">Usar como banner</button>` : ''}<button class="icon-button danger" type="button" data-command="hive-photo-delete" data-id="${photo.id}" data-hive-id="${hive.id}" title="Eliminar">×</button></div></article>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay fotografías ni documentos.</p>'}
                     </section>
                 </div>`
         });
@@ -353,7 +424,7 @@
         shell({
             title: hive ? 'Editar colmena' : 'Nueva colmena', subtitle: hive ? hive.name : 'Cree una ficha simple y clara', active: 'hives',
             actions: `<a class="btn btn-ghost" href="${hive ? `#/hive/${hive.id}` : '#/hives'}">Volver</a>`,
-            content: `<section class="form-card narrow"><form data-form="hive-save"><input type="hidden" name="id" value="${hive?.id || ''}"><div class="form-grid two-columns"><label class="field full"><span>Nombre *</span><input type="text" name="name" required maxlength="120" value="${h(hive?.name || '')}" placeholder="Ej.: Colmena 1"></label><label class="field"><span>Estado</span><select name="status">${[['activa','Activa'],['observacion','En observación'],['inactiva','Inactiva'],['baja','Baja']].map(([value,label]) => `<option value="${value}" ${(hive?.status || 'activa') === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><label class="field"><span>Fecha de creación</span><input type="date" name="creation_date" required value="${h(hive?.creation_date || today())}"></label><label class="field"><span>Año de la reina</span><input type="number" name="queen_year" min="1990" max="${new Date().getFullYear() + 1}" value="${h(hive?.queen_year || '')}" placeholder="Ej.: ${new Date().getFullYear()}"></label></div><div class="form-actions"><button class="btn btn-primary" type="submit">Guardar colmena</button><a class="btn btn-ghost" href="${hive ? `#/hive/${hive.id}` : '#/hives'}">Cancelar</a></div></form>${hive ? `<hr><button class="btn btn-danger" data-command="hive-delete" data-id="${hive.id}">Eliminar colmena</button>` : ''}</section>`
+            content: `<section class="form-card narrow"><form data-form="hive-save"><input type="hidden" name="id" value="${hive?.id || ''}"><div class="form-grid two-columns"><label class="field full"><span>Nombre *</span><input type="text" name="name" required maxlength="120" value="${h(hive?.name || '')}" placeholder="Ej.: Colmena 1"></label><label class="field"><span>Estado</span><select name="status">${[['activa','Activa'],['observacion','En observación'],['inactiva','Inactiva'],['baja','Baja']].map(([value,label]) => `<option value="${value}" ${(hive?.status || 'activa') === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><label class="field"><span>Fecha de creación</span><input type="date" name="creation_date" required value="${h(hive?.creation_date || today())}"></label>${hive ? `<div class="field queen-edit-hint"><span>Reina actual</span><a href="#/hive/${hive.id}" class="queen-edit-link"><strong>${hive.queen_year || 'Sin registrar'}</strong><small>Abra la ficha para ver o agregar cambios de reina →</small></a></div>` : `<label class="field"><span>Año de la reina inicial</span><input type="number" name="queen_year" min="1990" max="${new Date().getFullYear() + 1}" value="" placeholder="Ej.: ${new Date().getFullYear()}"></label>`}</div><div class="form-actions"><button class="btn btn-primary" type="submit">Guardar colmena</button><a class="btn btn-ghost" href="${hive ? `#/hive/${hive.id}` : '#/hives'}">Cancelar</a></div></form>${hive ? `<hr><button class="btn btn-danger" data-command="hive-delete" data-id="${hive.id}">Eliminar colmena</button>` : ''}</section>`
         });
     }
 
@@ -625,6 +696,7 @@
         const type = form.dataset.form;
         const button = form.querySelector('button[type="submit"]');
         const oldText = button?.textContent;
+        form.classList.add('is-submitting');
         if (button) { button.disabled = true; button.textContent = 'Guardando…'; }
         try {
             if (type === 'server-config') {
@@ -645,6 +717,10 @@
                 const result = await api('hive_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast(result.message); go(`/hive/${result.id}`);
             } else if (type === 'hive-note-save') {
                 await api('hive_note_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast('Observación agregada'); await route();
+            } else if (type === 'hive-queen-save') {
+                await api('hive_queen_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast('Nueva reina agregada al historial'); await route(); revealQueenHistory(true);
+            } else if (type === 'apiculture-banner-upload') {
+                await api('apiculture_banner_upload', { method: 'POST', formData: new FormData(form) }); toast('Banner del inicio actualizado'); await route();
             } else if (type === 'hive-photo-upload') {
                 await api('hive_photo_upload', { method: 'POST', formData: new FormData(form) }); toast('Archivo agregado'); await route();
             } else if (type === 'material-filter') {
@@ -674,6 +750,7 @@
         } catch (error) {
             toast(error.message, 'error');
         } finally {
+            form.classList.remove('is-submitting');
             if (button) { button.disabled = false; button.textContent = oldText; }
         }
     });
@@ -696,9 +773,24 @@
             } else if (command === 'hive-note-delete') {
                 if (!confirm('¿Eliminar esta observación?')) return;
                 await api('hive_note_delete', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Observación eliminada'); await route();
+            } else if (command === 'queen-history-toggle') {
+                const panel = document.querySelector('[data-queen-history]');
+                if (panel) {
+                    panel.hidden = !panel.hidden;
+                    document.querySelectorAll('[data-command="queen-history-toggle"]').forEach(button => button.setAttribute('aria-expanded', String(!panel.hidden)));
+                    if (!panel.hidden) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'center' }), 30);
+                }
+            } else if (command === 'hive-queen-delete') {
+                if (!confirm('¿Eliminar este registro del historial de reinas?')) return;
+                await api('hive_queen_delete', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Registro de reina eliminado'); await route(); revealQueenHistory(false);
+            } else if (command === 'hive-photo-cover') {
+                await api('hive_photo_cover', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Banner de la colmena actualizado'); await route();
             } else if (command === 'hive-photo-delete') {
                 if (!confirm('¿Eliminar este archivo?')) return;
                 await api('hive_photo_delete', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Archivo eliminado'); await route();
+            } else if (command === 'apiculture-banner-delete') {
+                if (!confirm('¿Quitar la imagen del inicio?')) return;
+                await api('apiculture_banner_delete', { method: 'POST', data: {} }); toast('Banner eliminado'); await route();
             } else if (command === 'material-delete') {
                 if (!confirm('¿Eliminar este material?')) return;
                 await api('material_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Material eliminado'); await route();
