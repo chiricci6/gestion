@@ -1,0 +1,16 @@
+MELLIFERA TECHNOLOGY · ACTUALIZACIÓN V9 PARA GITHUB PAGES
+
+Reemplace solamente:
+- assets/css/app.css
+- assets/js/app.js
+- assets/js/ganaderia.js
+
+No reemplace assets/js/config.js ni CNAME.
+Después del commit abra https://gestion.mellifera-technology.com y presione Ctrl + F5.
+
+Cambios visuales:
+- Selector de aplicación para Chiara desde el nombre Gestión Apícola/Ganadera.
+- Dólares primero y pesos debajo en los resúmenes.
+- Banners con lápiz discreto en vez de formulario permanente.
+- Tarjetas de actividades teñidas según prioridad.
+- Etiquetas con color propio y aspecto de etiqueta.
