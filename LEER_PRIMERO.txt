@@ -1,21 +1,8 @@
-ACTUALIZACIÓN V5 - FRONTEND GANADERÍA
+ACTUALIZACIÓN V10 PARA GITHUB PAGES
 
-Suba/reemplace en el repositorio GitHub "gestion":
-- index.html
-- ganaderia.html
-- assets/css/app.css
-- assets/js/app.js
+Reemplace solamente:
 - assets/js/ganaderia.js
+- assets/css/app.css
 
-NO modifique assets/js/config.js.
-Debe conservar:
-window.APICULTURA_CONFIG = {
-    apiUrl: "https://api.mellifera-technology.com/apicultura/api/index.php"
-};
-
-Después del commit abra:
-https://gestion.mellifera-technology.com
-
-Use Ctrl + F5 y entre con:
-Usuario: Ganaderia
-Contraseña: Ganaderia123#
+No reemplace assets/js/config.js ni CNAME.
+Después del commit abra la web y presione Ctrl + F5.
