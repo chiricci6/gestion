@@ -326,8 +326,8 @@
     }catch(error){toast(error.message,'error');}finally{form.classList.remove('is-submitting');if(button){button.disabled=false;button.textContent=old;}}});
 
     document.addEventListener('click',async event=>{const el=event.target.closest('[data-command]');if(!el)return;const command=el.dataset.command;try{
-        if(command==='app-switch-toggle'){const switcher=commandElement.closest('.app-switcher');const menu=switcher?.querySelector('.app-switch-menu');if(menu){menu.hidden=!menu.hidden;commandElement.setAttribute('aria-expanded',String(!menu.hidden));}}
-        else if(command==='switch-app'){const target=commandElement.dataset.app;if(target==='apicultura'&&canAccessApp('apicultura'))window.location.href='index.html#/dashboard';if(target==='ganaderia'&&canAccessApp('ganaderia'))window.location.href='ganaderia.html#/ganaderia';}
+        if(command==='app-switch-toggle'){const switcher=el.closest('.app-switcher');const menu=switcher?.querySelector('.app-switch-menu');if(menu){menu.hidden=!menu.hidden;el.setAttribute('aria-expanded',String(!menu.hidden));}}
+        else if(command==='switch-app'){const target=el.dataset.app;if(target==='apicultura'&&canAccessApp('apicultura'))window.location.href='index.html#/dashboard';if(target==='ganaderia'&&canAccessApp('ganaderia'))window.location.href='ganaderia.html#/ganaderia';}
         else if(command==='livestock-banner-editor-toggle'){const editor=document.querySelector('[data-livestock-banner-editor]');if(editor)editor.hidden=!editor.hidden;}
         else if(command==='logout'){try{await api('logout',{method:'POST',data:{}});}catch(_){}clearSession();window.location.href='index.html';}
         else if(command==='retry-route')await route();
