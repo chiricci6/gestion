@@ -395,3 +395,43 @@ select,input,textarea { width: 100%; border: 1px solid #d9d7ce; border-radius: 1
     appearance:none;display:flex;width:100%;justify-content:space-between;gap:14px;padding:9px 0;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;
 }
 .app-shell:not(.livestock-app):not(.community-app) .history-activity-button:hover strong{color:var(--primary-dark)}
+
+
+/* ===== V13.3 · Pulido visual focalizado, sin cambios de lógica ===== */
+
+/* Actividades apícolas en Inicio y dentro de cada colmena */
+.activity-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.activity-preview-card{appearance:none;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:15px 16px 14px;border:1px solid var(--line);border-left:5px solid #81946f;border-radius:16px;background:linear-gradient(150deg,#fff,#fbfcf6);color:inherit;text-align:left;font:inherit;cursor:pointer;box-shadow:0 6px 18px rgba(74,71,35,.055);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.activity-preview-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(74,71,35,.12);border-color:color-mix(in srgb,var(--primary) 35%,var(--line))}
+.activity-preview-card::after{content:"";position:absolute;right:-28px;bottom:-34px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--priority-tint,#8a9b75) 10%,transparent);pointer-events:none}
+.activity-preview-card.priority-preview-baja{--priority-tint:#6f8b72;border-left-color:#6f8b72}.activity-preview-card.priority-preview-normal{--priority-tint:#5e83ae;border-left-color:#5e83ae}.activity-preview-card.priority-preview-alta{--priority-tint:#d49b2e;border-left-color:#d49b2e}.activity-preview-card.priority-preview-urgente{--priority-tint:#c65a50;border-left-color:#c65a50}
+.activity-preview-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.activity-status-chip{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:850;color:#5b6554}.activity-status-chip i{width:8px;height:8px;border-radius:50%;background:var(--activity-status,#78906f);box-shadow:0 0 0 4px color-mix(in srgb,var(--activity-status,#78906f) 14%,transparent)}
+.activity-preview-card h3{position:relative;z-index:1;margin:0;font-size:15px;line-height:1.35}.activity-preview-meta{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:9px;color:var(--muted);font-size:11px}.activity-preview-meta time{white-space:nowrap}.activity-preview-label{position:relative;z-index:1;align-self:flex-start;margin:0}.activity-preview-label.label-empty{--label-color:#8e9488;color:#70766c;background:#f3f4f1;border-color:#e3e5df}.activity-preview-arrow{position:relative;z-index:1;margin-top:auto;padding-top:3px;font-size:10px;font-weight:850;color:var(--primary-dark)}
+.hive-activity-preview-grid{grid-template-columns:repeat(auto-fit,minmax(225px,1fr))}
+
+/* Resumen de Documentos como tarjetas reales en las tres aplicaciones */
+.summary-cards.document-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:18px}
+.summary-cards.document-summary>div{position:relative;overflow:hidden;min-height:112px;padding:17px 18px 16px 68px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fff,#f8fbf5);box-shadow:0 8px 24px rgba(43,57,42,.065);transition:transform .18s ease,box-shadow .18s ease}
+.summary-cards.document-summary>div:hover{transform:translateY(-3px);box-shadow:0 15px 32px rgba(43,57,42,.11)}
+.summary-cards.document-summary>div::before{position:absolute;left:17px;top:19px;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary-dark);font-size:18px;font-weight:900}
+.summary-cards.document-summary>div:nth-child(1)::before{content:"▤"}.summary-cards.document-summary>div:nth-child(2)::before{content:"◷"}.summary-cards.document-summary>div:nth-child(3)::before{content:"!"}
+.summary-cards.document-summary span,.summary-cards.document-summary strong,.summary-cards.document-summary small{display:block}.summary-cards.document-summary span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:850;color:var(--muted)}.summary-cards.document-summary strong{margin:5px 0 2px;font-size:25px}.summary-cards.document-summary small{color:var(--muted);font-size:11px}.summary-cards.document-summary>div.warning{border-color:#e5c77e}.summary-cards.document-summary>div.warning::before{background:#fff0c8;color:#936b10}.summary-cards.document-summary>div.danger{border-color:#e8b0aa}.summary-cards.document-summary>div.danger::before{background:#fbe1de;color:#a64238}
+.community-app .summary-cards.document-summary>div:nth-child(1)::before{background:#eee9ff;color:#584799}.livestock-app .summary-cards.document-summary>div:nth-child(1)::before{background:#efe1d5;color:#795038}
+
+/* Contabilidad de Apicultura y Ganadería con el balance general destacado */
+.apiculture-accounting-hero{background:linear-gradient(135deg,#596428,#9a9a3c)}
+.accounting-hero-split .accounting-count{background:rgba(255,255,255,.16)}
+.accounting-hero-split .accounting-count b{font-size:1.2rem}
+.livestock-accounting-hero{background:linear-gradient(135deg,#3c291f,#775038)}
+
+/* Ficha de parcela con el mismo cuidado visual de las fichas de colmena */
+.parcel-profile-hero{position:relative;min-height:300px;margin-bottom:22px;padding:0;overflow:hidden;background:#e8dfd4;color:#fff}
+.parcel-profile-hero>img,.parcel-profile-placeholder{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.parcel-profile-placeholder{display:grid;place-items:center;background:linear-gradient(135deg,#8a674b,#b58a61);font-size:76px}
+.parcel-profile-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(31,21,15,.86) 0%,rgba(31,21,15,.57) 45%,rgba(31,21,15,.2) 100%),linear-gradient(0deg,rgba(31,21,15,.46),transparent 58%)}
+.parcel-profile-content{position:relative;z-index:1;min-height:300px;display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding:30px}
+.parcel-profile-main{max-width:650px}.parcel-profile-main h2{margin:9px 0 8px;font-size:32px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.28)}.parcel-profile-main p{margin:0;max-width:620px;color:rgba(255,255,255,.83);line-height:1.55}.parcel-profile-main .badge{background:rgba(255,255,255,.92);color:#5c422f}
+.parcel-profile-stats{display:grid;grid-template-columns:repeat(3,minmax(105px,1fr));gap:9px}.parcel-profile-stats span{min-width:105px;padding:12px 13px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.13);backdrop-filter:blur(8px)}.parcel-profile-stats small,.parcel-profile-stats strong{display:block}.parcel-profile-stats small{font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em}.parcel-profile-stats strong{margin-top:4px;font-size:17px;color:#fff}
+.parcel-detail-grid{gap:18px}.parcel-detail-grid>.panel{padding:20px}.parcel-detail-grid .panel-header{margin-bottom:15px}.parcel-detail-grid .account-details>div{padding:11px 0}.parcel-events-panel{background:linear-gradient(145deg,#fff,#fbf6f0)}
+
+@media(max-width:900px){.summary-cards.document-summary{grid-template-columns:1fr 1fr}.summary-cards.document-summary>div:first-child{grid-column:1/-1}.parcel-profile-content{align-items:flex-start;flex-direction:column;justify-content:flex-end}.parcel-profile-stats{width:100%}}
+@media(max-width:640px){.activity-preview-grid,.hive-activity-preview-grid,.summary-cards.document-summary{grid-template-columns:1fr}.summary-cards.document-summary>div:first-child{grid-column:auto}.activity-preview-meta{align-items:flex-start;flex-direction:column}.parcel-profile-hero,.parcel-profile-content{min-height:360px}.parcel-profile-content{padding:20px}.parcel-profile-main h2{font-size:27px}.parcel-profile-stats{grid-template-columns:repeat(2,1fr)}.parcel-profile-stats span:last-child{grid-column:1/-1}.accounting-hero-split{display:grid;grid-template-columns:1fr 1fr}.accounting-hero-split .accounting-count{grid-column:1/-1}}
