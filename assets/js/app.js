@@ -4,6 +4,7 @@
     const app = document.getElementById('app');
     const toastStack = document.getElementById('toast-stack');
     const config = window.APICULTURA_CONFIG || {};
+    const DEFAULT_API_URL = 'https://api.mellifera-technology.com/apicultura/api/index.php';
     const STORAGE = {
         apiUrl: 'apicultura_api_url',
         token: 'apicultura_api_token',
@@ -11,7 +12,7 @@
     };
 
     const state = {
-        apiUrl: localStorage.getItem(STORAGE.apiUrl) || config.apiUrl || '',
+        apiUrl: config.apiUrl || DEFAULT_API_URL,
         token: localStorage.getItem(STORAGE.token) || '',
         user: JSON.parse(localStorage.getItem(STORAGE.user) || 'null'),
         protectedUrls: []
@@ -50,21 +51,6 @@
         const text = String(value ?? '').replaceAll('_', ' ');
         return text.charAt(0).toUpperCase() + text.slice(1);
     };
-
-    function normalizeApiUrl(value) {
-        let url = String(value || '').trim().replace(/\/+$/, '');
-        if (!url) return '';
-        if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
-        if (/\/index\.php$/i.test(url)) return url;
-        if (/\/api$/i.test(url)) return `${url}/index.php`;
-        if (/\/apicultura$/i.test(url)) return `${url}/api/index.php`;
-        return `${url}/apicultura/api/index.php`;
-    }
-
-    function saveApiUrl(value) {
-        state.apiUrl = normalizeApiUrl(value);
-        localStorage.setItem(STORAGE.apiUrl, state.apiUrl);
-    }
 
     function saveSession(token, user) {
         state.token = token;
@@ -192,7 +178,7 @@
         if (apps.length < 2) {
             return `<a class="brand" href="${current === 'ganaderia' ? 'ganaderia.html#/ganaderia' : '#/dashboard'}"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Acceso privado</small></span></a>`;
         }
-        return `<div class="app-switcher"><button class="brand app-switcher-trigger" type="button" data-command="app-switch-toggle" aria-expanded="false"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Cambiar de vista</small></span><span class="app-switch-chevron">⌄</span></button><div class="app-switch-menu" hidden>${apps.includes('apicultura') ? `<button type="button" data-command="switch-app" data-app="apicultura" class="${current === 'apicultura' ? 'active' : ''}"><span>🐝</span><div><strong>Gestión Apícola</strong><small>Colmenas y apiario</small></div></button>` : ''}${apps.includes('ganaderia') ? `<button type="button" data-command="switch-app" data-app="ganaderia" class="${current === 'ganaderia' ? 'active' : ''}"><span>⌾</span><div><strong>Gestión Ganadera</strong><small>Animales y parcelas</small></div></button>` : ''}${apps.includes('comunidad') ? `<button type="button" data-command="switch-app" data-app="comunidad" class="${current === 'comunidad' ? 'active' : ''}"><span>✦</span><div><strong>Comunidad Apícola</strong><small>Trabajo compartido</small></div></button>` : ''}</div></div>`;
+        return `<div class="app-switcher"><button class="brand app-switcher-trigger" type="button" data-command="app-switch-toggle" aria-expanded="false"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Cambiar de vista</small></span><span class="app-switch-chevron">⌄</span></button><div class="app-switch-menu" hidden>${apps.includes('apicultura') ? `<button type="button" data-command="switch-app" data-app="apicultura" class="${current === 'apicultura' ? 'active' : ''}"><span>🐝</span><div><strong>Gestión Apícola</strong><small>Colmenas y apiario</small></div></button>` : ''}${apps.includes('ganaderia') ? `<button type="button" data-command="switch-app" data-app="ganaderia" class="${current === 'ganaderia' ? 'active' : ''}"><span>⌾</span><div><strong>Gestión Ganadera</strong><small>Animales y parcelas</small></div></button>` : ''}${apps.includes('comunidad') ? `<button type="button" data-command="switch-app" data-app="comunidad" class="${current === 'comunidad' ? 'active' : ''}"><span>⬢</span><div><strong>Comunidad Apícola</strong><small>Trabajo compartido</small></div></button>` : ''}</div></div>`;
     }
 
     const navItems = [
@@ -202,6 +188,8 @@
         ['/materials', '⬡', 'Materiales', 'materials'],
         ['/purchases', '▤', 'Compras pendientes', 'purchases'],
         ['/accounting', '$', 'Contabilidad', 'accounting'],
+        ['/documents', '▤', 'Documentos', 'documents'],
+        ['/queen-rearing', '♛', 'Crianza de reinas', 'queen-rearing'],
         ['/calendar', '▣', 'Calendario', 'calendar'],
         ['/backups', '⇩', 'Copias de seguridad', 'backups']
     ];
@@ -281,7 +269,6 @@
         document.title = 'Ingresar · Mellifera Technology';
         document.body.className = 'auth-page';
         app.className = '';
-        const apiDisplay = state.apiUrl || 'Todavía no configurado';
         app.innerHTML = `
             <main class="auth-card">
                 <div class="auth-brand">
@@ -295,14 +282,8 @@
                     <button class="btn btn-primary btn-block btn-large" type="submit">Ingresar</button>
                 </form>
                 <div class="auth-security">🔒 Los datos permanecen en la base MariaDB del servidor.</div>
-                <details class="server-config" ${state.apiUrl ? '' : 'open'}>
-                    <summary>Configurar conexión con Laragon</summary>
-                    <form class="server-config-form" data-form="server-config">
-                        <label class="field"><span>Dirección pública del servidor</span><input type="url" name="api_url" required value="${h(state.apiUrl)}" placeholder="https://direccion.trycloudflare.com"></label>
-                        <button class="btn btn-secondary" type="submit">Guardar y comprobar</button>
-                    </form>
-                    <div class="connection-state"><span class="connection-dot ${state.apiUrl ? '' : 'offline'}"></span><span>${h(apiDisplay)}</span></div>
-                </details>
+                <div class="connection-state connection-ready"><span class="connection-dot"></span><span>Servidor configurado automáticamente</span></div>
+
             </main>`;
         initPasswordToggles();
     }
@@ -673,6 +654,57 @@
         concept.addEventListener('change', () => { const selected = concept.selectedOptions[0]; if (selected?.dataset.defaultType) type.value = selected.dataset.defaultType; });
     }
 
+
+    const documentCategoryLabels = { renapa:'RENAPA', senasa:'SENASA', registro:'Registro', certificado:'Certificado', contrato:'Contrato', seguro:'Seguro', plano:'Plano', factura:'Factura', manual:'Manual', otro:'Otro' };
+
+    async function openManagedDocument(appCode, id, name='documento') {
+        const blob = await api('document_file', { params:{ app_code:appCode, id }, blob:true });
+        const url = URL.createObjectURL(blob); state.protectedUrls.push(url);
+        const win = window.open(url, '_blank', 'noopener');
+        if (!win) { const a=document.createElement('a');a.href=url;a.download=name;a.click(); }
+    }
+
+    function openDocumentModal(appCode, document={}) {
+        openAppModal(document.id ? 'Editar documento' : 'Agregar documento', `
+            <form data-form="document-save" enctype="multipart/form-data">
+                <input type="hidden" name="app_code" value="${h(appCode)}"><input type="hidden" name="id" value="${document.id||''}">
+                <div class="form-grid two-columns">
+                    <label class="field"><span>Nombre del documento *</span><input name="title" required maxlength="180" value="${h(document.title||'')}"></label>
+                    <label class="field"><span>Categoría</span><select name="category">${Object.entries(documentCategoryLabels).map(([v,l])=>`<option value="${v}" ${document.category===v?'selected':''}>${l}</option>`).join('')}</select></label>
+                    <label class="field"><span>Número</span><input name="document_number" value="${h(document.document_number||'')}" placeholder="Opcional"></label>
+                    <label class="field"><span>Organismo o emisor</span><input name="issuer" value="${h(document.issuer||'')}" placeholder="SENASA, RENAPA, aseguradora…"></label>
+                    <label class="field"><span>Fecha de emisión</span><input type="date" name="issue_date" value="${h(document.issue_date||'')}"></label>
+                    <label class="field"><span>Vencimiento</span><input type="date" name="expiry_date" value="${h(document.expiry_date||'')}"></label>
+                </div>
+                <label class="field"><span>Notas</span><textarea name="notes">${h(document.notes||'')}</textarea></label>
+                <label class="field"><span>${document.id?'Reemplazar archivo (opcional)':'Archivo *'}</span><input type="file" name="document" accept="application/pdf,image/jpeg,image/png,image/webp" ${document.id?'':'required'}></label>
+                <div class="form-actions"><button class="btn btn-primary" type="submit">Guardar documento</button><button class="btn btn-ghost" type="button" data-command="modal-close">Cancelar</button></div>
+            </form>`, false);
+    }
+
+    async function renderDocuments(params) {
+        loading('Cargando documentos…');
+        const filters={q:params.get('q')||'',category:params.get('category')||'',status:params.get('status')||''};
+        const data=await api('documents_list',{params:{app_code:'apicultura',...filters}});state.managementDocuments=data.documents||[];
+        const summary=data.summary||{};
+        shell({title:'Documentos',subtitle:'Registros, certificados y archivos importantes del apiario',active:'documents',actions:'<button class="btn btn-primary" data-command="document-new">+ Agregar documento</button>',content:`
+            <section class="summary-cards document-summary"><div><span>Total</span><strong>${Number(summary.total||0)}</strong><small>Documentos guardados</small></div><div class="warning"><span>Por vencer</span><strong>${Number(summary.expiring||0)}</strong><small>Próximos 45 días</small></div><div class="danger"><span>Vencidos</span><strong>${Number(summary.expired||0)}</strong><small>Requieren revisión</small></div></section>
+            <form class="filter-bar" data-form="document-filter"><input name="q" value="${h(filters.q)}" placeholder="Buscar por nombre, número o emisor"><select name="category"><option value="">Todas las categorías</option>${Object.entries(documentCategoryLabels).map(([v,l])=>`<option value="${v}" ${filters.category===v?'selected':''}>${l}</option>`).join('')}</select><select name="status"><option value="">Todos</option><option value="vigente" ${filters.status==='vigente'?'selected':''}>Vigentes</option><option value="por_vencer" ${filters.status==='por_vencer'?'selected':''}>Por vencer</option><option value="vencido" ${filters.status==='vencido'?'selected':''}>Vencidos</option></select><button class="btn btn-secondary">Filtrar</button></form>
+            ${(data.documents||[]).length?`<section class="document-grid">${data.documents.map(d=>{const days=d.days_to_expiry===null?null:Number(d.days_to_expiry);const expiry=days===null?'Sin vencimiento':days<0?`Vencido hace ${Math.abs(days)} días`:days<=45?`Vence en ${days} días`:`Vence ${formatDate(d.expiry_date)}`;return `<article class="document-card ${days!==null&&days<0?'is-expired':days!==null&&days<=45?'is-expiring':''}"><div class="document-card-icon">${String(d.mime_type||'').includes('pdf')?'PDF':'IMG'}</div><div class="document-card-body"><span class="document-category">${h(documentCategoryLabels[d.category]||'Otro')}</span><h3>${h(d.title)}</h3><p>${h(d.issuer||'Sin emisor')}${d.document_number?` · Nº ${h(d.document_number)}`:''}</p><div class="document-expiry">${h(expiry)}</div><small>Subió: ${h(d.uploaded_by_name||'—')}</small></div><div class="document-card-actions"><button class="btn btn-small btn-primary" data-command="document-open" data-id="${d.id}" data-name="${h(d.original_name)}">Abrir</button><button class="btn btn-small btn-ghost" data-command="document-edit" data-id="${d.id}">Editar</button><button class="icon-button danger" data-command="document-delete" data-id="${d.id}">×</button></div></article>`}).join('')}</section>`:emptyState('▤','No hay documentos','Agregue RENAPA, certificados, planos, contratos u otros archivos importantes.')}`});
+    }
+
+    function openQueenRearingModal(item={}) {
+        const hives=state.queenRearingHives||[];
+        openAppModal(item.id?'Actualizar crianza':'Nueva crianza de reinas',`<form data-form="queen-rearing-save">
+            <input type="hidden" name="app_code" value="apicultura"><input type="hidden" name="id" value="${item.id||''}">
+            <div class="form-grid two-columns"><label class="field"><span>Nombre o lote *</span><input name="name" required value="${h(item.name||'')}" placeholder="Ej. Lote primavera 1"></label><label class="field"><span>Colmena de origen</span><select name="source_hive_id"><option value="">Sin especificar</option>${hives.map(x=>`<option value="${x.id}" ${String(item.source_hive_id||'')===String(x.id)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Dónde quedó instalado</span><input name="location" value="${h(item.location||'')}" placeholder="Starter, criadora, colmena…"></label><label class="field"><span>Punto de inicio</span><select name="start_point"><option value="huevo" ${item.start_point==='huevo'?'selected':''}>Huevo o puesta (aprox. 16 días)</option><option value="traslarve" ${!item.start_point||item.start_point==='traslarve'?'selected':''}>Traslarve (aprox. 12 días)</option><option value="celda_operculada" ${item.start_point==='celda_operculada'?'selected':''}>Celda operculada (aprox. 6 días)</option></select></label><label class="field"><span>Fecha de inicio *</span><input type="date" name="start_date" required value="${h(item.start_date||today())}"></label><label class="field"><span>Días estimados</span><input type="number" min="1" max="30" name="estimated_days" value="${item.estimated_days||12}"></label><label class="field"><span>Reinas proyectadas</span><input type="number" min="0" name="projected_queens" value="${item.projected_queens||0}"></label><label class="field"><span>Estado</span><select name="status">${[['planificada','Planificada'],['en_proceso','En proceso'],['nacidas','Nacidas'],['finalizada','Finalizada'],['cancelada','Cancelada']].map(([v,l])=>`<option value="${v}" ${item.status===v?'selected':''}>${l}</option>`).join('')}</select></label><label class="field"><span>Reinas obtenidas</span><input type="number" min="0" name="emerged_queens" value="${item.emerged_queens??''}"></label><label class="field"><span>Nuevas colmenas formadas</span><input type="number" min="0" name="formed_hives" value="${item.formed_hives??''}"></label></div><label class="field"><span>Observaciones</span><textarea name="notes">${h(item.notes||'')}</textarea></label><div class="estimate-note">Al guardar se calculará el nacimiento estimado y se creará o actualizará automáticamente el evento del calendario.</div><div class="form-actions"><button class="btn btn-primary">Guardar</button><button type="button" class="btn btn-ghost" data-command="modal-close">Cancelar</button></div></form>`,true);
+    }
+
+    async function renderQueenRearing(params) {
+        loading('Cargando crianza de reinas…');const status=params.get('status')||'';const data=await api('queen_rearing_list',{params:{app_code:'apicultura',status}});state.queenRearingBatches=data.batches||[];state.queenRearingHives=data.hives||[];
+        shell({title:'Crianza de reinas',subtitle:'Planificación, nacimiento estimado y resultados de cada lote',active:'queen-rearing',actions:'<button class="btn btn-primary" data-command="queen-rearing-new">+ Iniciar crianza</button>',content:`<form class="filter-bar" data-form="queen-rearing-filter"><select name="status"><option value="">Todos los estados</option>${[['planificada','Planificada'],['en_proceso','En proceso'],['nacidas','Nacidas'],['finalizada','Finalizada'],['cancelada','Cancelada']].map(([v,l])=>`<option value="${v}" ${status===v?'selected':''}>${l}</option>`).join('')}</select><button class="btn btn-secondary">Filtrar</button></form>${(data.batches||[]).length?`<section class="queen-rearing-grid">${data.batches.map(q=>`<article class="queen-rearing-card status-${h(q.status)}"><div class="queen-rearing-date"><small>Nacimiento estimado</small><strong>${formatDate(q.expected_emergence_date)}</strong><span>${Number(q.days_remaining)>=0?`Faltan ${q.days_remaining} días`:'Fecha cumplida'}</span></div><div class="queen-rearing-body"><span class="badge">${capitalize(q.status)}</span><h3>${h(q.name)}</h3><p>${h(q.location||'Ubicación sin especificar')}${q.source_hive_name?` · Origen: ${h(q.source_hive_name)}`:''}</p><div class="queen-rearing-counts"><span><b>${Number(q.projected_queens||0)}</b> proyectadas</span><span><b>${q.emerged_queens??'—'}</b> obtenidas</span><span><b>${q.formed_hives??'—'}</b> colmenas</span></div><small>Inició ${formatDate(q.start_date)} · ${h(q.created_by_name||'—')}</small></div><div class="queen-rearing-actions"><button class="btn btn-small btn-secondary" data-command="queen-rearing-edit" data-id="${q.id}">Abrir</button><button class="icon-button danger" data-command="queen-rearing-delete" data-id="${q.id}">×</button></div></article>`).join('')}</section>`:emptyState('♛','Todavía no hay crianzas','Inicie un lote para calcular el nacimiento y agregarlo automáticamente al calendario.')}`});
+    }
+
     async function renderBackups() {
         loading('Cargando copias de seguridad…');
         const data = await api('backups');
@@ -746,13 +778,15 @@
             if (path === '/purchases') return await renderPurchases(params);
             if (/^\/purchase\/\d+$/.test(path)) return await renderPurchase(Number(path.split('/')[2]), params);
             if (path === '/accounting') return await renderAccounting(params);
+            if (path === '/queen-rearing') return await renderQueenRearing(params);
+            if (path === '/documents') return await renderDocuments(params);
             if (path === '/calendar') return await renderCalendar(params);
             if (path === '/backups') return await renderBackups();
             if (path === '/profile') return await renderProfile();
             go('/dashboard');
         } catch (error) {
             if (!state.token) return;
-            shell({ title: 'No se pudo abrir', subtitle: 'Problema de conexión con el servidor local', active: '', content: `<section class="panel api-offline-box"><div class="empty-state"><div>!</div><h3>${h(error.message)}</h3><p>La interfaz está publicada, pero necesita que la computadora con Laragon y Cloudflare Tunnel esté encendida.</p><div class="inline-buttons"><button class="btn btn-primary" data-command="retry-route">Volver a intentar</button><button class="btn btn-ghost" data-command="show-login">Cambiar servidor</button></div></div></section>` });
+            shell({ title: 'No se pudo abrir', subtitle: 'Problema de conexión con el servidor local', active: '', content: `<section class="panel api-offline-box"><div class="empty-state"><div>!</div><h3>${h(error.message)}</h3><p>La interfaz está publicada, pero necesita que la computadora con Laragon y Cloudflare Tunnel esté encendida.</p><div class="inline-buttons"><button class="btn btn-primary" data-command="retry-route">Volver a intentar</button></div></div></section>` });
         }
     }
 
@@ -766,14 +800,7 @@
         form.classList.add('is-submitting');
         if (button) { button.disabled = true; button.textContent = 'Guardando…'; }
         try {
-            if (type === 'server-config') {
-                const url = form.elements.api_url.value;
-                saveApiUrl(url);
-                const health = await api('health', { noAuth: true });
-                toast(`Servidor conectado: ${health.service}`);
-                renderLogin();
-            } else if (type === 'login') {
-                if (!state.apiUrl) throw new Error('Abra “Configurar conexión con Laragon” e ingrese la dirección pública.');
+            if (type === 'login') {
                 const result = await api('login', { method: 'POST', noAuth: true, data: { username: form.elements.username.value, password: form.elements.password.value } });
                 saveSession(result.token, result.user);
                 if (!availableApps(result.user).includes('apicultura')) { if (availableApps(result.user).includes('ganaderia')) { window.location.href='ganaderia.html'; return; } if (availableApps(result.user).includes('comunidad')) { window.location.href='comunidad.html#/comunidad'; return; } }
@@ -808,6 +835,14 @@
                 go('/accounting', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'accounting-save') {
                 await api('accounting_save', { method: 'POST', formData: new FormData(form) }); toast('Movimiento guardado'); go('/accounting');
+            } else if (type === 'document-filter') {
+                go('/documents', Object.fromEntries(new FormData(form).entries()));
+            } else if (type === 'document-save') {
+                await api('document_save', { method:'POST', formData:new FormData(form) }); closeAppModal(); toast('Documento guardado'); go('/documents');
+            } else if (type === 'queen-rearing-filter') {
+                go('/queen-rearing', Object.fromEntries(new FormData(form).entries()));
+            } else if (type === 'queen-rearing-save') {
+                const result=await api('queen_rearing_save',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast(result.message||'Crianza guardada');go('/queen-rearing');
             } else if (type === 'backup-restore') {
                 if (!confirm('¿Restaurar esta copia? Los datos actuales serán reemplazados. Se generará primero un respaldo automático.')) return;
                 await api('backup_restore', { method: 'POST', formData: new FormData(form) }); clearSession(); toast('Copia restaurada. Vuelva a ingresar.'); renderLogin();
@@ -905,6 +940,20 @@
             } else if (command === 'accounting-delete') {
                 if (!confirm('¿Eliminar este movimiento y su comprobante?')) return;
                 await api('accounting_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Movimiento eliminado'); await route();
+            } else if (command === 'document-new') {
+                openDocumentModal('apicultura');
+            } else if (command === 'document-edit') {
+                openDocumentModal('apicultura',(state.managementDocuments||[]).find(x=>String(x.id)===String(commandElement.dataset.id))||{});
+            } else if (command === 'document-open') {
+                await openManagedDocument('apicultura',commandElement.dataset.id,commandElement.dataset.name);
+            } else if (command === 'document-delete') {
+                if(!confirm('¿Eliminar este documento y su archivo?'))return;await api('document_delete',{method:'POST',data:{app_code:'apicultura',id:commandElement.dataset.id}});toast('Documento eliminado');await route();
+            } else if (command === 'queen-rearing-new') {
+                openQueenRearingModal();
+            } else if (command === 'queen-rearing-edit') {
+                openQueenRearingModal((state.queenRearingBatches||[]).find(x=>String(x.id)===String(commandElement.dataset.id))||{});
+            } else if (command === 'queen-rearing-delete') {
+                if(!confirm('¿Eliminar este registro y su evento automático del calendario?'))return;await api('queen_rearing_delete',{method:'POST',data:{app_code:'apicultura',id:commandElement.dataset.id}});toast('Registro eliminado');await route();
             } else if (command === 'backup-create') {
                 commandElement.disabled = true; const text = commandElement.textContent; commandElement.textContent = 'Generando ZIP…';
                 try { await downloadBlob('backup_create', {}, `apicultura_completa_${today()}.zip`, 'POST', new FormData()); toast('Copia completa descargada'); await route(); } finally { commandElement.disabled = false; commandElement.textContent = text; }
