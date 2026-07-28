@@ -1,17 +1,10 @@
-ACTUALIZACIÓN V11 PARA GITHUB PAGES
+MELLIFERA TECHNOLOGY · ACTUALIZACIÓN V13 PARA GITHUB PAGES
 
-Reemplace en la raíz del repositorio gestion:
-- comunidad.html
-- assets/js/comunidad.js
+Reemplace únicamente los archivos incluidos en este ZIP:
+- assets/css/app.css
 - assets/js/app.js
 - assets/js/ganaderia.js
-- assets/css/app.css
+- assets/js/comunidad.js
 
-No reemplace ni elimine:
-- assets/js/config.js
-- CNAME
-
-Después del commit, abra:
-https://gestion.mellifera-technology.com
-
-y presione Ctrl + F5.
+No reemplace assets/js/config.js ni CNAME.
+Después del commit, abra https://gestion.mellifera-technology.com y presione Ctrl+F5.
