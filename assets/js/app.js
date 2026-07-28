@@ -187,12 +187,12 @@
 
     function appSwitcher(current) {
         const apps = availableApps();
-        const currentLabel = current === 'ganaderia' ? 'Gestión Ganadera' : 'Gestión Apícola';
-        const currentIcon = current === 'ganaderia' ? '⌾' : '🐝';
+        const currentLabel = current === 'ganaderia' ? 'Gestión Ganadera' : current === 'comunidad' ? 'Comunidad Apícola' : 'Gestión Apícola';
+        const currentIcon = current === 'ganaderia' ? '⌾' : current === 'comunidad' ? '✦' : '🐝';
         if (apps.length < 2) {
             return `<a class="brand" href="${current === 'ganaderia' ? 'ganaderia.html#/ganaderia' : '#/dashboard'}"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Acceso privado</small></span></a>`;
         }
-        return `<div class="app-switcher"><button class="brand app-switcher-trigger" type="button" data-command="app-switch-toggle" aria-expanded="false"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Cambiar de vista</small></span><span class="app-switch-chevron">⌄</span></button><div class="app-switch-menu" hidden>${apps.includes('apicultura') ? `<button type="button" data-command="switch-app" data-app="apicultura" class="${current === 'apicultura' ? 'active' : ''}"><span>🐝</span><div><strong>Gestión Apícola</strong><small>Colmenas y apiario</small></div></button>` : ''}${apps.includes('ganaderia') ? `<button type="button" data-command="switch-app" data-app="ganaderia" class="${current === 'ganaderia' ? 'active' : ''}"><span>⌾</span><div><strong>Gestión Ganadera</strong><small>Animales y parcelas</small></div></button>` : ''}</div></div>`;
+        return `<div class="app-switcher"><button class="brand app-switcher-trigger" type="button" data-command="app-switch-toggle" aria-expanded="false"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Cambiar de vista</small></span><span class="app-switch-chevron">⌄</span></button><div class="app-switch-menu" hidden>${apps.includes('apicultura') ? `<button type="button" data-command="switch-app" data-app="apicultura" class="${current === 'apicultura' ? 'active' : ''}"><span>🐝</span><div><strong>Gestión Apícola</strong><small>Colmenas y apiario</small></div></button>` : ''}${apps.includes('ganaderia') ? `<button type="button" data-command="switch-app" data-app="ganaderia" class="${current === 'ganaderia' ? 'active' : ''}"><span>⌾</span><div><strong>Gestión Ganadera</strong><small>Animales y parcelas</small></div></button>` : ''}${apps.includes('comunidad') ? `<button type="button" data-command="switch-app" data-app="comunidad" class="${current === 'comunidad' ? 'active' : ''}"><span>✦</span><div><strong>Comunidad Apícola</strong><small>Trabajo compartido</small></div></button>` : ''}</div></div>`;
     }
 
     const navItems = [
@@ -202,6 +202,7 @@
         ['/materials', '⬡', 'Materiales', 'materials'],
         ['/purchases', '▤', 'Compras pendientes', 'purchases'],
         ['/accounting', '$', 'Contabilidad', 'accounting'],
+        ['/calendar', '▣', 'Calendario', 'calendar'],
         ['/backups', '⇩', 'Copias de seguridad', 'backups']
     ];
 
@@ -331,7 +332,7 @@
         const banner = data.banner || {};
         shell({
             title: 'Inicio', subtitle: 'Resumen general del proyecto apícola', active: 'dashboard',
-            actions: '<a class="btn btn-primary" href="#/activity-edit">+ Nueva actividad</a>',
+            actions: '<button class="btn btn-primary" type="button" data-command="activity-open">+ Nueva actividad</button>',
             content: `
                 <section class="apiculture-hero-banner panel ${Number(banner.has_file) ? 'has-photo' : ''}">
                     ${Number(banner.has_file) ? `<img class="protected-image" data-protected-image="1" data-file-type="apiculture_banner" data-id="1" alt="${h(banner.caption || 'Vista general del apiario')}">` : '<div class="apiculture-hero-placeholder"><span>✦</span><strong>Su apiario, en una sola mirada</strong><small>Agregue una fotografía para personalizar el inicio.</small></div>'}
@@ -480,6 +481,52 @@
         update();
     }
 
+    function closeAppModal() { document.querySelector('.modal-backdrop')?.remove(); }
+
+    function showAppModal(title, body, wide = true) {
+        closeAppModal();
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop';
+        backdrop.innerHTML = `<section class="app-modal ${wide ? 'app-modal-wide' : ''}" role="dialog" aria-modal="true"><header><div><small>Gestión Apícola</small><h2>${h(title)}</h2></div><button class="modal-close" type="button" data-command="modal-close">×</button></header><div class="app-modal-body">${body}</div></section>`;
+        document.body.appendChild(backdrop);
+        requestAnimationFrame(() => backdrop.classList.add('open'));
+        hydrateProtectedImages();
+    }
+
+    async function openActivityModal(id = 0, defaults = {}) {
+        const data = await api('activity', { params: { id } });
+        const item = data.activity;
+        const selectedHive = item?.hive_id || defaults.hiveId || '';
+        showAppModal(item ? 'Editar actividad' : 'Nueva actividad', `<div class="modal-form-layout"><form data-form="activity-save" enctype="multipart/form-data"><input type="hidden" name="id" value="${item?.id || ''}"><label class="field"><span>Título *</span><input name="title" maxlength="180" required value="${h(item?.title || '')}"></label><label class="field"><span>Descripción</span><textarea name="description" rows="4">${h(item?.description || '')}</textarea></label><div class="form-grid two-columns"><label class="field"><span>Colmena</span><select name="hive_id"><option value="">Sin colmena</option>${(data.hives || []).map(x => `<option value="${x.id}" ${String(x.id) === String(selectedHive) ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Responsable</span><input name="responsible" value="${h(item?.responsible || '')}" placeholder="Chiara o Felipe"></label><label class="field"><span>Estado</span><select name="status_id">${(data.statuses || []).map(x => `<option value="${x.id}" ${Number(item?.status_id || 1) === Number(x.id) ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Etiqueta</span><select name="label_id"><option value="">Sin etiqueta</option>${(data.labels || []).map(x => `<option value="${x.id}" ${Number(item?.label_id || 0) === Number(x.id) ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Prioridad</span><select name="priority">${['baja','normal','alta','urgente'].map(x => `<option value="${x}" ${(item?.priority || 'normal') === x ? 'selected' : ''}>${capitalize(x)}</option>`).join('')}</select></label><label class="field"><span>Fecha prevista</span><input type="date" name="due_date" value="${h(item?.due_date || '')}"></label></div>${item ? '' : '<label class="field"><span>Foto o archivo inicial</span><input type="file" name="attachment" accept="image/jpeg,image/png,image/webp,application/pdf"></label>'}<div class="form-actions"><button class="btn btn-primary" type="submit">Guardar actividad</button><button class="btn btn-ghost" type="button" data-command="modal-close">Cancelar</button>${item ? `<button class="btn btn-danger" type="button" data-command="activity-delete" data-id="${item.id}">Eliminar</button>` : ''}</div></form>${item ? `<aside class="modal-side-panel"><h3>Fotos y archivos</h3><form data-form="activity-attachment-upload" enctype="multipart/form-data"><input type="hidden" name="activity_id" value="${item.id}"><input type="file" name="attachment" accept="image/jpeg,image/png,image/webp,application/pdf" required><button class="btn btn-secondary btn-small">Agregar</button></form><div class="modal-attachment-grid">${(data.attachments || []).map(f => `<article>${String(f.mime_type).startsWith('image/') ? `<img data-protected-image data-file-type="activity" data-id="${f.id}" alt="${h(f.original_name)}">` : '<div class="pdf-preview">PDF</div>'}<button class="file-link file-button" data-command="open-file" data-file-type="activity" data-id="${f.id}" data-name="${h(f.original_name)}">${h(f.original_name)}</button><button class="icon-button danger" data-command="activity-attachment-delete" data-id="${f.id}" data-activity-id="${item.id}">×</button></article>`).join('')}</div><h3>Historial</h3><div class="history-list">${(data.logs || []).map(x => `<div><strong>${h(x.action)}</strong><small>${formatDateTime(x.created_at)}</small></div>`).join('')}</div></aside>` : ''}</div>`);
+    }
+
+    function calendarMonthRange(offset = 0) {
+        const base = new Date(); base.setDate(1); base.setMonth(base.getMonth() + Number(offset || 0));
+        const year = base.getFullYear(), month = base.getMonth();
+        const from = `${year}-${String(month + 1).padStart(2,'0')}-01`;
+        const last = new Date(year, month + 1, 0).getDate();
+        return { base, from, to: `${year}-${String(month + 1).padStart(2,'0')}-${String(last).padStart(2,'0')}`, last, offset: Number(offset || 0) };
+    }
+
+    async function renderCalendar(params) {
+        loading('Cargando calendario…');
+        const range = calendarMonthRange(params.get('offset') || 0);
+        const data = await api('calendar_events', { params: { app_code:'apicultura', from:range.from, to:range.to } });
+        const firstDay = new Date(`${range.from}T12:00:00`).getDay();
+        const byDate = {};
+        (data.events || []).forEach(x => { (byDate[x.start_date] ||= []).push({...x, kind:'manual'}); });
+        (data.activities || []).forEach(x => { (byDate[x.start_date] ||= []).push({...x, kind:'activity'}); });
+        const cells = [];
+        for (let i=0;i<firstDay;i++) cells.push('<div class="calendar-day outside"></div>');
+        for (let day=1;day<=range.last;day++) { const date=`${range.from.slice(0,8)}${String(day).padStart(2,'0')}`; const items=byDate[date]||[]; cells.push(`<div class="calendar-day"><div class="calendar-day-number">${day}<button type="button" data-command="calendar-new" data-date="${date}">+</button></div>${items.map(x=>x.kind==='activity'?`<a class="calendar-event activity" href="#/activities"><strong>${h(x.title)}</strong><small>${h(x.entity_name||'Actividad')}</small></a>`:`<button class="calendar-event manual" style="--event-color:${h(x.color||'#3976bd')}" data-command="calendar-edit" data-id="${x.id}" data-title="${h(x.title)}" data-type="${h(x.event_type)}" data-start="${h(x.start_date)}" data-end="${h(x.end_date||'')}" data-notes="${h(x.notes||'')}"><strong>${h(x.title)}</strong><small>${capitalize(x.event_type)}</small></button>`).join('')}</div>`); }
+        const label=new Intl.DateTimeFormat('es-AR',{month:'long',year:'numeric'}).format(range.base);
+        shell({title:'Calendario',subtitle:'Actividades y fechas apícolas importantes',active:'calendar',actions:'<button class="btn btn-primary" data-command="calendar-new">+ Nuevo evento</button>',content:`<section class="calendar-toolbar panel"><a class="btn btn-ghost" href="#/calendar?offset=${range.offset-1}">←</a><h2>${capitalize(label)}</h2><a class="btn btn-ghost" href="#/calendar?offset=${range.offset+1}">→</a></section><section class="calendar-grid"><div class="calendar-weekday">Dom</div><div class="calendar-weekday">Lun</div><div class="calendar-weekday">Mar</div><div class="calendar-weekday">Mié</div><div class="calendar-weekday">Jue</div><div class="calendar-weekday">Vie</div><div class="calendar-weekday">Sáb</div>${cells.join('')}</section>`});
+    }
+
+    function openCalendarModal(data = {}) {
+        showAppModal(data.id ? 'Editar evento' : 'Nuevo evento', `<form data-form="calendar-save"><input type="hidden" name="id" value="${data.id || ''}"><input type="hidden" name="app_code" value="apicultura"><label class="field"><span>Título</span><input name="title" required value="${h(data.title || '')}"></label><label class="field"><span>Tipo</span><select name="event_type">${[['general','General'],['zanganos','Arranque de zánganos'],['mielada','Mielada'],['senasa','Calendario SENASA'],['floracion','Floración'],['reunion','Reunión']].map(([v,l])=>`<option value="${v}" ${data.type===v?'selected':''}>${l}</option>`).join('')}</select></label><div class="form-grid two-columns"><label class="field"><span>Desde</span><input type="date" name="start_date" required value="${data.start || today()}"></label><label class="field"><span>Hasta</span><input type="date" name="end_date" value="${data.end || ''}"></label></div><label class="field"><span>Notas</span><textarea name="notes">${h(data.notes || '')}</textarea></label><input type="hidden" name="color" value="#3976bd"><div class="form-actions"><button class="btn btn-primary">Guardar</button>${data.id ? `<button type="button" class="btn btn-danger" data-command="calendar-delete" data-id="${data.id}">Eliminar</button>` : ''}</div></form>`, false);
+    }
+
     async function renderActivities(params) {
         loading('Cargando el tablero…');
         const filters = { hive_id: params.get('hive_id') || '', label_id: params.get('label_id') || '', q: params.get('q') || '' };
@@ -491,10 +538,11 @@
                 <section class="kanban-board" data-kanban-board>${(data.statuses || []).map(status => {
                     const cards = (data.activities || []).filter(item => Number(item.status_id) === Number(status.id));
                     const purchases = status.slug === 'pendientes' ? (data.purchase_plans || []) : [];
-                    return `<article class="kanban-column"><div class="kanban-header" style="--status-color:${h(status.color)}"><div><span></span><h2>${h(status.name)}</h2></div><strong>${cards.length + purchases.length}</strong></div><div class="kanban-list" data-status-id="${status.id}">${purchases.map(plan => `<article class="kanban-card purchase-kanban-card"><a href="#/purchase/${plan.id}"><div class="kanban-card-top"><span class="activity-label purchase-label">Compra pendiente</span><span class="purchase-card-symbol">▤</span></div><h3>${h(plan.title)}</h3>${plan.notes ? `<p>${h(plan.notes)}</p>` : ''}<div class="kanban-card-meta"><span>▤ ${h(monthLabel(plan.plan_month))}</span><span>${Number(plan.item_count || 0)} elementos</span><span>${moneyARS(plan.total_amount)}</span></div><small>Abrir compra planificada →</small></a></article>`).join('')}${cards.map(activity => `<article class="kanban-card priority-card-${h(activity.priority)}" draggable="true" data-activity-id="${activity.id}"><a href="#/activity-edit/${activity.id}"><div class="kanban-card-top">${activity.label_name ? `<span class="activity-label" style="--label-color:${h(activity.label_color)}">${h(activity.label_name)}</span>` : '<span></span>'}<span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span></div><h3>${h(activity.title)}</h3>${activity.description ? `<p>${h(activity.description)}</p>` : ''}<div class="kanban-card-meta"><span>⬡ ${h(activity.hive_name || 'Sin colmena')}</span><span>◷ ${formatDate(activity.due_date)}</span></div>${activity.responsible ? `<small>Responsable: ${h(activity.responsible)}</small>` : ''}</a></article>`).join('')}</div></article>`;
+                    return `<article class="kanban-column"><div class="kanban-header" style="--status-color:${h(status.color)}"><div><span></span><h2>${h(status.name)}</h2></div><strong>${cards.length + purchases.length}</strong></div><div class="kanban-list" data-status-id="${status.id}">${purchases.map(plan => `<article class="kanban-card purchase-kanban-card"><a href="#/purchase/${plan.id}"><div class="kanban-card-top"><span class="activity-label purchase-label">Compra pendiente</span><span class="purchase-card-symbol">▤</span></div><h3>${h(plan.title)}</h3>${plan.notes ? `<p>${h(plan.notes)}</p>` : ''}<div class="kanban-card-meta"><span>▤ ${h(monthLabel(plan.plan_month))}</span><span>${Number(plan.item_count || 0)} elementos</span><span>${moneyARS(plan.total_amount)}</span></div><small>Abrir compra planificada →</small></a></article>`).join('')}${cards.map(activity => `<article class="kanban-card priority-card-${h(activity.priority)}" draggable="true" data-activity-id="${activity.id}">${activity.preview_image_id ? `<button class="activity-thumb" type="button" data-command="open-file" data-file-type="activity" data-id="${activity.preview_image_id}" data-name="foto"><img data-protected-image data-file-type="activity" data-id="${activity.preview_image_id}" alt="Foto de actividad"></button>` : ''}<button class="activity-card-open" type="button" data-command="activity-open" data-id="${activity.id}"><div class="kanban-card-top">${activity.label_name ? `<span class="activity-label" style="--label-color:${h(activity.label_color)}">${h(activity.label_name)}</span>` : '<span></span>'}<span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span></div><h3>${h(activity.title)}</h3>${activity.description ? `<p>${h(activity.description)}</p>` : ''}<div class="kanban-card-meta"><span>⬡ ${h(activity.hive_name || 'Sin colmena')}</span><span>◷ ${formatDate(activity.due_date)}</span></div>${activity.responsible ? `<small>Responsable: ${h(activity.responsible)}</small>` : ''}</button></article>`).join('')}</div></article>`;
                 }).join('')}</section>`
         });
         initKanban();
+        hydrateProtectedImages();
     }
 
     function initKanban() {
@@ -698,6 +746,7 @@
             if (path === '/purchases') return await renderPurchases(params);
             if (/^\/purchase\/\d+$/.test(path)) return await renderPurchase(Number(path.split('/')[2]), params);
             if (path === '/accounting') return await renderAccounting(params);
+            if (path === '/calendar') return await renderCalendar(params);
             if (path === '/backups') return await renderBackups();
             if (path === '/profile') return await renderProfile();
             go('/dashboard');
@@ -727,7 +776,7 @@
                 if (!state.apiUrl) throw new Error('Abra “Configurar conexión con Laragon” e ingrese la dirección pública.');
                 const result = await api('login', { method: 'POST', noAuth: true, data: { username: form.elements.username.value, password: form.elements.password.value } });
                 saveSession(result.token, result.user);
-                if (!availableApps(result.user).includes('apicultura') && availableApps(result.user).includes('ganaderia')) { window.location.href = 'ganaderia.html'; return; }
+                if (!availableApps(result.user).includes('apicultura')) { if (availableApps(result.user).includes('ganaderia')) { window.location.href='ganaderia.html'; return; } if (availableApps(result.user).includes('comunidad')) { window.location.href='comunidad.html#/comunidad'; return; } }
                 if (!location.hash || location.hash === '#/') location.hash = '#/dashboard'; else await route();
             } else if (type === 'hive-filter') {
                 const fd = new FormData(form); go('/hives', Object.fromEntries(fd.entries()));
@@ -748,9 +797,9 @@
             } else if (type === 'activity-filter') {
                 const fd = new FormData(form); go('/activities', Object.fromEntries(fd.entries()));
             } else if (type === 'activity-save') {
-                const result = await api('activity_save', { method: 'POST', formData: new FormData(form) }); toast(result.message); go(`/activity-edit/${result.id}`);
+                const result = await api('activity_save', { method: 'POST', formData: new FormData(form) }); toast(result.message); if (form.closest('.app-modal')) { closeAppModal(); go('/activities'); } else go(`/activity-edit/${result.id}`);
             } else if (type === 'activity-attachment-upload') {
-                await api('activity_attachment_upload', { method: 'POST', formData: new FormData(form) }); toast('Archivo agregado'); await route();
+                await api('activity_attachment_upload', { method: 'POST', formData: new FormData(form) }); toast('Archivo agregado'); if (form.closest('.app-modal')) await openActivityModal(Number(form.elements.activity_id.value)); else await route();
             } else if (type === 'purchase-plan-save') {
                 const result = await api('purchase_plan_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast(result.message); go(`/purchase/${result.id}`);
             } else if (type === 'purchase-item-save') {
@@ -762,6 +811,8 @@
             } else if (type === 'backup-restore') {
                 if (!confirm('¿Restaurar esta copia? Los datos actuales serán reemplazados. Se generará primero un respaldo automático.')) return;
                 await api('backup_restore', { method: 'POST', formData: new FormData(form) }); clearSession(); toast('Copia restaurada. Vuelva a ingresar.'); renderLogin();
+            } else if (type === 'calendar-save') {
+                await api('calendar_save', { method:'POST', data:Object.fromEntries(new FormData(form).entries()) }); closeAppModal(); toast('Evento guardado'); await route();
             } else if (type === 'change-password') {
                 const result = await api('change_password', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast(result.message); form.reset();
             }
@@ -786,6 +837,7 @@
                 const target = commandElement.dataset.app;
                 if (target === 'ganaderia' && canAccessApp('ganaderia')) window.location.href = 'ganaderia.html#/ganaderia';
                 if (target === 'apicultura' && canAccessApp('apicultura')) window.location.href = 'index.html#/dashboard';
+                if (target === 'comunidad' && canAccessApp('comunidad')) window.location.href = 'comunidad.html#/comunidad';
             } else if (command === 'banner-editor-toggle') {
                 const editor = document.querySelector('[data-banner-editor]');
                 if (editor) editor.hidden = !editor.hidden;
@@ -794,6 +846,16 @@
                 clearSession(); renderLogin();
             } else if (command === 'retry-route') {
                 await route();
+            } else if (command === 'modal-close') {
+                closeAppModal();
+            } else if (command === 'activity-open') {
+                await openActivityModal(Number(commandElement.dataset.id || 0), { hiveId: commandElement.dataset.hiveId || '' });
+            } else if (command === 'calendar-new') {
+                openCalendarModal({ start: commandElement.dataset.date || today() });
+            } else if (command === 'calendar-edit') {
+                openCalendarModal({ id:commandElement.dataset.id,title:commandElement.dataset.title,type:commandElement.dataset.type,start:commandElement.dataset.start,end:commandElement.dataset.end,notes:commandElement.dataset.notes });
+            } else if (command === 'calendar-delete') {
+                await api('calendar_delete',{method:'POST',data:{id:commandElement.dataset.id,app_code:'apicultura'}}); closeAppModal(); toast('Evento eliminado'); await route();
             } else if (command === 'show-login') {
                 clearSession(); renderLogin();
             } else if (command === 'hive-delete') {
@@ -825,10 +887,10 @@
                 await api('material_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Material eliminado'); await route();
             } else if (command === 'activity-delete') {
                 if (!confirm('¿Eliminar esta actividad y sus archivos?')) return;
-                await api('activity_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Actividad eliminada'); go('/activities');
+                await api('activity_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Actividad eliminada'); closeAppModal(); go('/activities');
             } else if (command === 'activity-attachment-delete') {
                 if (!confirm('¿Eliminar este archivo?')) return;
-                await api('activity_attachment_delete', { method: 'POST', data: { id: commandElement.dataset.id, activity_id: commandElement.dataset.activityId } }); toast('Archivo eliminado'); await route();
+                await api('activity_attachment_delete', { method: 'POST', data: { id: commandElement.dataset.id, activity_id: commandElement.dataset.activityId } }); toast('Archivo eliminado'); if (document.querySelector('.app-modal')) await openActivityModal(Number(commandElement.dataset.activityId)); else await route();
             } else if (command === 'purchase-plan-delete') {
                 if (!confirm('¿Eliminar esta tarjeta mensual y todos sus renglones?')) return;
                 await api('purchase_plan_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Tarjeta eliminada'); go('/purchases');
@@ -860,6 +922,7 @@
     });
 
     window.addEventListener('hashchange', route);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAppModal(); });
 
     async function init() {
         if (!state.token) {
@@ -870,7 +933,7 @@
             const result = await api('me');
             state.user = result.user;
             localStorage.setItem(STORAGE.user, JSON.stringify(state.user));
-            if (!canAccessApp('apicultura') && canAccessApp('ganaderia')) { window.location.href = 'ganaderia.html'; return; }
+            if (!canAccessApp('apicultura')) { if (canAccessApp('ganaderia')) { window.location.href='ganaderia.html'; return; } if (canAccessApp('comunidad')) { window.location.href='comunidad.html#/comunidad'; return; } }
             if (!location.hash) location.hash = '#/dashboard'; else await route();
         } catch (_) {
             clearSession();
