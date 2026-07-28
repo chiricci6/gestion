@@ -841,7 +841,7 @@
             } else if (type === 'document-filter') {
                 go('/documents', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'document-save') {
-                await api('document_save', { method:'POST', formData:new FormData(form) }); closeAppModal(); toast('Documento guardado'); go('/documents');
+                await api('document_save', { method:'POST', params:{app_code:'apicultura'}, formData:new FormData(form) }); closeAppModal(); toast('Documento guardado'); go('/documents');
             } else if (type === 'queen-rearing-filter') {
                 go('/queen-rearing', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'queen-rearing-save') {
