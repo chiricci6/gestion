@@ -15,7 +15,9 @@
         apiUrl: config.apiUrl || DEFAULT_API_URL,
         token: localStorage.getItem(STORAGE.token) || '',
         user: JSON.parse(localStorage.getItem(STORAGE.user) || 'null'),
-        protectedUrls: []
+        protectedUrls: [],
+        navigationOrder: null,
+        archivedActivities: []
     };
 
     const h = value => String(value ?? '')
@@ -194,6 +196,53 @@
         ['/backups', '⇩', 'Copias de seguridad', 'backups']
     ];
 
+
+    function orderedNavigationItems() {
+        const order = Array.isArray(state.navigationOrder) ? state.navigationOrder : [];
+        const byKey = new Map(navItems.map(item => [item[3], item]));
+        const result = order.map(key => byKey.get(key)).filter(Boolean);
+        navItems.forEach(item => { if (!result.some(row => row[3] === item[3])) result.push(item); });
+        return result;
+    }
+
+    async function ensureNavigationOrder() {
+        if (Array.isArray(state.navigationOrder)) return;
+        try {
+            const result = await api('navigation_get', { params: { app_code: 'apicultura' } });
+            state.navigationOrder = Array.isArray(result.order) ? result.order : [];
+        } catch (_) { state.navigationOrder = []; }
+    }
+
+    function navigationOrderRows(items = orderedNavigationItems()) {
+        return `<div class="navigation-order-list" data-navigation-order-list>${items.map(([path,icon,label,key]) => `<article class="navigation-order-row" draggable="true" data-nav-key="${h(key)}"><span class="navigation-drag-handle" title="Arrastrar">⋮⋮</span><span class="navigation-order-icon">${icon}</span><strong>${h(label)}</strong><div><button class="icon-button" type="button" data-command="nav-order-move" data-direction="up" aria-label="Subir">↑</button><button class="icon-button" type="button" data-command="nav-order-move" data-direction="down" aria-label="Bajar">↓</button></div></article>`).join('')}</div><div class="form-actions"><button class="btn btn-primary" type="button" data-command="nav-order-save">Guardar mi orden</button><button class="btn btn-ghost" type="button" data-command="nav-order-reset">Restablecer</button></div>`;
+    }
+
+    function initNavigationOrderEditor() {
+        const list = document.querySelector('[data-navigation-order-list]');
+        if (!list) return;
+        let dragged = null;
+        list.querySelectorAll('[data-nav-key]').forEach(row => {
+            row.addEventListener('dragstart', () => { dragged = row; row.classList.add('dragging'); });
+            row.addEventListener('dragend', () => { row.classList.remove('dragging'); dragged = null; });
+            row.addEventListener('dragover', event => {
+                event.preventDefault();
+                if (!dragged || dragged === row) return;
+                const rect = row.getBoundingClientRect();
+                list.insertBefore(dragged, event.clientY < rect.top + rect.height / 2 ? row : row.nextSibling);
+            });
+        });
+    }
+
+    function openNavigationOrderEditor() {
+        showAppModal('Orden de mi menú', `<div class="navigation-order-intro"><span>✎</span><p>Este orden es personal para su usuario. No cambia la vista de las demás personas.</p></div>${navigationOrderRows()}`, false);
+        initNavigationOrderEditor();
+    }
+
+    function openArchivedActivities() {
+        const rows = state.archivedActivities || [];
+        showAppModal('Actividades archivadas', rows.length ? `<div class="archived-activity-grid">${rows.map(activity => `<article class="archived-activity-card priority-preview-${h(activity.priority)}">${activity.preview_image_id ? `<img data-protected-image data-file-type="activity" data-id="${activity.preview_image_id}" alt="Foto de ${h(activity.title)}">` : '<div class="archived-activity-placeholder">✓</div>'}<div><div class="activity-preview-top">${activity.label_name ? `<span class="activity-label" style="--label-color:${h(activity.label_color || '#64748b')}">${h(activity.label_name)}</span>` : '<span class="activity-label label-empty">Sin etiqueta</span>'}<span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span></div><h3>${h(activity.title)}</h3><p>${h(activity.hive_name || 'Sin colmena')} · Terminada ${formatDateTime(activity.completed_at)}</p><button class="btn btn-small btn-secondary" type="button" data-command="activity-open" data-id="${activity.id}">Abrir actividad</button></div></article>`).join('')}</div>` : emptyState('✓','No hay actividades archivadas','Las actividades terminadas aparecerán aquí.'));
+    }
+
     function shell({ title, subtitle = '', active = 'dashboard', actions = '', content }) {
         revokeProtectedUrls();
         const user = state.user || { display_name: 'Usuario' };
@@ -206,7 +255,7 @@
                 <aside class="sidebar" id="sidebar">
                     ${appSwitcher('apicultura')}
                     <nav class="nav-menu">
-                        ${navItems.map(([path, icon, label, key]) => `<a class="${active === key ? 'active' : ''}" href="#${path}"><span>${icon}</span> ${label}</a>`).join('')}
+                        <div class="nav-menu-tools"><span>Mi menú</span><button type="button" data-command="nav-order-open" title="Cambiar orden" aria-label="Cambiar orden del menú">✎</button></div>${orderedNavigationItems().map(([path, icon, label, key]) => `<a class="${active === key ? 'active' : ''}" href="#${path}"><span>${icon}</span> ${label}</a>`).join('')}
                     </nav>
                     <div class="sidebar-user">
                         <div class="sidebar-avatar">${initial}</div>
@@ -515,15 +564,19 @@
         loading('Cargando el tablero…');
         const filters = { hive_id: params.get('hive_id') || '', label_id: params.get('label_id') || '', q: params.get('q') || '' };
         const data = await api('activities', { params: filters });
+        const archived = (data.activities || []).filter(item => Number((data.statuses || []).find(status => Number(status.id) === Number(item.status_id))?.is_closed));
+        state.archivedActivities = archived;
+        const openStatuses = (data.statuses || []).filter(status => !Number(status.is_closed));
+        const closedStatus = (data.statuses || []).find(status => Number(status.is_closed));
         shell({
             title: 'Actividades', subtitle: 'Arrastre las tarjetas para cambiar su estado', active: 'activities',
-            actions: '<button class="btn btn-primary" type="button" data-command="activity-open">+ Nueva actividad</button>',
+            actions: `<button class="btn btn-secondary archived-button" type="button" data-command="activity-archive-open">Archivadas <strong>${archived.length}</strong></button><button class="btn btn-primary" type="button" data-command="activity-open">+ Nueva actividad</button>`,
             content: `<form class="filter-bar" data-form="activity-filter"><label class="search-field"><span>⌕</span><input type="search" name="q" value="${h(filters.q)}" placeholder="Buscar actividad"></label><select name="hive_id"><option value="">Todas las colmenas</option>${(data.hives || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.hive_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><select name="label_id"><option value="">Todas las etiquetas</option>${(data.labels || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.label_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-ghost" href="#/activities">Limpiar</a></form>
-                <section class="kanban-board" data-kanban-board>${(data.statuses || []).map(status => {
+                <section class="kanban-board kanban-board-open" data-kanban-board>${openStatuses.map(status => {
                     const cards = (data.activities || []).filter(item => Number(item.status_id) === Number(status.id));
                     const purchases = status.slug === 'pendientes' ? (data.purchase_plans || []) : [];
                     return `<article class="kanban-column"><div class="kanban-header" style="--status-color:${h(status.color)}"><div><span></span><h2>${h(status.name)}</h2></div><strong>${cards.length + purchases.length}</strong></div><div class="kanban-list" data-status-id="${status.id}">${purchases.map(plan => `<article class="kanban-card purchase-kanban-card"><a href="#/purchase/${plan.id}"><div class="kanban-card-top"><span class="activity-label purchase-label">Compra pendiente</span><span class="purchase-card-symbol">▤</span></div><h3>${h(plan.title)}</h3>${plan.notes ? `<p>${h(plan.notes)}</p>` : ''}<div class="kanban-card-meta"><span>▤ ${h(monthLabel(plan.plan_month))}</span><span>${Number(plan.item_count || 0)} elementos</span><span>${moneyARS(plan.total_amount)}</span></div><small>Abrir compra planificada →</small></a></article>`).join('')}${cards.map(activity => `<article class="kanban-card priority-card-${h(activity.priority)}" draggable="true" data-activity-id="${activity.id}">${activity.preview_image_id ? `<button class="activity-thumb" type="button" data-command="open-file" data-file-type="activity" data-id="${activity.preview_image_id}" data-name="foto"><img data-protected-image data-file-type="activity" data-id="${activity.preview_image_id}" alt="Foto de actividad"></button>` : ''}<button class="activity-card-open" type="button" data-command="activity-open" data-id="${activity.id}"><div class="kanban-card-top">${activity.label_name ? `<span class="activity-label" style="--label-color:${h(activity.label_color)}">${h(activity.label_name)}</span>` : '<span></span>'}<span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span></div><h3>${h(activity.title)}</h3>${activity.description ? `<p>${h(activity.description)}</p>` : ''}<div class="kanban-card-meta"><span>⬡ ${h(activity.hive_name || 'Sin colmena')}</span><span>◷ ${formatDate(activity.due_date)}</span></div>${activity.responsible ? `<small>Responsable: ${h(activity.responsible)}</small>` : ''}</button></article>`).join('')}</div></article>`;
-                }).join('')}</section>`
+                }).join('')}</section>${closedStatus ? `<section class="archive-drop-zone panel"><div><span class="archive-drop-icon">✓</span><div><strong>Finalizar y archivar</strong><small>Arrastre una actividad aquí. No se elimina y seguirá disponible en Archivadas.</small></div></div><div class="kanban-list archive-drop-list" data-status-id="${closedStatus.id}"><span>Soltar aquí</span></div></section>` : ''}`
         });
         initKanban();
         hydrateProtectedImages();
@@ -533,11 +586,11 @@
         const board = document.querySelector('[data-kanban-board]');
         if (!board) return;
         let dragged = null;
-        board.querySelectorAll('.kanban-card[data-activity-id]').forEach(card => {
+        document.querySelectorAll('.kanban-card[data-activity-id]').forEach(card => {
             card.addEventListener('dragstart', event => { dragged = card; card.classList.add('dragging'); event.dataTransfer.effectAllowed = 'move'; });
-            card.addEventListener('dragend', () => { card.classList.remove('dragging'); dragged = null; board.querySelectorAll('.kanban-list').forEach(list => list.classList.remove('drag-over')); });
+            card.addEventListener('dragend', () => { card.classList.remove('dragging'); dragged = null; document.querySelectorAll('.kanban-list').forEach(list => list.classList.remove('drag-over')); });
         });
-        board.querySelectorAll('.kanban-list').forEach(list => {
+        document.querySelectorAll('.kanban-list').forEach(list => {
             list.addEventListener('dragover', event => {
                 event.preventDefault();
                 list.classList.add('drag-over');
@@ -553,7 +606,7 @@
                 if (!dragged) return;
                 const payload = { activity_id: Number(dragged.dataset.activityId), status_id: Number(list.dataset.statusId), ordered_ids: [...list.querySelectorAll('.kanban-card[data-activity-id]')].map(card => Number(card.dataset.activityId)) };
                 board.querySelectorAll('.kanban-column').forEach(column => column.querySelector('.kanban-header > strong').textContent = String(column.querySelectorAll('.kanban-card').length));
-                try { await api('activity_status_update', { method: 'POST', data: payload }); toast('Estado actualizado'); }
+                try { await api('activity_status_update', { method: 'POST', data: payload }); toast(Number(list.dataset.statusId) === Number((document.querySelector('.archive-drop-list')||{}).dataset?.statusId) ? 'Actividad archivada' : 'Estado actualizado'); await route(); }
                 catch (error) { toast(error.message, 'error'); route(); }
             });
         });
@@ -770,6 +823,7 @@
         }
         const { path, params } = parseHash();
         try {
+            await ensureNavigationOrder();
             if (path === '/' || path === '/dashboard') return await renderDashboard();
             if (path === '/hives') return await renderHives(params);
             if (/^\/hive\/\d+$/.test(path)) return await renderHive(Number(path.split('/')[2]));
@@ -893,6 +947,16 @@
                 await route();
             } else if (command === 'modal-close') {
                 closeAppModal();
+            } else if (command === 'nav-order-open') {
+                openNavigationOrderEditor();
+            } else if (command === 'nav-order-move') {
+                const row=commandElement.closest('[data-nav-key]');const sibling=commandElement.dataset.direction==='up'?row?.previousElementSibling:row?.nextElementSibling;if(row&&sibling){if(commandElement.dataset.direction==='up')row.parentElement.insertBefore(row,sibling);else row.parentElement.insertBefore(sibling,row);}
+            } else if (command === 'nav-order-reset') {
+                {const box=document.createElement('div');box.innerHTML=navigationOrderRows(navItems);document.querySelector('[data-navigation-order-list]').innerHTML=box.querySelector('[data-navigation-order-list]').innerHTML;initNavigationOrderEditor();}
+            } else if (command === 'nav-order-save') {
+                const order=[...document.querySelectorAll('[data-navigation-order-list] [data-nav-key]')].map(row=>row.dataset.navKey);const result=await api('navigation_save',{method:'POST',data:{app_code:'apicultura',order}});state.navigationOrder=result.order;closeAppModal();toast('Orden personal guardado');await route();
+            } else if (command === 'activity-archive-open') {
+                openArchivedActivities();
             } else if (command === 'activity-open') {
                 await openActivityModal(Number(commandElement.dataset.id || 0), { hiveId: commandElement.dataset.hiveId || '' });
             } else if (command === 'calendar-new') {

@@ -1,25 +1,16 @@
-GESTIÓN MELLIFERA · ACTUALIZACIÓN VISUAL V13.3
+ACTUALIZACIÓN V14 · GITHUB PAGES
 
-Esta actualización es SOLO para GitHub Pages.
-No requiere copiar archivos a Laragon ni modificar MariaDB.
-
-Reemplazar en el repositorio gestion:
+Reemplazar/agregar:
 - index.html
 - ganaderia.html
 - comunidad.html
 - assets/css/app.css
 - assets/js/app.js
 - assets/js/ganaderia.js
+- assets/js/comunidad.js
 
-NO reemplazar ni borrar:
+No reemplazar:
 - assets/js/config.js
 - CNAME
 
-Cambios:
-- Corrige el error "openAppModal is not defined" en Documentos y Crianza de reinas de Gestión Apícola.
-- Mejora visualmente Próximas actividades y Actividades abiertas de cada colmena.
-- Mejora la ficha de parcelas sin alterar funciones.
-- Convierte los resúmenes de Documentos en tarjetas en las tres aplicaciones.
-- Destaca el balance general de Contabilidad en Apicultura y Ganadería.
-
-Después del commit abrir https://gestion.mellifera-technology.com y presionar Ctrl+F5.
+Después del commit, abrir la web y presionar Ctrl+F5.
