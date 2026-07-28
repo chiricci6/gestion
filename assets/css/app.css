@@ -385,3 +385,13 @@ select,input,textarea { width: 100%; border: 1px solid #d9d7ce; border-radius: 1
 @media(max-width:1050px){.soil-filter{grid-template-columns:repeat(3,1fr)}.soil-filter input{grid-column:1/-1}.soil-summary-grid{grid-template-columns:repeat(2,1fr)}.four-columns{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.calendar-toolbar{grid-template-columns:42px 1fr 42px}.calendar-today{grid-column:1/-1;grid-row:2}.calendar-grid{display:block}.calendar-day{min-height:auto;margin-bottom:9px;padding:10px}.calendar-day.outside,.calendar-weekday{display:none}.calendar-day-number button{opacity:1;transform:none}.soil-summary-grid,.soil-filter,.three-columns,.four-columns{grid-template-columns:1fr}.soil-card-grid{grid-template-columns:1fr}.soil-card-head{grid-template-columns:42px 1fr}.soil-card-head time{grid-column:2}.soil-metrics{grid-template-columns:repeat(2,1fr)}.soil-card-footer{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.dashboard-card,.entity-card,.parcel-card,.cattle-card,.category-card,.document-card,.queen-rearing-card,.community-purchase-card,.person-community-balance,.soil-card,.calendar-day,.calendar-event,.btn,.icon-button{transition:none!important;transform:none!important}}
+
+
+/* V13.2 · Gestión Apícola: enlaces de actividades unificados en modales */
+.app-shell:not(.livestock-app):not(.community-app) .compact-list button.compact-item{
+    appearance:none;cursor:pointer;width:100%;font:inherit;color:inherit;text-align:left;border:0;background:transparent;
+}
+.app-shell:not(.livestock-app):not(.community-app) .history-activity-button{
+    appearance:none;display:flex;width:100%;justify-content:space-between;gap:14px;padding:9px 0;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;
+}
+.app-shell:not(.livestock-app):not(.community-app) .history-activity-button:hover strong{color:var(--primary-dark)}

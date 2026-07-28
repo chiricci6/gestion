@@ -342,7 +342,7 @@
                 </section>
                 <section class="panel animated-panel">
                     <div class="panel-header"><div><h2>Próximas actividades</h2><p>Las más urgentes o próximas a vencer</p></div><a class="btn btn-secondary" href="#/activities">Abrir tablero</a></div>
-                    ${(data.recent_activities || []).length ? `<div class="compact-list">${data.recent_activities.map(activity => `<a href="#/activity-edit/${activity.id}" class="compact-item"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.hive_name || 'Sin colmena')}</small>${activity.label_name ? `<span class="activity-label compact-label" style="--label-color:${h(activity.label_color || '#64748b')}">${h(activity.label_name)}</span>` : ''}</div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></a>`).join('')}</div>` : emptyState('✓', 'No hay actividades abiertas', 'Puede crear la primera desde el botón superior.')}
+                    ${(data.recent_activities || []).length ? `<div class="compact-list">${data.recent_activities.map(activity => `<button type="button" class="compact-item" data-command="activity-open" data-id="${activity.id}"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.hive_name || 'Sin colmena')}</small>${activity.label_name ? `<span class="activity-label compact-label" style="--label-color:${h(activity.label_color || '#64748b')}">${h(activity.label_name)}</span>` : ''}</div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></button>`).join('')}</div>` : emptyState('✓', 'No hay actividades abiertas', 'Puede crear la primera desde el botón superior.')}
                 </section>`
         });
         hydrateProtectedImages();
@@ -406,8 +406,8 @@
                         ${(data.notes || []).length ? `<div class="timeline">${data.notes.map(note => `<div class="timeline-item"><div class="timeline-date">${formatDate(note.note_date)}</div><div class="timeline-content"><p>${nl2br(note.note)}</p><small>Cargada ${formatDateTime(note.created_at)}</small></div><button class="icon-button danger" data-command="hive-note-delete" data-id="${note.id}" data-hive-id="${hive.id}" title="Eliminar">×</button></div>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay observaciones.</p>'}
                     </section>
                     <section class="panel animated-panel"><div class="panel-header"><div><h2>Materiales en uso</h2><p>Asignados a esta colmena</p></div><a class="btn btn-small btn-secondary" href="#/materials">Administrar</a></div>${(data.materials || []).length ? `<div class="simple-list">${data.materials.map(material => `<div><span>⬡</span><strong>${h(material.name)}</strong></div>`).join('')}</div>` : '<p class="muted empty-line">No tiene materiales asignados.</p>'}</section>
-                    <section class="panel span-2 animated-panel"><div class="panel-header"><div><h2>Actividades abiertas</h2><p>Trabajo pendiente en esta colmena</p></div><a class="btn btn-small btn-primary" href="#/activity-edit?hive_id=${hive.id}">+ Actividad</a></div>${openActivities.length ? `<div class="compact-list">${openActivities.map(activity => `<a class="compact-item" href="#/activity-edit/${activity.id}"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.status_name)}</small>${activity.label_name ? `<span class="activity-label compact-label" style="--label-color:${h(activity.label_color || '#64748b')}">${h(activity.label_name)}</span>` : ''}</div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></a>`).join('')}</div>` : '<p class="muted empty-line">No hay actividades abiertas.</p>'}</section>
-                    <section class="panel animated-panel"><div class="panel-header"><div><h2>Historial</h2><p>Actividades terminadas</p></div></div>${historyActivities.length ? `<div class="history-list">${historyActivities.map(activity => `<a href="#/activity-edit/${activity.id}"><strong>${h(activity.title)}</strong><small>${formatDateTime(activity.completed_at)}</small></a>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay actividades terminadas.</p>'}</section>
+                    <section class="panel span-2 animated-panel"><div class="panel-header"><div><h2>Actividades abiertas</h2><p>Trabajo pendiente en esta colmena</p></div><button class="btn btn-small btn-primary" type="button" data-command="activity-open" data-hive-id="${hive.id}">+ Actividad</button></div>${openActivities.length ? `<div class="compact-list">${openActivities.map(activity => `<button type="button" class="compact-item" data-command="activity-open" data-id="${activity.id}"><span class="status-dot" style="--dot-color:${h(activity.status_color)}"></span><div><strong>${h(activity.title)}</strong><small>${h(activity.status_name)}</small>${activity.label_name ? `<span class="activity-label compact-label" style="--label-color:${h(activity.label_color || '#64748b')}">${h(activity.label_name)}</span>` : ''}</div><span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span><time>${formatDate(activity.due_date)}</time></button>`).join('')}</div>` : '<p class="muted empty-line">No hay actividades abiertas.</p>'}</section>
+                    <section class="panel animated-panel"><div class="panel-header"><div><h2>Historial</h2><p>Actividades terminadas</p></div></div>${historyActivities.length ? `<div class="history-list">${historyActivities.map(activity => `<button type="button" class="history-activity-button" data-command="activity-open" data-id="${activity.id}"><strong>${h(activity.title)}</strong><small>${formatDateTime(activity.completed_at)}</small></button>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay actividades terminadas.</p>'}</section>
                     <section class="panel span-3 animated-panel"><div class="panel-header"><div><h2>Fotografías y archivos</h2><p>Seleccione una fotografía como banner de la colmena</p></div></div>
                         <form class="upload-form" data-form="hive-photo-upload" enctype="multipart/form-data"><input type="hidden" name="hive_id" value="${hive.id}"><input type="file" name="photo" accept="image/jpeg,image/png,image/webp,application/pdf" required><input type="text" name="caption" placeholder="Descripción opcional"><button class="btn btn-primary" type="submit">Subir archivo</button></form>
                         ${photos.length ? `<div class="media-grid">${photos.map(photo => `<article class="media-card ${Number(photo.is_cover)?'is-cover':''}">${Number(photo.is_cover)?'<span class="cover-ribbon">Banner actual</span>':''}<button class="file-button" data-command="open-file" data-file-type="hive" data-id="${photo.id}" data-name="${h(photo.original_name)}">${String(photo.mime_type).startsWith('image/') ? `<img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${photo.id}" alt="${h(photo.caption || photo.original_name)}">` : '<div class="pdf-preview">PDF</div>'}<strong>${h(photo.caption || photo.original_name)}</strong><small>${formatDateTime(photo.uploaded_at)}</small></button><div class="media-card-actions">${String(photo.mime_type).startsWith('image/') && !Number(photo.is_cover) ? `<button class="btn btn-small btn-secondary" type="button" data-command="hive-photo-cover" data-id="${photo.id}" data-hive-id="${hive.id}">Usar como banner</button>` : ''}<button class="icon-button danger" type="button" data-command="hive-photo-delete" data-id="${photo.id}" data-hive-id="${hive.id}" title="Eliminar">×</button></div></article>`).join('')}</div>` : '<p class="muted empty-line">Todavía no hay fotografías ni documentos.</p>'}
@@ -517,7 +517,7 @@
         const data = await api('activities', { params: filters });
         shell({
             title: 'Actividades', subtitle: 'Arrastre las tarjetas para cambiar su estado', active: 'activities',
-            actions: '<a class="btn btn-primary" href="#/activity-edit">+ Nueva actividad</a>',
+            actions: '<button class="btn btn-primary" type="button" data-command="activity-open">+ Nueva actividad</button>',
             content: `<form class="filter-bar" data-form="activity-filter"><label class="search-field"><span>⌕</span><input type="search" name="q" value="${h(filters.q)}" placeholder="Buscar actividad"></label><select name="hive_id"><option value="">Todas las colmenas</option>${(data.hives || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.hive_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><select name="label_id"><option value="">Todas las etiquetas</option>${(data.labels || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.label_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-ghost" href="#/activities">Limpiar</a></form>
                 <section class="kanban-board" data-kanban-board>${(data.statuses || []).map(status => {
                     const cards = (data.activities || []).filter(item => Number(item.status_id) === Number(status.id));
@@ -661,7 +661,9 @@
     const documentCategoryLabels = { renapa:'RENAPA', senasa:'SENASA', registro:'Registro', certificado:'Certificado', contrato:'Contrato', seguro:'Seguro', plano:'Plano', factura:'Factura', manual:'Manual', otro:'Otro' };
 
     async function openManagedDocument(appCode, id, name='documento') {
-        const blob = await api('document_file', { params:{ app_code:appCode, id }, blob:true });
+        const action = appCode === 'apicultura' ? 'apiculture_document_file' : 'document_file';
+        const params = appCode === 'apicultura' ? { id } : { app_code:appCode, id };
+        const blob = await api(action, { params, blob:true });
         const url = URL.createObjectURL(blob); state.protectedUrls.push(url);
         const win = window.open(url, '_blank', 'noopener');
         if (!win) { const a=document.createElement('a');a.href=url;a.download=name;a.click(); }
@@ -688,7 +690,7 @@
     async function renderDocuments(params) {
         loading('Cargando documentos…');
         const filters={q:params.get('q')||'',category:params.get('category')||'',status:params.get('status')||''};
-        const data=await api('documents_list',{params:{app_code:'apicultura',...filters}});state.managementDocuments=data.documents||[];
+        const data=await api('apiculture_documents_list',{params:filters});state.managementDocuments=data.documents||[];
         const summary=data.summary||{};
         shell({title:'Documentos',subtitle:'Registros, certificados y archivos importantes del apiario',active:'documents',actions:'<button class="btn btn-primary" data-command="document-new">+ Agregar documento</button>',content:`
             <section class="summary-cards document-summary"><div><span>Total</span><strong>${Number(summary.total||0)}</strong><small>Documentos guardados</small></div><div class="warning"><span>Por vencer</span><strong>${Number(summary.expiring||0)}</strong><small>Próximos 45 días</small></div><div class="danger"><span>Vencidos</span><strong>${Number(summary.expired||0)}</strong><small>Requieren revisión</small></div></section>
@@ -776,8 +778,14 @@
             if (/^\/hive-edit\/\d+$/.test(path)) return await renderHiveEdit(Number(path.split('/')[2]));
             if (path === '/materials') return await renderMaterials(params);
             if (path === '/activities') return await renderActivities(params);
-            if (path === '/activity-edit') return await renderActivityEdit(0, params);
-            if (/^\/activity-edit\/\d+$/.test(path)) return await renderActivityEdit(Number(path.split('/')[2]), params);
+            if (path === '/activity-edit') {
+                await renderActivities(new URLSearchParams());
+                return await openActivityModal(0, { hiveId: params.get('hive_id') || '' });
+            }
+            if (/^\/activity-edit\/\d+$/.test(path)) {
+                await renderActivities(new URLSearchParams());
+                return await openActivityModal(Number(path.split('/')[2]));
+            }
             if (path === '/purchases') return await renderPurchases(params);
             if (/^\/purchase\/\d+$/.test(path)) return await renderPurchase(Number(path.split('/')[2]), params);
             if (path === '/accounting') return await renderAccounting(params);
@@ -841,7 +849,7 @@
             } else if (type === 'document-filter') {
                 go('/documents', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'document-save') {
-                await api('document_save', { method:'POST', params:{app_code:'apicultura'}, formData:new FormData(form) }); closeAppModal(); toast('Documento guardado'); go('/documents');
+                const documentData = new FormData(form); documentData.set('app_code', 'apicultura'); await api('apiculture_document_save', { method:'POST', formData:documentData }); closeAppModal(); toast('Documento guardado'); go('/documents');
             } else if (type === 'queen-rearing-filter') {
                 go('/queen-rearing', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'queen-rearing-save') {
@@ -950,7 +958,7 @@
             } else if (command === 'document-open') {
                 await openManagedDocument('apicultura',commandElement.dataset.id,commandElement.dataset.name);
             } else if (command === 'document-delete') {
-                if(!confirm('¿Eliminar este documento y su archivo?'))return;await api('document_delete',{method:'POST',data:{app_code:'apicultura',id:commandElement.dataset.id}});toast('Documento eliminado');await route();
+                if(!confirm('¿Eliminar este documento y su archivo?'))return;await api('apiculture_document_delete',{method:'POST',data:{id:commandElement.dataset.id}});toast('Documento eliminado');await route();
             } else if (command === 'queen-rearing-new') {
                 openQueenRearingModal();
             } else if (command === 'queen-rearing-edit') {
