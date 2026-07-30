@@ -1,4 +1,9 @@
-ACTUALIZACIÓN MELLIFERA v16 PARA GITHUB PAGES
+ACTUALIZACIÓN V17 PARA GITHUB PAGES
 
-Reemplace index.html, ganaderia.html, comunidad.html, assets/js/app.js y assets/css/app.css.
-No reemplace assets/js/config.js ni CNAME.
+Reemplazar solamente:
+- index.html
+- assets/js/app.js
+- assets/css/app.css
+
+Conservar assets/js/config.js y CNAME.
+Después del commit abrir la web y presionar Ctrl+F5.
