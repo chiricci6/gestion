@@ -17,7 +17,8 @@
         user: JSON.parse(localStorage.getItem(STORAGE.user) || 'null'),
         protectedUrls: [],
         navigationOrder: null,
-        archivedActivities: []
+        archivedActivities: [],
+        laRudaData: null
     };
 
     const h = value => String(value ?? '')
@@ -192,6 +193,7 @@
         ['/accounting', '$', 'Contabilidad', 'accounting'],
         ['/documents', '▤', 'Documentos', 'documents'],
         ['/queen-rearing', '♛', 'Crianza de reinas', 'queen-rearing'],
+        ['/apiario-la-ruda', '◆', 'Apiario La Ruda', 'la-ruda'],
         ['/calendar', '▣', 'Calendario', 'calendar'],
         ['/backups', '⇩', 'Copias de seguridad', 'backups']
     ];
@@ -560,6 +562,39 @@
         showAppModal(data.id ? 'Editar evento' : 'Nuevo evento', `<form data-form="calendar-save"><input type="hidden" name="id" value="${data.id || ''}"><input type="hidden" name="app_code" value="apicultura"><label class="field"><span>Título</span><input name="title" required value="${h(data.title || '')}"></label><label class="field"><span>Tipo</span><select name="event_type">${[['general','General'],['zanganos','Arranque de zánganos'],['mielada','Mielada'],['senasa','Calendario SENASA'],['floracion','Floración'],['reunion','Reunión']].map(([v,l])=>`<option value="${v}" ${data.type===v?'selected':''}>${l}</option>`).join('')}</select></label><div class="form-grid two-columns"><label class="field"><span>Desde</span><input type="date" name="start_date" required value="${data.start || today()}"></label><label class="field"><span>Hasta</span><input type="date" name="end_date" value="${data.end || ''}"></label></div><label class="field"><span>Notas</span><textarea name="notes">${h(data.notes || '')}</textarea></label><input type="hidden" name="color" value="#a69b24"><div class="form-actions"><button class="btn btn-primary">Guardar</button>${data.id ? `<button type="button" class="btn btn-danger" data-command="calendar-delete" data-id="${data.id}">Eliminar</button>` : ''}</div></form>`, false);
     }
 
+
+    const laRudaStatusLabel = value => ({ingresado:'Ingresado',produccion:'En producción',listo:'Listo para entregar',entregado:'Entregado',cancelado:'Cancelado'}[value] || capitalize(value));
+    const laRudaLineLabel = value => value === 'apiario' ? 'Material vivo y núcleos' : 'Insumos y producción 3D';
+
+    function openLaRudaOrderForm(order = {}) {
+        showAppModal(order.id ? 'Editar pedido' : 'Nuevo pedido', `<form data-form="la-ruda-order-save"><input type="hidden" name="id" value="${order.id||''}"><div class="form-grid two-columns"><label class="field"><span>Cliente *</span><input name="customer_name" required value="${h(order.customer_name||'')}"></label><label class="field"><span>Contacto</span><input name="customer_contact" value="${h(order.customer_contact||'')}"></label><label class="field"><span>Fecha del pedido</span><input type="date" name="order_date" required value="${order.order_date||today()}"></label><label class="field"><span>Fecha estimada de entrega</span><input type="date" name="due_date" value="${order.due_date||''}"></label><label class="field full"><span>Observaciones</span><textarea name="notes" rows="4">${h(order.notes||'')}</textarea></label></div><div class="form-actions"><button class="btn btn-primary">Guardar y abrir pedido</button></div></form>`, false);
+    }
+
+    async function openLaRudaOrder(id) {
+        const data=await api('la_ruda_order',{params:{id}}),order=data.order,products=state.laRudaData?.products||[];
+        const items=order.items||[];
+        showAppModal(`Pedido #${order.id} · ${order.customer_name}`, `<div class="la-ruda-order-head"><div><span class="la-ruda-status status-${h(order.status)}">${h(laRudaStatusLabel(order.status))}</span><h3>${h(order.customer_name)}</h3><p>${formatDate(order.order_date)}${order.due_date?` · Entrega ${formatDate(order.due_date)}`:''}${order.customer_contact?` · ${h(order.customer_contact)}`:''}</p></div><button class="btn btn-small btn-secondary" data-command="la-ruda-order-edit" data-id="${order.id}">Editar datos</button></div>${order.notes?`<p class="la-ruda-order-notes">${nl2br(order.notes)}</p>`:''}
+        <div class="la-ruda-status-actions">${['ingresado','produccion','listo','entregado'].map(st=>`<button type="button" class="${order.status===st?'active':''}" data-command="la-ruda-order-status" data-id="${order.id}" data-status="${st}">${h(laRudaStatusLabel(st))}</button>`).join('')}</div>
+        <section class="la-ruda-order-items"><div class="panel-header"><div><h3>Productos y etapas</h3><p>Cada parte queda marcada sin perder el historial del pedido.</p></div></div>${items.length?items.map(item=>{const pct=Number(item.stage_count)?Math.round(Number(item.completed_count)*100/Number(item.stage_count)):0;return `<article class="la-ruda-order-item"><header><div><span class="product-line line-${h(item.business_line)}">${h(laRudaLineLabel(item.business_line))}</span><h3>${number3(item.quantity)} ${h(item.unit)} · ${h(item.product_name)}</h3>${item.notes?`<p>${h(item.notes)}</p>`:''}</div><div class="production-progress"><strong>${pct}%</strong><span><i style="width:${pct}%"></i></span></div></header><div class="production-stage-list">${(item.stages||[]).map(stage=>`<button type="button" class="production-stage ${Number(stage.completed)?'done':''}" data-command="la-ruda-stage-toggle" data-id="${stage.id}" data-order-id="${order.id}" data-completed="${Number(stage.completed)?0:1}"><span>${Number(stage.completed)?'✓':'○'}</span><div><strong>${h(stage.name)}</strong>${stage.completed_at?`<small>${formatDateTime(stage.completed_at)}${stage.completed_by_name?` · ${h(stage.completed_by_name)}`:''}</small>`:''}</div></button>`).join('')}</div><button class="icon-button danger la-ruda-item-delete" type="button" data-command="la-ruda-item-delete" data-id="${item.id}" data-order-id="${order.id}" title="Quitar producto">×</button></article>`}).join(''):'<p class="muted">Todavía no hay productos en este pedido.</p>'}</section>
+        <form class="la-ruda-add-item" data-form="la-ruda-item-save"><input type="hidden" name="order_id" value="${order.id}"><label class="field"><span>Producto</span><select name="product_id" required><option value="">Seleccionar</option>${products.map(p=>`<option value="${p.id}">${h(p.name)} · stock ${number3(p.stock_quantity)}</option>`).join('')}</select></label><label class="field"><span>Cantidad</span><input type="number" name="quantity" min="0.001" step="0.001" value="1" required></label><label class="field"><span>Precio unitario</span><input type="number" name="unit_price" min="0" step="0.01" value="0"></label><label class="field grow"><span>Detalle</span><input name="notes" placeholder="Opcional"></label><button class="btn btn-primary">Agregar</button></form>
+        <div class="form-actions"><button type="button" class="btn btn-danger" data-command="la-ruda-order-delete" data-id="${order.id}">Eliminar pedido</button></div>`, true);
+    }
+
+    function openLaRudaStock(product) {
+        showAppModal(`Stock · ${product.name}`, `<div class="stock-current"><small>Stock actual</small><strong>${number3(product.stock_quantity)} ${h(product.unit)}</strong><span>Mínimo: ${number3(product.minimum_stock)}</span></div><form data-form="la-ruda-stock-adjust"><input type="hidden" name="product_id" value="${product.id}"><label class="field"><span>Fecha</span><input type="date" name="movement_date" value="${today()}" required></label><label class="field"><span>Cantidad a sumar o restar</span><input type="number" name="quantity_change" step="0.001" placeholder="Ej.: 20 o -3" required><small>Use un número positivo para ingresar stock y negativo para descontar.</small></label><label class="field"><span>Motivo</span><textarea name="notes" rows="3"></textarea></label><button class="btn btn-primary">Actualizar stock</button></form>`, false);
+    }
+
+    function openLaRudaProductForm() {
+        showAppModal('Nuevo producto', `<form data-form="la-ruda-product-save"><div class="form-grid two-columns"><label class="field full"><span>Nombre *</span><input name="name" required></label><label class="field"><span>Línea</span><select name="business_line"><option value="insumos">Insumos y producción 3D</option><option value="apiario">Material vivo y núcleos</option></select></label><label class="field"><span>Modo</span><select name="production_mode"><option value="stock">Se prepara desde stock</option><option value="por_pedido">Se fabrica por pedido</option></select></label><label class="field"><span>Unidad</span><input name="unit" value="unidad"></label><label class="field"><span>Stock mínimo</span><input type="number" name="minimum_stock" min="0" step="0.001" value="0"></label><label class="field full"><span>Etapas, una por línea</span><textarea name="stages" rows="6" placeholder="Imprimir piezas\nArmado\nControl final"></textarea></label><label class="field full"><span>Notas</span><textarea name="notes"></textarea></label></div><button class="btn btn-primary">Crear producto</button></form>`, false);
+    }
+
+    async function renderLaRuda(params) {
+        loading('Abriendo Apiario La Ruda…');const data=await api('la_ruda_dashboard');state.laRudaData=data;const view=params.get('view')||'pedidos';const summary=data.summary||{};const active=(data.orders||[]).filter(o=>!['entregado','cancelado'].includes(o.status)),delivered=(data.orders||[]).filter(o=>o.status==='entregado');
+        const orderCards=rows=>rows.length?`<div class="la-ruda-order-grid">${rows.map(o=>{const pct=Number(o.stage_count)?Math.round(Number(o.completed_count)*100/Number(o.stage_count)):0;return `<button class="la-ruda-order-card status-${h(o.status)}" type="button" data-command="la-ruda-order-open" data-id="${o.id}"><div class="la-ruda-order-card-top"><span class="la-ruda-status status-${h(o.status)}">${h(laRudaStatusLabel(o.status))}</span><strong>#${o.id}</strong></div><h3>${h(o.customer_name)}</h3><p>${Number(o.item_count||0)} productos · ${moneyARS(o.total_amount)}</p><div class="production-progress"><span><i style="width:${pct}%"></i></span><small>${pct}% de etapas</small></div><footer><span>${formatDate(o.order_date)}</span><span>${o.due_date?`Entrega ${formatDate(o.due_date)}`:'Sin fecha de entrega'}</span></footer></button>`}).join('')}</div>`:emptyState('◆','Sin pedidos','No hay pedidos en esta vista.');
+        const stockCards=`<div class="la-ruda-product-grid">${(data.products||[]).map(p=>`<article class="la-ruda-product-card ${Number(p.stock_quantity)<=Number(p.minimum_stock)?'low-stock':''}"><header><span class="product-line line-${h(p.business_line)}">${h(laRudaLineLabel(p.business_line))}</span><strong>${p.production_mode==='stock'?'Stock':'Por pedido'}</strong></header><h3>${h(p.name)}</h3><div class="stock-number"><strong>${number3(p.stock_quantity)}</strong><span>${h(p.unit)}</span></div><p>${Number(p.stage_count)} etapas de preparación${Number(p.minimum_stock)?` · mínimo ${number3(p.minimum_stock)}`:''}</p><div class="product-stage-mini">${(p.stages||[]).map(x=>`<span>${h(x.name)}</span>`).join('')}</div><button class="btn btn-small btn-secondary" data-command="la-ruda-stock-open" data-id="${p.id}">Mover stock</button></article>`).join('')}</div>`;
+        shell({title:'Apiario La Ruda',subtitle:'Ventas, producción 3D, material vivo y stock',active:'la-ruda',actions:'<button class="btn btn-secondary" data-command="la-ruda-product-new">+ Producto</button><button class="btn btn-primary" data-command="la-ruda-order-new">+ Nuevo pedido</button>',content:`<section class="la-ruda-hero panel"><div class="la-ruda-mark">◆</div><div><span class="eyebrow">APIARIO LA RUDA</span><h2>Del pedido a la entrega, parte por parte</h2><p>Núcleos, celdas reales e insumos 3D con stock y etapas visibles.</p></div></section><section class="la-ruda-summary"><article><small>Pedidos activos</small><strong>${Number(summary.active||0)}</strong></article><article><small>Listos para entregar</small><strong>${Number(summary.ready||0)}</strong></article><article><small>Entregados</small><strong>${Number(summary.delivered||0)}</strong></article><article class="${Number(summary.low_stock)?'alert':''}"><small>Stock bajo</small><strong>${Number(summary.low_stock||0)}</strong></article></section><nav class="la-ruda-tabs"><a class="${view==='pedidos'?'active':''}" href="#/apiario-la-ruda?view=pedidos">Pedidos activos</a><a class="${view==='stock'?'active':''}" href="#/apiario-la-ruda?view=stock">Stock y productos</a><a class="${view==='entregados'?'active':''}" href="#/apiario-la-ruda?view=entregados">Entregados</a></nav>${view==='stock'?stockCards:view==='entregados'?orderCards(delivered):orderCards(active)}`});
+    }
+
     async function renderActivities(params) {
         loading('Cargando el tablero…');
         const filters = { hive_id: params.get('hive_id') || '', label_id: params.get('label_id') || '', q: params.get('q') || '' };
@@ -576,7 +611,7 @@
                     const cards = (data.activities || []).filter(item => Number(item.status_id) === Number(status.id));
                     const purchases = status.slug === 'pendientes' ? (data.purchase_plans || []) : [];
                     return `<article class="kanban-column"><div class="kanban-header" style="--status-color:${h(status.color)}"><div><span></span><h2>${h(status.name)}</h2></div><strong>${cards.length + purchases.length}</strong></div><div class="kanban-list" data-status-id="${status.id}">${purchases.map(plan => `<article class="kanban-card purchase-kanban-card"><a href="#/purchase/${plan.id}"><div class="kanban-card-top"><span class="activity-label purchase-label">Compra pendiente</span><span class="purchase-card-symbol">▤</span></div><h3>${h(plan.title)}</h3>${plan.notes ? `<p>${h(plan.notes)}</p>` : ''}<div class="kanban-card-meta"><span>▤ ${h(monthLabel(plan.plan_month))}</span><span>${Number(plan.item_count || 0)} elementos</span><span>${moneyARS(plan.total_amount)}</span></div><small>Abrir compra planificada →</small></a></article>`).join('')}${cards.map(activity => `<article class="kanban-card priority-card-${h(activity.priority)}" draggable="true" data-activity-id="${activity.id}">${activity.preview_image_id ? `<button class="activity-thumb" type="button" data-command="open-file" data-file-type="activity" data-id="${activity.preview_image_id}" data-name="foto"><img data-protected-image data-file-type="activity" data-id="${activity.preview_image_id}" alt="Foto de actividad"></button>` : ''}<button class="activity-card-open" type="button" data-command="activity-open" data-id="${activity.id}"><div class="kanban-card-top">${activity.label_name ? `<span class="activity-label" style="--label-color:${h(activity.label_color)}">${h(activity.label_name)}</span>` : '<span></span>'}<span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span></div><h3>${h(activity.title)}</h3>${activity.description ? `<p>${h(activity.description)}</p>` : ''}<div class="kanban-card-meta"><span>⬡ ${h(activity.hive_name || 'Sin colmena')}</span><span>◷ ${formatDate(activity.due_date)}</span></div>${activity.responsible ? `<small>Responsable: ${h(activity.responsible)}</small>` : ''}</button></article>`).join('')}</div></article>`;
-                }).join('')}</section>${closedStatus ? `<section class="archive-drop-zone panel"><div><span class="archive-drop-icon">✓</span><div><strong>Finalizar y archivar</strong><small>Arrastre una actividad aquí. No se elimina y seguirá disponible en Archivadas.</small></div></div><div class="kanban-list archive-drop-list" data-status-id="${closedStatus.id}"><span>Soltar aquí</span></div></section>` : ''}`
+                }).join('')}${closedStatus ? `<article class="kanban-column archive-kanban-column"><div class="kanban-header" style="--status-color:${h(closedStatus.color)}"><div><span></span><h2>${h(closedStatus.name)}</h2></div><strong>${archived.length}</strong></div><div class="kanban-list archive-drop-list" data-status-id="${closedStatus.id}"><div class="archive-column-message"><span>✓</span><strong>Arrastre aquí para finalizar</strong><small>Se archiva sin borrar fotos ni historial.</small><button type="button" class="btn btn-small btn-secondary" data-command="activity-archive-open">Ver archivadas (${archived.length})</button></div></div></article>` : ''}</section>`
         });
         initKanban();
         hydrateProtectedImages();
@@ -843,6 +878,7 @@
             if (/^\/purchase\/\d+$/.test(path)) return await renderPurchase(Number(path.split('/')[2]), params);
             if (path === '/accounting') return await renderAccounting(params);
             if (path === '/queen-rearing') return await renderQueenRearing(params);
+            if (path === '/apiario-la-ruda') return await renderLaRuda(params);
             if (path === '/documents') return await renderDocuments(params);
             if (path === '/calendar') return await renderCalendar(params);
             if (path === '/backups') return await renderBackups();
@@ -895,6 +931,14 @@
                 const result = await api('purchase_plan_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast(result.message); go(`/purchase/${result.id}`);
             } else if (type === 'purchase-item-save') {
                 const fd = new FormData(form); const obj = Object.fromEntries(fd.entries()); obj.is_purchased = form.elements.is_purchased.checked ? 1 : 0; await api('purchase_item_save', { method: 'POST', data: obj }); toast('Renglón guardado'); go(`/purchase/${obj.plan_id}`);
+            } else if (type === 'la-ruda-order-save') {
+                const result=await api('la_ruda_order_save',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast(result.message);await renderLaRuda(new URLSearchParams());await openLaRudaOrder(result.id);
+            } else if (type === 'la-ruda-item-save') {
+                const orderId=Number(form.elements.order_id.value);await api('la_ruda_item_save',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});toast('Producto agregado');await openLaRudaOrder(orderId);
+            } else if (type === 'la-ruda-stock-adjust') {
+                await api('la_ruda_stock_adjust',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast('Stock actualizado');await route();
+            } else if (type === 'la-ruda-product-save') {
+                await api('la_ruda_product_save',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast('Producto creado');await route();
             } else if (type === 'accounting-filter') {
                 go('/accounting', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'accounting-save') {
@@ -937,6 +981,24 @@
                 if (target === 'ganaderia' && canAccessApp('ganaderia')) window.location.href = 'ganaderia.html#/ganaderia';
                 if (target === 'apicultura' && canAccessApp('apicultura')) window.location.href = 'index.html#/dashboard';
                 if (target === 'comunidad' && canAccessApp('comunidad')) window.location.href = 'comunidad.html#/comunidad';
+            } else if (command === 'la-ruda-order-new') {
+                openLaRudaOrderForm();
+            } else if (command === 'la-ruda-order-open') {
+                await openLaRudaOrder(Number(commandElement.dataset.id));
+            } else if (command === 'la-ruda-order-edit') {
+                const d=await api('la_ruda_order',{params:{id:commandElement.dataset.id}});openLaRudaOrderForm(d.order);
+            } else if (command === 'la-ruda-order-status') {
+                await api('la_ruda_order_status',{method:'POST',data:{id:commandElement.dataset.id,status:commandElement.dataset.status}});toast('Estado actualizado');await openLaRudaOrder(Number(commandElement.dataset.id));
+            } else if (command === 'la-ruda-stage-toggle') {
+                await api('la_ruda_stage_toggle',{method:'POST',data:{id:commandElement.dataset.id,completed:commandElement.dataset.completed}});toast('Etapa actualizada');await openLaRudaOrder(Number(commandElement.dataset.orderId));
+            } else if (command === 'la-ruda-item-delete') {
+                if(confirm('¿Quitar este producto del pedido?')){await api('la_ruda_item_delete',{method:'POST',data:{id:commandElement.dataset.id}});await openLaRudaOrder(Number(commandElement.dataset.orderId));}
+            } else if (command === 'la-ruda-order-delete') {
+                if(confirm('¿Eliminar el pedido completo?')){await api('la_ruda_order_delete',{method:'POST',data:{id:commandElement.dataset.id}});closeAppModal();toast('Pedido eliminado');go('/apiario-la-ruda');}
+            } else if (command === 'la-ruda-stock-open') {
+                const product=(state.laRudaData?.products||[]).find(x=>String(x.id)===String(commandElement.dataset.id));if(product)openLaRudaStock(product);
+            } else if (command === 'la-ruda-product-new') {
+                openLaRudaProductForm();
             } else if (command === 'banner-editor-toggle') {
                 const editor = document.querySelector('[data-banner-editor]');
                 if (editor) editor.hidden = !editor.hidden;

@@ -1,16 +1,5 @@
-ACTUALIZACIÓN V14 · GITHUB PAGES
+ACTUALIZACIÓN V15 PARA GITHUB PAGES
 
-Reemplazar/agregar:
-- index.html
-- ganaderia.html
-- comunidad.html
-- assets/css/app.css
-- assets/js/app.js
-- assets/js/ganaderia.js
-- assets/js/comunidad.js
-
-No reemplazar:
-- assets/js/config.js
-- CNAME
-
-Después del commit, abrir la web y presionar Ctrl+F5.
+Reemplazar los archivos incluidos en el repositorio gestion.
+No reemplazar assets/js/config.js ni CNAME.
+Después del commit abrir la web y presionar Ctrl+F5.
