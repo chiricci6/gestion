@@ -1,12 +1,9 @@
-ACTUALIZACIÓN GITHUB v20 · GESTIÓN GANADERA
+ACTUALIZACIÓN v21 · GITHUB PAGES
 
-Reemplazar únicamente:
-- ganaderia.html
-- assets/js/ganaderia.js
+Reemplace únicamente:
+- index.html
+- assets/js/app.js
 - assets/css/app.css
 
-No reemplazar:
-- assets/js/config.js
-- CNAME
-
-Después del commit, abrir la web y presionar Ctrl+F5.
+No reemplace assets/js/config.js ni CNAME.
+Después del commit, abra la web y presione Ctrl + F5.
