@@ -1,5 +1,12 @@
-ACTUALIZACIÓN GITHUB v19
+ACTUALIZACIÓN GITHUB v20 · GESTIÓN GANADERA
 
-Reemplazar index.html, ganaderia.html, comunidad.html, assets/css/app.css y los tres archivos JS.
-No reemplazar assets/js/config.js ni CNAME.
-Luego hacer Ctrl+F5.
+Reemplazar únicamente:
+- ganaderia.html
+- assets/js/ganaderia.js
+- assets/css/app.css
+
+No reemplazar:
+- assets/js/config.js
+- CNAME
+
+Después del commit, abrir la web y presionar Ctrl+F5.
