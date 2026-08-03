@@ -16,6 +16,7 @@
         token: localStorage.getItem(STORAGE.token) || '',
         user: JSON.parse(localStorage.getItem(STORAGE.user) || 'null'),
         protectedUrls: [],
+        imageCache: new Map(),
         navigationOrder: null,
         archivedActivities: [],
         laRudaData: null,
@@ -71,8 +72,19 @@
     }
 
     function revokeProtectedUrls() {
-        state.protectedUrls.forEach(url => URL.revokeObjectURL(url));
+        state.imageCache.forEach(url => URL.revokeObjectURL(url));
+        state.imageCache.clear();
         state.protectedUrls = [];
+    }
+
+    function invalidateImageCache(fileType = '', id = '') {
+        const prefix = fileType ? `${fileType}:` : '';
+        [...state.imageCache.entries()].forEach(([key, url]) => {
+            if ((!prefix || key.startsWith(prefix)) && (!id || key === `${fileType}:${id}`)) {
+                URL.revokeObjectURL(url);
+                state.imageCache.delete(key);
+            }
+        });
     }
 
     function toast(message, type = 'success') {
@@ -141,7 +153,6 @@
     }
 
     function loading(text = 'Cargando…') {
-        revokeProtectedUrls();
         app.className = 'app-loading';
         app.innerHTML = `<div><div class="auth-bee">🐝</div><strong>${h(text)}</strong></div>`;
     }
@@ -247,7 +258,6 @@
     }
 
     function shell({ title, subtitle = '', active = 'dashboard', actions = '', content }) {
-        revokeProtectedUrls();
         const user = state.user || { display_name: 'Usuario' };
         const initial = h(String(user.display_name || 'U').slice(0, 1).toUpperCase());
         document.title = `${title} · Gestión Apícola`;
@@ -563,6 +573,31 @@
         showAppModal(item ? 'Editar actividad' : 'Nueva actividad', `<div class="modal-form-layout"><form data-form="activity-save" enctype="multipart/form-data"><input type="hidden" name="id" value="${item?.id || ''}"><label class="field"><span>Título *</span><input name="title" maxlength="180" required value="${h(item?.title || '')}"></label><label class="field"><span>Descripción</span><textarea name="description" rows="4">${h(item?.description || '')}</textarea></label><div class="form-grid two-columns"><label class="field"><span>Colmena</span><select name="hive_id"><option value="">Sin colmena</option>${(data.hives || []).map(x => `<option value="${x.id}" ${String(x.id) === String(selectedHive) ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Responsable</span><input name="responsible" value="${h(item?.responsible || '')}" placeholder="Chiara o Felipe"></label><label class="field"><span>Estado</span><select name="status_id">${(data.statuses || []).map(x => `<option value="${x.id}" ${Number(item?.status_id || 1) === Number(x.id) ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Etiqueta</span><select name="label_id"><option value="">Sin etiqueta</option>${(data.labels || []).map(x => `<option value="${x.id}" ${Number(item?.label_id || 0) === Number(x.id) ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Prioridad</span><select name="priority">${['baja','normal','alta','urgente'].map(x => `<option value="${x}" ${(item?.priority || 'normal') === x ? 'selected' : ''}>${capitalize(x)}</option>`).join('')}</select></label><label class="field"><span>Fecha prevista</span><input type="date" name="due_date" value="${h(item?.due_date || '')}"></label></div>${item ? '' : '<label class="field"><span>Foto o archivo inicial</span><input type="file" name="attachment" accept="image/jpeg,image/png,image/webp,application/pdf"></label>'}<div class="form-actions"><button class="btn btn-primary" type="submit">Guardar actividad</button><button class="btn btn-ghost" type="button" data-command="modal-close">Cancelar</button>${item ? `<button class="btn btn-danger" type="button" data-command="activity-delete" data-id="${item.id}">Eliminar</button>` : ''}</div></form>${item ? `<aside class="modal-side-panel"><h3>Fotos y archivos</h3><form data-form="activity-attachment-upload" enctype="multipart/form-data"><input type="hidden" name="activity_id" value="${item.id}"><input type="file" name="attachment" accept="image/jpeg,image/png,image/webp,application/pdf" required><button class="btn btn-secondary btn-small">Agregar</button></form><div class="modal-attachment-grid">${(data.attachments || []).map(f => `<article>${String(f.mime_type).startsWith('image/') ? `<img data-protected-image data-file-type="activity" data-id="${f.id}" alt="${h(f.original_name)}">` : '<div class="pdf-preview">PDF</div>'}<button class="file-link file-button" data-command="open-file" data-file-type="activity" data-id="${f.id}" data-name="${h(f.original_name)}">${h(f.original_name)}</button><button class="icon-button danger" data-command="activity-attachment-delete" data-id="${f.id}" data-activity-id="${item.id}">×</button></article>`).join('')}</div><h3>Historial</h3><div class="history-list">${(data.logs || []).map(x => `<div><strong>${h(x.action)}</strong><small>${formatDateTime(x.created_at)}</small></div>`).join('')}</div></aside>` : ''}</div>`);
     }
 
+    async function googleCalendarStatus(appCode) {
+        try { return await api('google_calendar_status', { params: { app_code: appCode } }); }
+        catch (_) { return { configured:false, connected:false, email:'' }; }
+    }
+
+    async function syncGoogleBestEffort(appCode) {
+        try { await api('google_calendar_sync', { method:'POST', data:{ app_code:appCode } }); } catch (_) {}
+    }
+
+    function googleCalendarButton(status) {
+        return `<button class="btn btn-secondary google-calendar-button ${status.connected?'is-connected':''}" type="button" data-command="google-calendar-open"><span>G</span>${status.connected?'Google conectado':'Vincular Google Calendar'}</button>`;
+    }
+
+    async function openGoogleCalendarModal(appCode='apicultura') {
+        const status=await googleCalendarStatus(appCode);
+        if(!status.configured){
+            showAppModal('Google Calendar',`<section class="google-calendar-empty"><div class="google-logo">G</div><h3>Falta configurar Google</h3><p>Las credenciales OAuth todavía no están cargadas en el servidor. Una vez configuradas, cada usuario podrá conectar su cuenta desde este mismo botón.</p></section>`,false);return;
+        }
+        if(!status.connected){
+            showAppModal('Vincular Google Calendar',`<section class="google-calendar-connect"><div class="google-logo">G</div><p>Los eventos y actividades de esta aplicación se copiarán a su Google Calendar.</p><form data-form="google-calendar-connect"><input type="hidden" name="app_code" value="${appCode}">${status.email?`<input type="hidden" name="email" value="${h(status.email)}"><div class="google-known-email"><small>Cuenta registrada</small><strong>${h(status.email)}</strong></div>`:`<label class="field"><span>Correo de Google</span><input type="email" name="email" required placeholder="nombre@gmail.com"></label>`}<button class="btn btn-primary">Continuar con Google</button></form></section>`,false);return;
+        }
+        const c=status.connection||{};
+        showAppModal('Google Calendar conectado',`<section class="google-calendar-connected"><div class="google-connection-head"><div class="google-logo">G</div><div><strong>${h(c.google_email||status.email||'Cuenta conectada')}</strong><small>${c.last_sync_at?`Última sincronización: ${formatDateTime(c.last_sync_at)}`:'Todavía no se sincronizó'}</small>${c.last_sync_error?`<span class="google-sync-error">${h(c.last_sync_error)}</span>`:''}</div></div><form data-form="google-calendar-settings"><input type="hidden" name="app_code" value="${appCode}"><div class="form-grid two-columns"><label class="field"><span>Aviso por correo</span><select name="email_reminder_minutes">${[[0,'Sin correo'],[120,'2 horas antes'],[1440,'1 día antes'],[2880,'2 días antes'],[10080,'1 semana antes']].map(([v,l])=>`<option value="${v}" ${Number(c.email_reminder_minutes)===v?'selected':''}>${l}</option>`).join('')}</select></label><label class="field"><span>Aviso en Calendar</span><select name="popup_reminder_minutes">${[[0,'Sin aviso'],[30,'30 minutos antes'],[120,'2 horas antes'],[1440,'1 día antes']].map(([v,l])=>`<option value="${v}" ${Number(c.popup_reminder_minutes)===v?'selected':''}>${l}</option>`).join('')}</select></label></div><button class="btn btn-primary">Guardar avisos</button></form><div class="form-actions"><button class="btn btn-secondary" data-command="google-calendar-sync" data-app="${appCode}">Sincronizar ahora</button><button class="btn btn-ghost" data-command="google-calendar-disconnect" data-app="${appCode}">Desconectar</button></div></section>`,false);
+    }
+
     function calendarMonthRange(offset = 0) {
         const base = new Date(); base.setDate(1); base.setMonth(base.getMonth() + Number(offset || 0));
         const year = base.getFullYear(), month = base.getMonth();
@@ -574,7 +609,10 @@
     async function renderCalendar(params) {
         loading('Cargando calendario…');
         const range = calendarMonthRange(params.get('offset') || 0);
-        const data = await api('calendar_events', { params: { app_code:'apicultura', from:range.from, to:range.to } });
+        const [data,googleStatus] = await Promise.all([
+            api('calendar_events', { params: { app_code:'apicultura', from:range.from, to:range.to } }),
+            googleCalendarStatus('apicultura')
+        ]);
         const firstDay = new Date(`${range.from}T12:00:00`).getDay();
         const byDate = {};
         (data.events || []).forEach(x => { (byDate[x.start_date] ||= []).push({...x, kind:'manual'}); });
@@ -586,7 +624,7 @@
             cells.push(`<div class="calendar-day ${isToday?'is-today':''}"><button class="calendar-day-hit" type="button" data-command="calendar-new" data-date="${date}" aria-label="Agregar evento el ${date}"></button><div class="calendar-day-number"><span>${day}</span><button type="button" data-command="calendar-new" data-date="${date}">+</button></div><div class="calendar-day-events">${items.map(x=>x.kind==='activity'?`<a class="calendar-event activity" href="#/activities"><strong>${h(x.title)}</strong><small>${h(x.entity_name||'Actividad')}</small></a>`:`<button class="calendar-event manual" style="--event-color:${h(x.color||'#a69b24')}" data-command="calendar-edit" data-id="${x.id}" data-title="${h(x.title)}" data-type="${h(x.event_type)}" data-start="${h(x.start_date)}" data-end="${h(x.end_date||'')}" data-notes="${h(x.notes||'')}"><strong>${h(x.title)}</strong><small>${capitalize(x.event_type)}</small></button>`).join('')}</div></div>`);
         }
         const label=new Intl.DateTimeFormat('es-AR',{month:'long',year:'numeric'}).format(range.base),eventCount=(data.events||[]).length,activityCount=(data.activities||[]).length;
-        shell({title:'Calendario',subtitle:'Actividades y fechas apícolas importantes',active:'calendar',actions:'<button class="btn btn-primary" data-command="calendar-new">+ Nuevo evento</button>',content:`<section class="calendar-shell"><section class="calendar-toolbar panel"><a class="calendar-nav" href="#/calendar?offset=${range.offset-1}" aria-label="Mes anterior">←</a><div class="calendar-month-title"><small>${eventCount} eventos · ${activityCount} actividades</small><h2>${capitalize(label)}</h2></div><a class="calendar-today" href="#/calendar?offset=0">Hoy</a><a class="calendar-nav" href="#/calendar?offset=${range.offset+1}" aria-label="Mes siguiente">→</a></section><section class="calendar-grid"><div class="calendar-weekday">Dom</div><div class="calendar-weekday">Lun</div><div class="calendar-weekday">Mar</div><div class="calendar-weekday">Mié</div><div class="calendar-weekday">Jue</div><div class="calendar-weekday">Vie</div><div class="calendar-weekday">Sáb</div>${cells.join('')}</section></section>`});
+        shell({title:'Calendario',subtitle:'Actividades y fechas apícolas importantes',active:'calendar',actions:`${googleCalendarButton(googleStatus)}<button class="btn btn-primary" data-command="calendar-new">+ Nuevo evento</button>`,content:`<section class="calendar-shell"><section class="calendar-toolbar panel"><a class="calendar-nav" href="#/calendar?offset=${range.offset-1}" aria-label="Mes anterior">←</a><div class="calendar-month-title"><small>${eventCount} eventos · ${activityCount} actividades</small><h2>${capitalize(label)}</h2></div><a class="calendar-today" href="#/calendar?offset=0">Hoy</a><a class="calendar-nav" href="#/calendar?offset=${range.offset+1}" aria-label="Mes siguiente">→</a></section><section class="calendar-grid"><div class="calendar-weekday">Dom</div><div class="calendar-weekday">Lun</div><div class="calendar-weekday">Mar</div><div class="calendar-weekday">Mié</div><div class="calendar-weekday">Jue</div><div class="calendar-weekday">Vie</div><div class="calendar-weekday">Sáb</div>${cells.join('')}</section></section>`});
     }
 
     function openCalendarModal(data = {}) {
@@ -643,9 +681,33 @@
         showAppModal(`Artículo publicado · ${product.name}`, `<form data-form="la-ruda-publish-save"><input type="hidden" name="id" value="${product.id}"><label class="field"><span>Precio de venta por unidad</span><input type="number" name="sale_price_ars" min="0" step="0.01" value="${h(product.sale_price_ars||'')}" required></label><label class="check-field"><input type="checkbox" name="published_active" value="1" ${Number(product.published_active)?'checked':''}><span>Mostrar en Artículos publicados</span></label><button class="btn btn-primary">Guardar publicación</button></form>`, false);
     }
 
+    function updateLaRudaSaleSplit() {
+        const form=document.querySelector('[data-form="la-ruda-sale-save"]');if(!form)return;
+        const qty=Math.max(1,Number(form.elements.quantity.value||1));
+        const unit=Math.max(0,Number(form.elements.unit_sale_price_ars.value||0));
+        const avg=Math.max(0,Number(form.dataset.averageCost||0));
+        const total=qty*unit,recovery=Math.min(total,qty*avg),profit=Math.max(0,total-recovery);
+        const chiara=form.elements.chiara_profit_ars,felipe=form.elements.felipe_profit_ars;
+        const previousProfit=Number(form.dataset.lastProfit||-1);
+        if(previousProfit<0 || Math.abs((Number(chiara.value||0)+Number(felipe.value||0))-previousProfit)<0.02){
+            const half=Math.round(profit*50)/100;chiara.value=half.toFixed(2);felipe.value=(profit-half).toFixed(2);
+        }
+        form.dataset.lastProfit=String(profit);
+        const chiaraValue=Math.max(0,Number(chiara.value||0)),felipeValue=Math.max(0,Number(felipe.value||0));
+        const remaining=profit-chiaraValue-felipeValue;
+        form.querySelector('[data-sale-total]').textContent=moneyARS(total);
+        form.querySelector('[data-sale-recovery]').textContent=moneyARS(recovery);
+        form.querySelector('[data-sale-profit]').textContent=moneyARS(profit);
+        form.querySelector('[data-sale-remaining]').textContent=moneyARS(remaining);
+        form.querySelector('[data-sale-remaining-box]').classList.toggle('is-balanced',Math.abs(remaining)<0.02);form.querySelector('[data-sale-remaining-box]').classList.toggle('has-error',Math.abs(remaining)>=0.02);
+        form.querySelector('button[type="submit"]').disabled=Math.abs(remaining)>=0.02||total<recovery||total<=0;
+    }
+
     function openLaRudaSale(product) {
         const avg=Number(product.average_cost_ars||0);
-        showAppModal(`Registrar venta · ${product.name}`, `<section class="sale-product-resume">${productPhoto(product,'sale-product-photo')}<div><small>Stock disponible</small><strong>${integerQty(product.stock_quantity)} unidades</strong><span>Costo promedio: ${moneyARS(avg)} por unidad</span></div></section><form data-form="la-ruda-sale-save"><input type="hidden" name="product_id" value="${product.id}"><div class="form-grid two-columns"><label class="field"><span>Fecha</span><input type="date" name="sale_date" value="${today()}" required></label><label class="field"><span>Comprador</span><input name="buyer"></label><label class="field"><span>Cantidad vendida *</span><input type="number" name="quantity" min="1" max="${Math.max(1,Math.round(Number(product.stock_quantity)||0))}" step="1" value="1" required></label><label class="field"><span>Precio de venta por unidad *</span><input type="number" name="unit_sale_price_ars" min="0.01" step="0.01" value="${h(product.sale_price_ars||'')}" required></label><label class="field"><span>Cotización del dólar *</span><input type="number" name="usd_rate" min="0.01" step="0.01" required></label><label class="field full"><span>Notas</span><textarea name="notes"></textarea></label></div><div class="sale-split-note"><strong>Separación automática</strong><span>El costo del material se acredita a Chiara. La diferencia se registra como Venta de insumos para Apiario La Ruda.</span></div><button class="btn btn-primary">Confirmar venta</button></form>`, false);
+        showAppModal(`Registrar venta · ${product.name}`, `<section class="sale-product-resume">${productPhoto(product,'sale-product-photo')}<div><small>Stock disponible</small><strong>${integerQty(product.stock_quantity)} unidades</strong><span>Costo promedio: ${moneyARS(avg)} por unidad</span></div></section><form data-form="la-ruda-sale-save" data-average-cost="${avg}"><input type="hidden" name="product_id" value="${product.id}"><div class="form-grid two-columns"><label class="field"><span>Fecha</span><input type="date" name="sale_date" value="${today()}" required></label><label class="field"><span>Comprador</span><input name="buyer"></label><label class="field"><span>Cantidad vendida *</span><input type="number" name="quantity" min="1" max="${Math.max(1,Math.round(Number(product.stock_quantity)||0))}" step="1" value="1" required></label><label class="field"><span>Precio de venta por unidad *</span><input type="number" name="unit_sale_price_ars" min="0.01" step="0.01" value="${h(product.sale_price_ars||'')}" required></label><label class="field"><span>Cotización del dólar *</span><input type="number" name="usd_rate" min="0.01" step="0.01" required></label><label class="field full"><span>Notas</span><textarea name="notes"></textarea></label></div><section class="sale-allocation"><div class="sale-allocation-summary"><div><small>Total de la venta</small><strong data-sale-total>${moneyARS(0)}</strong></div><div class="material-recovery"><small>Chiara · recuperar materiales</small><strong data-sale-recovery>${moneyARS(0)}</strong></div><div><small>Resta repartir</small><strong data-sale-profit>${moneyARS(0)}</strong></div></div><h3>Distribución de la ganancia</h3><div class="form-grid two-columns"><label class="field"><span>Chiara</span><input type="number" name="chiara_profit_ars" min="0" step="0.01"></label><label class="field"><span>Felipe</span><input type="number" name="felipe_profit_ars" min="0" step="0.01"></label></div><div class="sale-remaining" data-sale-remaining-box><span>Falta distribuir</span><strong data-sale-remaining>${moneyARS(0)}</strong></div></section><button class="btn btn-primary" type="submit">Aceptar reparto y registrar venta</button></form>`, true);
+        const form=document.querySelector('[data-form="la-ruda-sale-save"]');
+        form?.addEventListener('input',updateLaRudaSaleSplit);updateLaRudaSaleSplit();
     }
 
     async function openLaRudaProductHistory(id) {
@@ -665,7 +727,7 @@
         const fabricationDone=(data.fabrication||[]).filter(x=>x.status==='terminada');
         const orderCards=rows=>rows.length?`<div class="la-ruda-order-grid">${rows.map(o=>{const pct=Number(o.stage_count)?Math.round(Number(o.completed_count)*100/Number(o.stage_count)):0;return `<button class="la-ruda-order-card status-${h(o.status)}" type="button" data-command="la-ruda-order-open" data-id="${o.id}"><div class="la-ruda-order-card-top"><span class="la-ruda-status status-${h(o.status)}">${h(laRudaStatusLabel(o.status))}</span><strong>#${o.id}</strong></div><h3>${h(o.customer_name)}</h3><p>${Number(o.item_count||0)} productos · ${moneyARS(o.total_amount)}</p><div class="production-progress"><span><i style="width:${pct}%"></i></span><small>${pct}% de etapas</small></div><footer><span>${formatDate(o.order_date)}</span><span>${o.due_date?`Entrega ${formatDate(o.due_date)}`:'Sin fecha de entrega'}</span></footer></button>`}).join('')}</div>`:emptyState('◆','Sin pedidos','No hay pedidos en esta vista.');
         const stockCards=(data.products||[]).length?`<div class="la-ruda-product-grid">${data.products.map(p=>`<article class="la-ruda-product-card">${productPhoto(p)}<button class="la-ruda-product-open" type="button" data-command="la-ruda-product-open" data-id="${p.id}"><header><span class="product-line">${h(p.category_name||'Sin categoría')}</span>${Number(p.published_active)?'<strong class="published-chip">Publicado</strong>':''}</header><h3>${h(p.name)}</h3><div class="stock-number"><strong>${integerQty(p.stock_quantity)}</strong><span>unidades</span></div><div class="product-cost-mini"><span>${integerQty(p.grams_per_unit)} g/unidad</span><span>${moneyARS(p.stock_value_ars)} en materiales</span></div><div class="product-stage-mini">${(p.stages||[]).map(x=>`<span>${h(x.name)}</span>`).join('')}</div><span class="product-history-link">Ver historial →</span></button><div class="la-ruda-product-actions"><button class="btn btn-small btn-secondary" data-command="la-ruda-production-new" data-id="${p.id}">Fabricar</button><button class="icon-button danger" data-command="la-ruda-product-delete" data-id="${p.id}" title="Eliminar producto">×</button></div></article>`).join('')}</div>`:emptyState('◆','Catálogo vacío','Cree sus productos con foto, gramos y etapas.');
-        const fabricationCards=`<section class="fabrication-board"><div class="panel-header"><div><h2>En fabricación</h2><p>Cada lote guarda gramos usados, costo del material y cotización.</p></div><button class="btn btn-primary" data-command="la-ruda-production-new">+ Iniciar fabricación</button></div>${fabricationOpen.length?`<div class="fabrication-grid">${fabricationOpen.map(x=>{const pct=Number(x.stage_count)?Math.round(Number(x.completed_count)*100/Number(x.stage_count)):0;return `<article class="fabrication-card"><header><span class="la-ruda-status status-produccion">Fabricación #${x.id}</span><strong>${pct}%</strong></header><h3>${integerQty(x.quantity)} unidades · ${h(x.product_name)}</h3><p>${gramsLabel(x.total_grams)} · ${moneyARS(x.material_cost_ars)} · ${moneyUSD(x.material_cost_usd)}</p><div class="production-progress"><span><i style="width:${pct}%"></i></span><small>${Number(x.completed_count||0)} de ${Number(x.stage_count||0)} etapas</small></div><div class="production-stage-list compact">${(x.stages||[]).map(stage=>`<button type="button" class="production-stage ${Number(stage.completed)?'done':''}" data-command="la-ruda-production-stage-toggle" data-id="${stage.id}" data-completed="${Number(stage.completed)?0:1}"><span>${Number(stage.completed)?'✓':'○'}</span><strong>${h(stage.stage_name)}</strong></button>`).join('')}</div><footer><button class="btn btn-small btn-ghost" data-command="la-ruda-production-delete" data-id="${x.id}">Cancelar</button><button class="btn btn-small btn-primary" data-command="la-ruda-production-complete" data-id="${x.id}" ${pct<100?'disabled title="Complete todas las etapas"':''}>Confirmar terminado</button></footer></article>`}).join('')}</div>`:emptyState('✓','No hay fabricaciones en curso','Inicie un lote y registre su costo real de material.')}</section>${fabricationDone.length?`<section class="panel fabrication-history-panel"><div class="panel-header"><div><h2>Fabricación finalizada</h2><p>Stock y costos ingresados automáticamente.</p></div></div><div class="manufacturing-history-list">${fabricationDone.slice(0,50).map(x=>`<article><span>✓</span><div><strong>${integerQty(x.quantity)} unidades · ${h(x.product_name)}</strong><small>${gramsLabel(x.total_grams)} · ${moneyARS(x.material_cost_ars)} · ${formatDateTime(x.completed_at)}${x.completed_by_name?` · ${h(x.completed_by_name)}`:''}</small></div></article>`).join('')}</div></section>`:''}`;
+        const fabricationCards=`<section class="fabrication-board"><div class="panel-header"><div><h2>En fabricación</h2><p>Cada lote guarda gramos usados, costo del material y cotización.</p></div><button class="btn btn-primary" data-command="la-ruda-production-new">+ Iniciar fabricación</button></div>${fabricationOpen.length?`<div class="fabrication-grid">${fabricationOpen.map(x=>{const pct=Number(x.stage_count)?Math.round(Number(x.completed_count)*100/Number(x.stage_count)):0;return `<article class="fabrication-card"><header><span class="la-ruda-status status-produccion">Fabricación #${x.id}</span><strong>${pct}%</strong></header><h3>${integerQty(x.quantity)} unidades · ${h(x.product_name)}</h3><p>${gramsLabel(x.total_grams)} · ${moneyARS(x.material_cost_ars)} · ${moneyUSD(x.material_cost_usd)}</p><div class="production-progress"><span><i style="width:${pct}%"></i></span><small>${Number(x.completed_count||0)} de ${Number(x.stage_count||0)} etapas</small></div><div class="production-stage-list compact">${(x.stages||[]).map(stage=>`<button type="button" class="production-stage ${Number(stage.completed)?'done':''}" data-command="la-ruda-production-stage-toggle" data-id="${stage.id}" data-completed="${Number(stage.completed)?0:1}"><span>${Number(stage.completed)?'✓':'○'}</span><strong>${h(stage.stage_name)}</strong></button>`).join('')}</div><footer><button class="btn btn-small btn-ghost" data-command="la-ruda-production-delete" data-id="${x.id}">Cancelar</button><button class="btn btn-small btn-primary" data-command="la-ruda-production-complete" data-id="${x.id}" ${pct<100?'disabled title="Complete todas las etapas"':''}>Confirmar terminado</button></footer></article>`}).join('')}</div>`:emptyState('✓','No hay fabricaciones en curso','Inicie un lote y registre su costo real de material.')}</section>${fabricationDone.length?`<section class="panel fabrication-history-panel"><div class="panel-header"><div><h2>Fabricación finalizada</h2><p>Stock y costos ingresados automáticamente.</p></div></div><div class="manufacturing-history-list">${fabricationDone.slice(0,50).map(x=>`<article><span>✓</span><div><strong>${integerQty(x.quantity)} unidades · ${h(x.product_name)}</strong><small>${gramsLabel(x.total_grams)} · Costo de fabricación: -${moneyARS(x.material_cost_ars)} · ${formatDateTime(x.completed_at)}${x.completed_by_name?` · ${h(x.completed_by_name)}`:''}</small></div></article>`).join('')}</div></section>`:''}`;
         const publishedCards=(data.published||[]).length?`<div class="published-products-grid">${data.published.map(p=>`<article class="published-product-card">${productPhoto(p,'published-product-photo')}<div><span class="product-line">${h(p.category_name||'Artículo')}</span><h3>${h(p.name)}</h3><strong class="published-price">${moneyARS(p.sale_price_ars)}</strong><p>Stock: ${integerQty(p.stock_quantity)} · costo promedio ${moneyARS(p.average_cost_ars)}</p><div class="published-actions"><button class="btn btn-small btn-secondary" data-command="la-ruda-publish-open" data-id="${p.id}">Editar precio</button><button class="btn btn-small btn-primary" data-command="la-ruda-sale-open" data-id="${p.id}" ${Number(p.stock_quantity)<1?'disabled':''}>Se vendió</button></div></div></article>`).join('')}</div>`:emptyState('$','Sin artículos publicados','Defina el precio de un producto y publíquelo.');
         const salesHistory=(data.sales||[]).length?`<section class="panel sales-history-panel"><div class="panel-header"><div><h2>Ventas registradas</h2><p>Separación entre recuperación de materiales y ganancia.</p></div></div><div class="stock-history-list">${data.sales.map(s=>`<article class="positive"><time>${formatDate(s.sale_date)}</time><strong>${integerQty(s.quantity)} un.</strong><div><span>${h(s.product_name)} · ${moneyARS(s.total_sale_ars)}</span><small>Chiara: ${moneyARS(s.material_cost_recovered_ars)} · Venta de insumos: ${moneyARS(s.profit_ars)}${s.buyer?` · ${h(s.buyer)}`:''}</small></div></article>`).join('')}</div></section>`:'';
         const publishedPage=`${publishedCards}${salesHistory}`;
@@ -866,14 +928,19 @@
 
     function openQueenRearingModal(item={}) {
         const hives=state.queenRearingHives||[];
-        showAppModal(item.id?'Actualizar crianza':'Nueva crianza de reinas',`<form data-form="queen-rearing-save">
-            <input type="hidden" name="app_code" value="apicultura"><input type="hidden" name="id" value="${item.id||''}">
-            <div class="form-grid two-columns"><label class="field"><span>Nombre o lote *</span><input name="name" required value="${h(item.name||'')}" placeholder="Ej. Lote primavera 1"></label><label class="field"><span>Colmena de origen</span><select name="source_hive_id"><option value="">Sin especificar</option>${hives.map(x=>`<option value="${x.id}" ${String(item.source_hive_id||'')===String(x.id)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Dónde quedó instalado</span><input name="location" value="${h(item.location||'')}" placeholder="Starter, criadora, colmena…"></label><label class="field"><span>Punto de inicio</span><select name="start_point"><option value="huevo" ${item.start_point==='huevo'?'selected':''}>Huevo o puesta (aprox. 16 días)</option><option value="traslarve" ${!item.start_point||item.start_point==='traslarve'?'selected':''}>Traslarve (aprox. 12 días)</option><option value="celda_operculada" ${item.start_point==='celda_operculada'?'selected':''}>Celda operculada (aprox. 6 días)</option></select></label><label class="field"><span>Fecha de inicio *</span><input type="date" name="start_date" required value="${h(item.start_date||today())}"></label><label class="field"><span>Días estimados</span><input type="number" min="1" max="30" name="estimated_days" value="${item.estimated_days||12}"></label><label class="field"><span>Reinas proyectadas</span><input type="number" min="0" name="projected_queens" value="${item.projected_queens||0}"></label><label class="field"><span>Estado</span><select name="status">${[['planificada','Planificada'],['en_proceso','En proceso'],['nacidas','Nacidas'],['finalizada','Finalizada'],['cancelada','Cancelada']].map(([v,l])=>`<option value="${v}" ${item.status===v?'selected':''}>${l}</option>`).join('')}</select></label><label class="field"><span>Reinas obtenidas</span><input type="number" min="0" name="emerged_queens" value="${item.emerged_queens??''}"></label><label class="field"><span>Nuevas colmenas formadas</span><input type="number" min="0" name="formed_hives" value="${item.formed_hives??''}"></label></div><label class="field"><span>Observaciones</span><textarea name="notes">${h(item.notes||'')}</textarea></label><div class="estimate-note">Al guardar se calculará el nacimiento estimado y se creará o actualizará automáticamente el evento del calendario.</div><div class="form-actions"><button class="btn btn-primary">Guardar</button><button type="button" class="btn btn-ghost" data-command="modal-close">Cancelar</button></div></form>`,true);
+        showAppModal(item.id?'Actualizar crianza':'Iniciar nueva crianza',`<form data-form="queen-rearing-save"><input type="hidden" name="app_code" value="apicultura"><input type="hidden" name="id" value="${item.id||''}"><div class="form-grid two-columns"><label class="field"><span>Nombre o lote *</span><input name="name" required value="${h(item.name||'')}" placeholder="Ej. Lote primavera 1"></label><label class="field"><span>Colmena de origen</span><select name="source_hive_id"><option value="">Sin especificar</option>${hives.map(x=>`<option value="${x.id}" ${String(item.source_hive_id||'')===String(x.id)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Dónde quedó instalado</span><input name="location" value="${h(item.location||'')}" placeholder="Starter, criadora, colmena…"></label><label class="field"><span>Punto de inicio</span><select name="start_point"><option value="huevo" ${item.start_point==='huevo'?'selected':''}>Huevo o puesta</option><option value="traslarve" ${!item.start_point||item.start_point==='traslarve'?'selected':''}>Traslarve</option><option value="celda_operculada" ${item.start_point==='celda_operculada'?'selected':''}>Celda operculada</option></select></label><label class="field"><span>Fecha de inicio *</span><input type="date" name="start_date" required value="${h(item.start_date||today())}"></label><label class="field"><span>Días estimados</span><input type="number" min="1" max="30" name="estimated_days" value="${item.estimated_days||12}"></label><label class="field"><span>Reinas proyectadas</span><input type="number" min="0" step="1" name="projected_queens" value="${item.projected_queens||0}"></label></div><label class="field"><span>Observaciones</span><textarea name="notes">${h(item.notes||'')}</textarea></label><div class="form-actions"><button class="btn btn-primary">${item.id?'Guardar cambios':'Iniciar crianza'}</button><button type="button" class="btn btn-ghost" data-command="modal-close">Cancelar</button></div></form>`,true);
     }
 
-    async function renderQueenRearing(params) {
-        loading('Cargando crianza de reinas…');const status=params.get('status')||'';const data=await api('queen_rearing_list',{params:{app_code:'apicultura',status}});state.queenRearingBatches=data.batches||[];state.queenRearingHives=data.hives||[];
-        shell({title:'Crianza de reinas',subtitle:'Planificación, nacimiento estimado y resultados de cada lote',active:'queen-rearing',actions:'<button class="btn btn-primary" data-command="queen-rearing-new">+ Iniciar crianza</button>',content:`<form class="filter-bar" data-form="queen-rearing-filter"><select name="status"><option value="">Todos los estados</option>${[['planificada','Planificada'],['en_proceso','En proceso'],['nacidas','Nacidas'],['finalizada','Finalizada'],['cancelada','Cancelada']].map(([v,l])=>`<option value="${v}" ${status===v?'selected':''}>${l}</option>`).join('')}</select><button class="btn btn-secondary">Filtrar</button></form>${(data.batches||[]).length?`<section class="queen-rearing-grid">${data.batches.map(q=>`<article class="queen-rearing-card status-${h(q.status)}"><div class="queen-rearing-date"><small>Nacimiento estimado</small><strong>${formatDate(q.expected_emergence_date)}</strong><span>${Number(q.days_remaining)>=0?`Faltan ${q.days_remaining} días`:'Fecha cumplida'}</span></div><div class="queen-rearing-body"><span class="badge">${capitalize(q.status)}</span><h3>${h(q.name)}</h3><p>${h(q.location||'Ubicación sin especificar')}${q.source_hive_name?` · Origen: ${h(q.source_hive_name)}`:''}</p><div class="queen-rearing-counts"><span><b>${Number(q.projected_queens||0)}</b> proyectadas</span><span><b>${q.emerged_queens??'—'}</b> obtenidas</span><span><b>${q.formed_hives??'—'}</b> colmenas</span></div><small>Inició ${formatDate(q.start_date)} · ${h(q.created_by_name||'—')}</small></div><div class="queen-rearing-actions"><button class="btn btn-small btn-secondary" data-command="queen-rearing-edit" data-id="${q.id}">Abrir</button><button class="icon-button danger" data-command="queen-rearing-delete" data-id="${q.id}">×</button></div></article>`).join('')}</section>`:emptyState('♛','Todavía no hay crianzas','Inicie un lote para calcular el nacimiento y agregarlo automáticamente al calendario.')}`});
+    function openQueenRearingClose(item) {
+        showAppModal(`Cerrar crianza · ${item.name}`,`<section class="queen-close-summary"><div><small>Reinas proyectadas</small><strong>${integerQty(item.projected_queens||0)}</strong></div><div><small>Nacimiento estimado</small><strong>${formatDate(item.expected_emergence_date)}</strong></div></section><form data-form="queen-rearing-close"><input type="hidden" name="app_code" value="apicultura"><input type="hidden" name="id" value="${item.id}"><div class="form-grid two-columns"><label class="field"><span>Reinas obtenidas *</span><input type="number" min="0" step="1" name="emerged_queens" required></label><label class="field"><span>Nuevas colmenas formadas</span><input type="number" min="0" step="1" name="formed_hives" value="0"></label></div><label class="field"><span>Observaciones del cierre</span><textarea name="closing_notes"></textarea></label><button class="btn btn-primary">Cerrar y guardar en historial</button></form>`,false);
+    }
+
+    async function renderQueenRearing() {
+        loading('Cargando crianza de reinas…');const data=await api('queen_rearing_list',{params:{app_code:'apicultura'}});state.queenRearingBatches=data.batches||[];state.queenRearingHives=data.hives||[];
+        const active=(data.batches||[]).filter(q=>!['finalizada','cancelada'].includes(q.status));
+        const history=(data.batches||[]).filter(q=>['finalizada','cancelada'].includes(q.status));
+        const card=q=>`<article class="queen-rearing-card status-${h(q.status)}"><div class="queen-rearing-date"><small>Nacimiento estimado</small><strong>${formatDate(q.expected_emergence_date)}</strong><span>${Number(q.days_remaining)>=0?`Faltan ${q.days_remaining} días`:'Fecha cumplida'}</span></div><div class="queen-rearing-body"><span class="badge">${q.status==='finalizada'?'Cerrada':q.status==='cancelada'?'Cancelada':'En curso'}</span><h3>${h(q.name)}</h3><p>${h(q.location||'Ubicación sin especificar')}${q.source_hive_name?` · Origen: ${h(q.source_hive_name)}`:''}</p><div class="queen-rearing-counts"><span><b>${integerQty(q.projected_queens||0)}</b> proyectadas</span>${q.status==='finalizada'?`<span><b>${integerQty(q.emerged_queens||0)}</b> obtenidas</span><span><b>${q.success_rate??0}%</b> efectividad</span>`:''}</div><small>Inició ${formatDate(q.start_date)} · ${h(q.created_by_name||'—')}</small></div><div class="queen-rearing-actions">${!['finalizada','cancelada'].includes(q.status)?`<button class="btn btn-small btn-primary" data-command="queen-rearing-close" data-id="${q.id}">Cerrar crianza</button><button class="btn btn-small btn-secondary" data-command="queen-rearing-edit" data-id="${q.id}">Editar</button>`:''}<button class="icon-button danger" data-command="queen-rearing-delete" data-id="${q.id}">×</button></div></article>`;
+        shell({title:'Crianza de reinas',subtitle:'Lotes activos, nacimiento estimado y resultados',active:'queen-rearing',actions:'<button class="btn btn-primary" data-command="queen-rearing-new">+ Iniciar crianza</button>',content:`<section class="queen-rearing-section"><div class="panel-header"><div><h2>Crianzas en curso</h2><p>Quedan abiertas hasta registrar cuántas reinas se obtuvieron.</p></div><strong class="section-count">${active.length}</strong></div>${active.length?`<div class="queen-rearing-grid">${active.map(card).join('')}</div>`:emptyState('♛','No hay crianzas abiertas','Inicie un lote para calcular el nacimiento y crear su evento en el calendario.')}</section><section class="queen-rearing-section queen-rearing-history"><div class="panel-header"><div><h2>Historial</h2><p>Resultados y efectividad de los lotes cerrados.</p></div><strong class="section-count">${history.length}</strong></div>${history.length?`<div class="queen-rearing-grid">${history.map(card).join('')}</div>`:'<p class="muted">Todavía no hay crianzas cerradas.</p>'}</section>`});
     }
 
     async function renderBackups() {
@@ -900,10 +967,15 @@
         const images = [...document.querySelectorAll('[data-protected-image]')];
         await Promise.all(images.map(async image => {
             try {
-                const blob = await api('file', { params: { type: image.dataset.fileType, id: image.dataset.id }, blob: true });
-                const url = URL.createObjectURL(blob);
-                state.protectedUrls.push(url);
-                image.src = url;
+                const key = `${image.dataset.fileType}:${image.dataset.id}`;
+                let url = state.imageCache.get(key);
+                if (!url) {
+                    const blob = await api('file', { params: { type: image.dataset.fileType, id: image.dataset.id }, blob: true });
+                    url = URL.createObjectURL(blob);
+                    state.imageCache.set(key, url);
+                }
+                if (image.src !== url) image.src = url;
+                image.classList.add('image-ready');
             } catch (_) {
                 image.alt = 'No se pudo cargar la imagen';
             }
@@ -1000,21 +1072,21 @@
             } else if (type === 'hive-queen-save') {
                 await api('hive_queen_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast('Nueva reina agregada al historial'); await route(); revealQueenHistory(true);
             } else if (type === 'apiculture-banner-upload') {
-                await api('apiculture_banner_upload', { method: 'POST', formData: new FormData(form) }); toast('Banner del inicio actualizado'); await route();
+                await api('apiculture_banner_upload', { method: 'POST', formData: new FormData(form) }); invalidateImageCache('apiculture_banner'); toast('Banner del inicio actualizado'); await route();
             } else if (type === 'hive-photo-upload') {
-                await api('hive_photo_upload', { method: 'POST', formData: new FormData(form) }); toast('Archivo agregado'); await route();
+                await api('hive_photo_upload', { method: 'POST', formData: new FormData(form) }); invalidateImageCache('hive'); toast('Archivo agregado'); await route();
             } else if (type === 'material-filter') {
                 const fd = new FormData(form); go('/materials', Object.fromEntries(fd.entries()));
             } else if (type === 'material-save') {
-                await api('material_save', { method: 'POST', formData: new FormData(form) }); toast('Material guardado'); go('/materials');
+                await api('material_save', { method: 'POST', formData: new FormData(form) }); invalidateImageCache('material'); toast('Material guardado'); go('/materials');
             } else if (type === 'material-category-save') {
                 await api('material_category_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast('Categoría guardada'); closeAppModal(); await renderMaterials(new URLSearchParams());
             } else if (type === 'activity-filter') {
                 const fd = new FormData(form); go('/activities', Object.fromEntries(fd.entries()));
             } else if (type === 'activity-save') {
-                const result = await api('activity_save', { method: 'POST', formData: new FormData(form) }); toast(result.message); if (form.closest('.app-modal')) { closeAppModal(); go('/activities'); } else go(`/activity-edit/${result.id}`);
+                const result = await api('activity_save', { method: 'POST', formData: new FormData(form) }); invalidateImageCache('activity'); toast(result.message); if (form.closest('.app-modal')) { closeAppModal(); go('/activities'); } else go(`/activity-edit/${result.id}`);
             } else if (type === 'activity-attachment-upload') {
-                await api('activity_attachment_upload', { method: 'POST', formData: new FormData(form) }); toast('Archivo agregado'); if (form.closest('.app-modal')) await openActivityModal(Number(form.elements.activity_id.value)); else await route();
+                await api('activity_attachment_upload', { method: 'POST', formData: new FormData(form) }); invalidateImageCache('activity'); toast('Archivo agregado'); if (form.closest('.app-modal')) await openActivityModal(Number(form.elements.activity_id.value)); else await route();
             } else if (type === 'purchase-plan-save') {
                 const result = await api('purchase_plan_save', { method: 'POST', data: Object.fromEntries(new FormData(form).entries()) }); toast(result.message); go(`/purchase/${result.id}`);
             } else if (type === 'purchase-item-save') {
@@ -1026,7 +1098,7 @@
             } else if (type === 'la-ruda-stock-adjust') {
                 await api('la_ruda_stock_adjust',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast('Stock actualizado');await route();
             } else if (type === 'la-ruda-product-save') {
-                const result=await api('la_ruda_product_save',{method:'POST',formData:new FormData(form)});closeAppModal();toast(result.message);await route();
+                const result=await api('la_ruda_product_save',{method:'POST',formData:new FormData(form)});invalidateImageCache('la_ruda_product');closeAppModal();toast(result.message);await route();
             } else if (type === 'la-ruda-production-save') {
                 const result=await api('la_ruda_production_save',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast(result.message);go('/apiario-la-ruda',{view:'fabricacion'});
             } else if (type === 'la-ruda-publish-save') {
@@ -1045,6 +1117,12 @@
                 go('/queen-rearing', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'queen-rearing-save') {
                 const result=await api('queen_rearing_save',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast(result.message||'Crianza guardada');go('/queen-rearing');
+            } else if (type === 'queen-rearing-close') {
+                const result=await api('queen_rearing_close',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast(`${result.message}${result.success_rate!==null&&result.success_rate!==undefined?` Efectividad: ${result.success_rate}%`:''}`);go('/queen-rearing');
+            } else if (type === 'google-calendar-connect') {
+                const result=await api('google_calendar_connect',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});window.location.href=result.auth_url;return;
+            } else if (type === 'google-calendar-settings') {
+                await api('google_calendar_settings',{method:'POST',data:Object.fromEntries(new FormData(form).entries())});closeAppModal();toast('Avisos de Google Calendar guardados');await route();
             } else if (type === 'backup-restore') {
                 if (!confirm('¿Restaurar esta copia? Los datos actuales serán reemplazados. Se generará primero un respaldo automático.')) return;
                 await api('backup_restore', { method: 'POST', formData: new FormData(form) }); clearSession(); toast('Copia restaurada. Vuelva a ingresar.'); renderLogin();
@@ -1133,6 +1211,12 @@
                 openArchivedActivities();
             } else if (command === 'activity-open') {
                 await openActivityModal(Number(commandElement.dataset.id || 0), { hiveId: commandElement.dataset.hiveId || '' });
+            } else if (command === 'google-calendar-open') {
+                await openGoogleCalendarModal('apicultura');
+            } else if (command === 'google-calendar-sync') {
+                const result=await api('google_calendar_sync',{method:'POST',data:{app_code:commandElement.dataset.app||'apicultura'}});toast(result.message);closeAppModal();await route();
+            } else if (command === 'google-calendar-disconnect') {
+                if(!confirm('¿Desconectar Google Calendar de esta aplicación?'))return;await api('google_calendar_disconnect',{method:'POST',data:{app_code:commandElement.dataset.app||'apicultura'}});closeAppModal();toast('Google Calendar desconectado');await route();
             } else if (command === 'calendar-new') {
                 openCalendarModal({ start: commandElement.dataset.date || today() });
             } else if (command === 'calendar-edit') {
@@ -1158,13 +1242,13 @@
                 if (!confirm('¿Eliminar este registro del historial de reinas?')) return;
                 await api('hive_queen_delete', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Registro de reina eliminado'); await route(); revealQueenHistory(false);
             } else if (command === 'hive-photo-cover') {
-                await api('hive_photo_cover', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Banner de la colmena actualizado'); await route();
+                await api('hive_photo_cover', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); invalidateImageCache('hive'); toast('Banner de la colmena actualizado'); await route();
             } else if (command === 'hive-photo-delete') {
                 if (!confirm('¿Eliminar este archivo?')) return;
-                await api('hive_photo_delete', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); toast('Archivo eliminado'); await route();
+                await api('hive_photo_delete', { method: 'POST', data: { id: commandElement.dataset.id, hive_id: commandElement.dataset.hiveId } }); invalidateImageCache('hive'); toast('Archivo eliminado'); await route();
             } else if (command === 'apiculture-banner-delete') {
                 if (!confirm('¿Quitar la imagen del inicio?')) return;
-                await api('apiculture_banner_delete', { method: 'POST', data: {} }); toast('Banner eliminado'); await route();
+                await api('apiculture_banner_delete', { method: 'POST', data: {} }); invalidateImageCache('apiculture_banner'); toast('Banner eliminado'); await route();
             } else if (command === 'material-categories-open') {
                 openMaterialCategories();
             } else if (command === 'material-category-delete') {
@@ -1205,6 +1289,8 @@
                 openQueenRearingModal();
             } else if (command === 'queen-rearing-edit') {
                 openQueenRearingModal((state.queenRearingBatches||[]).find(x=>String(x.id)===String(commandElement.dataset.id))||{});
+            } else if (command === 'queen-rearing-close') {
+                const item=(state.queenRearingBatches||[]).find(x=>String(x.id)===String(commandElement.dataset.id));if(item)openQueenRearingClose(item);
             } else if (command === 'queen-rearing-delete') {
                 if(!confirm('¿Eliminar este registro y su evento automático del calendario?'))return;await api('queen_rearing_delete',{method:'POST',data:{app_code:'apicultura',id:commandElement.dataset.id}});toast('Registro eliminado');await route();
             } else if (command === 'backup-create') {
@@ -1227,6 +1313,8 @@
     document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAppModal(); });
 
     async function init() {
+        const query=new URLSearchParams(window.location.search);const googleResult=query.get('google');
+        if(googleResult){history.replaceState({},document.title,window.location.pathname+window.location.hash);setTimeout(()=>toast(googleResult==='connected'?'Google Calendar conectado correctamente':(query.get('google_message')||'No se pudo conectar Google Calendar'),googleResult==='connected'?'success':'error'),300);}
         if (!state.token) {
             renderLogin();
             return;
