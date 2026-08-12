@@ -201,12 +201,10 @@
         ['/hives', '▦', 'Colmenas', 'hives'],
         ['/activities', '✓', 'Actividades', 'activities'],
         ['/materials', '⬡', 'Materiales', 'materials'],
-        ['/purchases', '▤', 'Compras pendientes', 'purchases'],
         ['/accounting', '$', 'Contabilidad', 'accounting'],
         ['/documents', '▤', 'Documentos', 'documents'],
         ['/queen-rearing', '♛', 'Crianza de reinas', 'queen-rearing'],
         ['/apiario-la-ruda', '◆', 'Apiario La Ruda', 'la-ruda'],
-        ['/calendar', '▣', 'Calendario', 'calendar'],
         ['/backups', '⇩', 'Copias de seguridad', 'backups']
     ];
 
@@ -290,6 +288,7 @@
                 </div>
             </div>`;
         initCommonUi();
+        queueMicrotask(() => hydrateProtectedImages());
     }
 
     function initCommonUi() {
@@ -424,13 +423,13 @@
                     <select name="status"><option value="">Todos los estados</option><option value="activa" ${status === 'activa' ? 'selected' : ''}>Activa</option><option value="observacion" ${status === 'observacion' ? 'selected' : ''}>En observación</option><option value="inactiva" ${status === 'inactiva' ? 'selected' : ''}>Inactiva</option><option value="baja" ${status === 'baja' ? 'selected' : ''}>Baja</option></select>
                     <button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-ghost" href="#/hives">Limpiar</a>
                 </form>
-                ${(data.hives || []).length ? `<section class="card-grid">${data.hives.map(hive => `<article class="entity-card hive-visual-card">
+                ${(data.hives || []).length ? `<section class="card-grid">${data.hives.map(hive => `<a class="entity-card hive-visual-card hive-card-clickable" href="#/hive/${hive.id}" aria-label="Abrir ficha de ${h(hive.name)}">
                     <div class="hive-card-cover ${hive.cover_photo_id ? 'has-photo' : ''}">
                         ${hive.cover_photo_id ? `<img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${hive.cover_photo_id}" alt="${h(hive.name)}">` : '<div class="hive-card-placeholder"><span>⬡</span><small>Sin banner</small></div>'}
                         <span class="badge status-${h(hive.status)}">${capitalize(hive.status)}</span>
                     </div>
-                    <div class="hive-card-body"><h2>${h(hive.name)}</h2><div class="entity-meta"><span><b>Creada:</b> ${formatDate(hive.creation_date)}</span><span><b>Reina:</b> ${hive.queen_year ? h(hive.queen_year) : 'Sin indicar'}</span></div><div class="entity-counters"><span><strong>${Number(hive.open_activities || 0)}</strong> actividades</span><span><strong>${Number(hive.notes_count || 0)}</strong> observaciones</span><span><strong>${Number(hive.photos_count || 0)}</strong> archivos</span></div><div class="entity-actions"><a class="btn btn-primary" href="#/hive/${hive.id}">Abrir ficha</a><a class="btn btn-ghost" href="#/hive-edit/${hive.id}">Editar</a></div></div>
-                </article>`).join('')}</section>` : `<div class="empty-state panel"><div>▦</div><h3>No hay colmenas</h3><p>Cree la primera ficha para comenzar.</p><a class="btn btn-primary" href="#/hive-edit">Crear colmena</a></div>`}`
+                    <div class="hive-card-body"><h2>${h(hive.name)}</h2><div class="entity-meta"><span><b>Creada:</b> ${formatDate(hive.creation_date)}</span><span><b>Reina:</b> ${hive.queen_year ? h(hive.queen_year) : 'Sin indicar'}</span></div><div class="entity-counters"><span><strong>${Number(hive.open_activities || 0)}</strong> actividades</span><span><strong>${Number(hive.notes_count || 0)}</strong> observaciones</span><span><strong>${Number(hive.photos_count || 0)}</strong> archivos</span></div><div class="hive-card-open-hint"><span>Abrir ficha</span><b>→</b></div></div>
+                </a>`).join('')}</section>` : `<div class="empty-state panel"><div>▦</div><h3>No hay colmenas</h3><p>Cree la primera ficha para comenzar.</p><a class="btn btn-primary" href="#/hive-edit">Crear colmena</a></div>`}`
         });
         hydrateProtectedImages();
     }
@@ -747,23 +746,63 @@
     }
 
 
+    function compactActivitiesCalendar(range, data) {
+        const firstDay = new Date(`${range.from}T12:00:00`).getDay();
+        const byDate = {};
+        (data.events || []).forEach(x => { (byDate[x.start_date] ||= []).push({...x, kind:'manual'}); });
+        (data.activities || []).forEach(x => { (byDate[x.start_date] ||= []).push({...x, kind:'activity'}); });
+        const cells = [];
+        for (let i=0;i<firstDay;i++) cells.push('<div class="activity-mini-day outside"></div>');
+        for (let day=1;day<=range.last;day++) {
+            const date=`${range.from.slice(0,8)}${String(day).padStart(2,'0')}`;
+            const items=byDate[date]||[];
+            const isToday=date===today();
+            const visible=items.slice(0,2);
+            cells.push(`<div class="activity-mini-day ${isToday?'is-today':''} ${items.length?'has-events':''}">
+                <button class="activity-mini-day-hit" type="button" data-command="calendar-new" data-date="${date}" aria-label="Agregar evento el ${date}"></button>
+                <div class="activity-mini-day-head"><span>${day}</span>${items.length?`<b>${items.length}</b>`:''}</div>
+                <div class="activity-mini-events">${visible.map(x=>x.kind==='activity'
+                    ? `<button type="button" class="activity-mini-event is-activity" data-command="activity-open" data-id="${x.id}" title="${h(x.title)}"><i></i>${h(x.title)}</button>`
+                    : `<button type="button" class="activity-mini-event is-manual" data-command="calendar-edit" data-id="${x.id}" data-title="${h(x.title)}" data-type="${h(x.event_type)}" data-start="${h(x.start_date)}" data-end="${h(x.end_date||'')}" data-notes="${h(x.notes||'')}" title="${h(x.title)}"><i style="--event-color:${h(x.color||'#a69b24')}"></i>${h(x.title)}</button>`).join('')}${items.length>2?`<small>+${items.length-2} más</small>`:''}</div>
+            </div>`);
+        }
+        const label=new Intl.DateTimeFormat('es-AR',{month:'long',year:'numeric'}).format(range.base);
+        const eventCount=(data.events||[]).length, activityCount=(data.activities||[]).length;
+        return `<section class="activities-calendar-panel panel">
+            <div class="activities-calendar-toolbar">
+                <a class="calendar-nav" href="#/activities?cal_offset=${range.offset-1}" aria-label="Mes anterior">←</a>
+                <div class="activities-calendar-title"><small>${eventCount} eventos · ${activityCount} actividades</small><h2>${capitalize(label)}</h2></div>
+                <a class="calendar-today" href="#/activities?cal_offset=0">Hoy</a>
+                <a class="calendar-nav" href="#/activities?cal_offset=${range.offset+1}" aria-label="Mes siguiente">→</a>
+                <div class="activities-calendar-actions"><button class="btn btn-small btn-secondary google-calendar-button" type="button" data-command="google-calendar-open" data-app="apicultura"><span>G</span> Google Calendar</button><button class="btn btn-small btn-primary" type="button" data-command="calendar-new">+ Evento</button></div>
+            </div>
+            <div class="activity-mini-calendar"><div class="activity-mini-weekday">Dom</div><div class="activity-mini-weekday">Lun</div><div class="activity-mini-weekday">Mar</div><div class="activity-mini-weekday">Mié</div><div class="activity-mini-weekday">Jue</div><div class="activity-mini-weekday">Vie</div><div class="activity-mini-weekday">Sáb</div>${cells.join('')}</div>
+        </section>`;
+    }
+
     async function renderActivities(params) {
-        loading('Cargando el tablero…');
+        loading('Cargando actividades…');
         const filters = { hive_id: params.get('hive_id') || '', label_id: params.get('label_id') || '', q: params.get('q') || '' };
-        const data = await api('activities', { params: filters });
+        const range = calendarMonthRange(params.get('cal_offset') || 0);
+        const [data, calendarData] = await Promise.all([
+            api('activities', { params: filters }),
+            api('calendar_events', { params: { app_code:'apicultura', from:range.from, to:range.to } })
+        ]);
         const archived = (data.activities || []).filter(item => Number((data.statuses || []).find(status => Number(status.id) === Number(item.status_id))?.is_closed));
         state.archivedActivities = archived;
         const openStatuses = (data.statuses || []).filter(status => !Number(status.is_closed));
         const closedStatus = (data.statuses || []).find(status => Number(status.is_closed));
         shell({
-            title: 'Actividades', subtitle: 'Arrastre las tarjetas para cambiar su estado', active: 'activities',
+            title: 'Actividades', subtitle: 'Calendario y tablero de trabajo en una sola vista', active: 'activities',
             actions: `<button class="btn btn-secondary archived-button" type="button" data-command="activity-archive-open">Archivadas <strong>${archived.length}</strong></button><button class="btn btn-primary" type="button" data-command="activity-open">+ Nueva actividad</button>`,
-            content: `<form class="filter-bar" data-form="activity-filter"><label class="search-field"><span>⌕</span><input type="search" name="q" value="${h(filters.q)}" placeholder="Buscar actividad"></label><select name="hive_id"><option value="">Todas las colmenas</option>${(data.hives || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.hive_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><select name="label_id"><option value="">Todas las etiquetas</option>${(data.labels || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.label_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-ghost" href="#/activities">Limpiar</a></form>
+            content: `${compactActivitiesCalendar(range, calendarData)}
+                <section class="activities-board-section"><div class="activities-board-heading"><div><span>TRABAJO DEL APIARIO</span><h2>Tablero de actividades</h2></div></div>
+                <form class="filter-bar" data-form="activity-filter"><label class="search-field"><span>⌕</span><input type="search" name="q" value="${h(filters.q)}" placeholder="Buscar actividad"></label><select name="hive_id"><option value="">Todas las colmenas</option>${(data.hives || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.hive_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><select name="label_id"><option value="">Todas las etiquetas</option>${(data.labels || []).map(item => `<option value="${item.id}" ${String(item.id) === String(filters.label_id) ? 'selected' : ''}>${h(item.name)}</option>`).join('')}</select><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-ghost" href="#/activities">Limpiar</a></form>
                 <section class="kanban-board kanban-board-open" data-kanban-board>${openStatuses.map(status => {
                     const cards = (data.activities || []).filter(item => Number(item.status_id) === Number(status.id));
                     const purchases = status.slug === 'pendientes' ? (data.purchase_plans || []) : [];
                     return `<article class="kanban-column"><div class="kanban-header" style="--status-color:${h(status.color)}"><div><span></span><h2>${h(status.name)}</h2></div><strong>${cards.length + purchases.length}</strong></div><div class="kanban-list" data-status-id="${status.id}">${purchases.map(plan => `<article class="kanban-card purchase-kanban-card"><a href="#/purchase/${plan.id}"><div class="kanban-card-top"><span class="activity-label purchase-label">Compra pendiente</span><span class="purchase-card-symbol">▤</span></div><h3>${h(plan.title)}</h3>${plan.notes ? `<p>${h(plan.notes)}</p>` : ''}<div class="kanban-card-meta"><span>▤ ${h(monthLabel(plan.plan_month))}</span><span>${Number(plan.item_count || 0)} elementos</span><span>${moneyARS(plan.total_amount)}</span></div><small>Abrir compra planificada →</small></a></article>`).join('')}${cards.map(activity => `<article class="kanban-card priority-card-${h(activity.priority)}" draggable="true" data-activity-id="${activity.id}">${activity.preview_image_id ? `<button class="activity-thumb" type="button" data-command="open-file" data-file-type="activity" data-id="${activity.preview_image_id}" data-name="foto"><img data-protected-image data-file-type="activity" data-id="${activity.preview_image_id}" alt="Foto de actividad"></button>` : ''}<button class="activity-card-open" type="button" data-command="activity-open" data-id="${activity.id}"><div class="kanban-card-top">${activity.label_name ? `<span class="activity-label" style="--label-color:${h(activity.label_color)}">${h(activity.label_name)}</span>` : '<span></span>'}<span class="priority priority-${h(activity.priority)}">${capitalize(activity.priority)}</span></div><h3>${h(activity.title)}</h3>${activity.description ? `<p>${h(activity.description)}</p>` : ''}<div class="kanban-card-meta"><span>⬡ ${h(activity.hive_name || 'Sin colmena')}</span><span>◷ ${formatDate(activity.due_date)}</span></div>${activity.responsible ? `<small>Responsable: ${h(activity.responsible)}</small>` : ''}</button></article>`).join('')}</div></article>`;
-                }).join('')}${closedStatus ? `<article class="kanban-column archive-kanban-column"><div class="kanban-header" style="--status-color:${h(closedStatus.color)}"><div><span></span><h2>${h(closedStatus.name)}</h2></div><strong>${archived.length}</strong></div><div class="kanban-list archive-drop-list" data-status-id="${closedStatus.id}"><div class="archive-column-message"><span>✓</span><strong>Arrastre aquí para finalizar</strong><small>Se archiva sin borrar fotos ni historial.</small><button type="button" class="btn btn-small btn-secondary" data-command="activity-archive-open">Ver archivadas (${archived.length})</button></div></div></article>` : ''}</section>`
+                }).join('')}${closedStatus ? `<article class="kanban-column archive-kanban-column"><div class="kanban-header" style="--status-color:${h(closedStatus.color)}"><div><span></span><h2>${h(closedStatus.name)}</h2></div><strong>${archived.length}</strong></div><div class="kanban-list archive-drop-list" data-status-id="${closedStatus.id}"><div class="archive-column-message"><span>✓</span><strong>Arrastre aquí para finalizar</strong><small>Se archiva sin borrar fotos ni historial.</small><button type="button" class="btn btn-small btn-secondary" data-command="activity-archive-open">Ver archivadas (${archived.length})</button></div></div></article>` : ''}</section></section>`
         });
         initKanban();
         hydrateProtectedImages();
@@ -829,8 +868,8 @@
             return `<article class="purchase-card ${completed ? 'purchase-card-completed' : ''}"><a class="purchase-card-main" href="#/purchase/${plan.id}"><div class="purchase-month"><span>${yearText}</span><strong>${h(monthName)}</strong></div><div class="purchase-title"><span class="badge ${completed || Number(plan.pending_count) === 0 ? 'badge-success' : 'badge-warning'}">${badge}</span><h2>${h(plan.title)}</h2><p>${h(plan.notes || 'Sin notas generales')}</p></div><div class="purchase-total"><small>Total estimado</small><strong>${moneyARS(plan.total_amount)}</strong><span>${Number(plan.item_count)} renglones</span></div></a><div class="purchase-progress"><div style="width:${progress}%"></div></div><div class="purchase-card-footer"><span>${completed ? `Realizada: ${formatDateTime(plan.completed_at)}` : `Pendiente: ${moneyARS(plan.pending_amount)}`}</span><a href="#/purchase/${plan.id}">${completed ? 'Ver compra →' : 'Abrir presupuesto →'}</a></div></article>`;
         }).join('')}</section>`;
         shell({
-            title: 'Compras pendientes', subtitle: 'Presupuestos organizados por tarjetas mensuales', active: 'purchases',
-            actions: '<a class="btn btn-primary" href="#/purchases?new=1">+ Agregar</a>',
+            title: 'Compras pendientes', subtitle: 'Presupuestos organizados por tarjetas mensuales', active: 'accounting',
+            actions: '<a class="btn btn-ghost" href="#/accounting">← Contabilidad</a><a class="btn btn-primary" href="#/purchases?new=1">+ Agregar</a>',
             content: `${showNew ? `<section class="panel form-card narrow"><div class="panel-header"><div><h2>Nueva compra pendiente</h2><p>Se guardará como una tarjeta mensual</p></div><a class="icon-button" href="#/purchases">×</a></div><form data-form="purchase-plan-save"><label class="field"><span>Mes *</span><input type="month" name="plan_month" required value="${currentMonth()}"></label><label class="field"><span>Título</span><input type="text" name="title" maxlength="180" placeholder="Si se deja vacío: Compra pendiente de agosto 2026"></label><label class="field"><span>Notas generales</span><textarea name="notes" rows="3" placeholder="Lugar, objetivo o aclaraciones"></textarea></label><button class="btn btn-primary" type="submit">Crear tarjeta</button></form></section>` : ''}<div class="filter-row-simple"><span>Ver año:</span><a class="chip ${!year ? 'active' : ''}" href="#/purchases">Todos</a>${(data.years || []).map(row => `<a class="chip ${String(row.year) === String(year) ? 'active' : ''}" href="#/purchases?year=${row.year}">${row.year}</a>`).join('')}</div><section class="purchase-list-section"><div class="purchase-section-heading"><div><h2>Pendientes</h2><p>Compras abiertas que también aparecen en Actividades.</p></div><span>${pendingPlans.length}</span></div>${pendingPlans.length ? renderCards(pendingPlans) : `<div class="empty-state panel"><div>▤</div><h3>No hay compras pendientes</h3><p>Cree una tarjeta mensual para comenzar.</p><a class="btn btn-primary" href="#/purchases?new=1">Agregar compra pendiente</a></div>`}</section>${completedPlans.length ? `<section class="purchase-list-section completed-section"><div class="purchase-section-heading"><div><h2>Realizadas</h2><p>Compras cerradas que ya generaron materiales disponibles.</p></div><span>${completedPlans.length}</span></div>${renderCards(completedPlans, true)}</section>` : ''}`
         });
     }
@@ -849,7 +888,7 @@
             : `<button class="btn btn-success btn-large" data-command="purchase-complete" data-id="${plan.id}" ${(data.items || []).length ? '' : 'disabled'}>REALIZADA</button><div><small>Pendiente</small><strong>${moneyARS(pending)}</strong></div>`;
         const editor = completed ? '' : `<section class="panel sticky-panel"><div class="panel-header"><div><h2>${editing ? 'Editar renglón' : 'Agregar elemento'}</h2><p>El total se calcula automáticamente</p></div></div><form data-form="purchase-item-save" data-purchase-item-form><input type="hidden" name="id" value="${editing?.id || ''}"><input type="hidden" name="plan_id" value="${plan.id}"><label class="field"><span>Elemento *</span><input type="text" name="item_name" required maxlength="180" value="${h(editing?.item_name || '')}" placeholder="Ej.: Alza mediana"></label><div class="form-grid two-columns"><label class="field"><span>Cantidad</span><input type="number" step="1" min="1" name="quantity" required value="${h(editing?.quantity || '1')}" data-quantity></label><label class="field"><span>Precio unitario</span><input type="number" step="0.01" min="0" name="unit_price" required value="${h(editing?.unit_price || '0')}" data-unit-price></label></div><div class="calculated-total"><small>Total del renglón</small><strong data-line-total>${moneyARS(Number(editing?.quantity || 1) * Number(editing?.unit_price || 0))}</strong></div><label class="field"><span>Lugar de compra</span><input type="text" name="purchase_place" maxlength="180" value="${h(editing?.purchase_place || '')}" placeholder="Proveedor o comercio"></label><label class="field"><span>Notas</span><textarea name="notes" rows="3">${h(editing?.notes || '')}</textarea></label><label class="checkbox-field"><input type="checkbox" name="is_purchased" value="1" ${Number(editing?.is_purchased || 0) ? 'checked' : ''}><span>Ya fue comprado</span></label><div class="form-actions"><button class="btn btn-primary" type="submit">${editing ? 'Guardar cambios' : '+ Agregar elemento'}</button>${editing ? `<a class="btn btn-ghost" href="#/purchase/${plan.id}">Cancelar</a>` : ''}</div></form><details><summary>Editar datos de la tarjeta</summary><form class="details-form" data-form="purchase-plan-save"><input type="hidden" name="id" value="${plan.id}"><label class="field"><span>Título</span><input name="title" value="${h(plan.title)}" required></label><label class="field"><span>Mes</span><input type="month" name="plan_month" value="${h(String(plan.plan_month).slice(0,7))}" required></label><label class="field"><span>Notas</span><textarea name="notes" rows="3">${h(plan.notes || '')}</textarea></label><button class="btn btn-secondary" type="submit">Actualizar tarjeta</button></form></details><button class="btn btn-danger" data-command="purchase-plan-delete" data-id="${plan.id}">Eliminar tarjeta completa</button></section>`;
         shell({
-            title: plan.title, subtitle: completed ? 'Compra realizada' : 'Detalle del presupuesto planificado', active: 'purchases',
+            title: plan.title, subtitle: completed ? 'Compra realizada' : 'Detalle del presupuesto planificado', active: 'accounting',
             actions: '<a class="btn btn-ghost" href="#/purchases">Volver a tarjetas</a>',
             content: `<section class="purchase-summary panel ${completed ? 'purchase-summary-completed' : ''}"><div><span class="purchase-summary-icon">▤</span><div><small>${completed ? 'Compra realizada' : 'Compra planificada'}</small><h2>${h(monthLabel(plan.plan_month))}</h2><p>${h(plan.notes || 'Sin notas generales')}</p></div></div><div><small>Total estimado</small><strong>${moneyARS(total)}</strong></div>${summaryTail}</section><div class="split-layout purchase-edit-layout ${completed ? 'purchase-layout-completed' : ''}">${editor}<section class="panel ${completed ? 'purchase-readonly-panel' : ''}"><div class="panel-header"><div><h2>Presupuesto</h2><p>${(data.items || []).length} renglones${completed ? ' · compra cerrada' : ''}</p></div></div>${(data.items || []).length ? `<div class="table-wrap"><table class="data-table purchase-table"><thead><tr><th>Estado</th><th>Elemento</th><th>Cantidad</th><th>Precio unit.</th><th>Total</th><th>Lugar</th>${completed ? '' : '<th></th>'}</tr></thead><tbody>${data.items.map(item => `<tr class="${completed || Number(item.is_purchased) ? 'row-completed' : ''}"><td><span class="badge ${completed || Number(item.is_purchased) ? 'badge-success' : 'badge-warning'}">${completed || Number(item.is_purchased) ? 'Comprado' : 'Pendiente'}</span></td><td><strong>${h(item.item_name)}</strong>${item.notes ? `<small>${h(item.notes)}</small>` : ''}</td><td>${number3(item.quantity)}</td><td>${moneyARS(item.unit_price)}</td><td><strong>${moneyARS(item.line_total)}</strong></td><td>${h(item.purchase_place || '—')}</td>${completed ? '' : `<td class="row-actions"><a class="icon-button" href="#/purchase/${plan.id}?edit_item=${item.id}">✎</a><button class="icon-button danger" data-command="purchase-item-delete" data-id="${item.id}" data-plan-id="${plan.id}">×</button></td>`}</tr>`).join('')}</tbody></table></div>` : emptyState('▤', 'Presupuesto vacío', 'Agregue el primer elemento desde el formulario.')}${completed ? `<div class="closed-purchase-note">Los materiales de esta compra ya fueron agregados automáticamente en estado <strong>Disponible</strong>.</div><button class="btn btn-danger completed-delete-form" data-command="purchase-plan-delete" data-id="${plan.id}">Eliminar tarjeta completa</button>` : ''}</section></div>`
         });
@@ -876,6 +915,7 @@
         const summary = data.summary || {};
         shell({
             title: 'Contabilidad', subtitle: 'Toda la existencia del proyecto con filtros por período', active: 'accounting',
+            actions: '<a class="btn btn-secondary accounting-purchases-button" href="#/purchases"><span>▤</span> Compras pendientes</a>',
             content: `<section class="accounting-hero apiculture-accounting-hero"><div><span>Balance del resultado</span><strong>${moneyUSD(Number(summary.income_usd || 0)-Number(summary.expense_usd || 0))}</strong><small>${moneyARS(Number(summary.income_ars || 0)-Number(summary.expense_ars || 0))}</small></div><div class="accounting-hero-split"><span><b>${moneyUSD(summary.income_usd)}</b><small>Ingresos</small></span><span><b>${moneyUSD(summary.expense_usd)}</b><small>Egresos</small></span><span class="accounting-count"><b>${Number(summary.total || 0)}</b><small>Movimientos</small></span></div></section><section class="balance-strip accounting-balances"><div class="balance-strip-title"><span>Saldo histórico por persona</span><small>Siempre muestra toda la existencia del proyecto</small></div>${(data.balances || []).map(balance => `<div class="person-balance ${Number(balance.balance_ars) < 0 ? 'negative' : 'positive'}"><strong>${h(balance.name)}</strong><span>${moneyUSD(balance.balance_usd)}</span><small>${moneyARS(balance.balance_ars)}</small></div>`).join('')}</section>
                 <form class="filter-panel panel" data-form="accounting-filter"><div class="filter-panel-title"><strong>Filtrar movimientos</strong><small>Por ejemplo: desde octubre hasta noviembre de cualquier año</small></div><label class="field"><span>Desde</span><input type="date" name="date_from" value="${h(filters.date_from || '')}"></label><label class="field"><span>Hasta</span><input type="date" name="date_to" value="${h(filters.date_to || '')}"></label><label class="field"><span>Persona</span><select name="person_id"><option value="">Todas</option>${(data.people || []).map(person => `<option value="${person.id}" ${String(person.id) === String(filters.person_id || '') ? 'selected' : ''}>${h(person.name)}</option>`).join('')}</select></label><label class="field"><span>Tipo</span><select name="movement_type"><option value="">Ingresos y egresos</option><option value="ingreso" ${filters.movement_type === 'ingreso' ? 'selected' : ''}>Ingresos</option><option value="egreso" ${filters.movement_type === 'egreso' ? 'selected' : ''}>Egresos</option></select></label><label class="field"><span>Concepto</span><select name="concept_id"><option value="">Todos</option>${(data.concepts || []).map(concept => `<option value="${concept.id}" ${String(concept.id) === String(filters.concept_id || '') ? 'selected' : ''}>${h(concept.name)}</option>`).join('')}</select></label><label class="field filter-search"><span>Texto</span><input type="search" name="q" value="${h(filters.q || '')}" placeholder="Buscar en descripción"></label><div class="filter-actions"><button class="btn btn-secondary" type="submit">Aplicar filtros</button><a class="btn btn-ghost" href="#/accounting">Ver todo</a></div></form>
                 <div class="split-layout accounting-layout"><section class="panel sticky-panel"><div class="panel-header"><div><h2>${editing ? 'Editar movimiento' : 'Agregar movimiento'}</h2><p>La conversión a dólares se calcula sola</p></div></div><form data-form="accounting-save" data-accounting-form enctype="multipart/form-data"><input type="hidden" name="id" value="${editing?.id || ''}"><label class="field"><span>Fecha *</span><input type="date" name="entry_date" required value="${h(editing?.entry_date || today())}"></label><label class="field"><span>Persona *</span><select name="person_id" required><option value="">Seleccione</option>${(data.people || []).map(person => `<option value="${person.id}" ${Number(editing?.person_id || 0) === Number(person.id) ? 'selected' : ''}>${h(person.name)}</option>`).join('')}</select></label><label class="field"><span>Concepto *</span><select name="concept_id" required data-concept-select><option value="">Seleccione</option>${(data.concepts || []).map(concept => `<option value="${concept.id}" data-default-type="${h(concept.default_type)}" ${Number(editing?.concept_id || 0) === Number(concept.id) ? 'selected' : ''}>${h(concept.name)}</option>`).join('')}</select></label><label class="field"><span>Tipo *</span><select name="movement_type" required data-movement-type><option value="egreso" ${(editing?.movement_type || 'egreso') === 'egreso' ? 'selected' : ''}>Egreso / gasto</option><option value="ingreso" ${editing?.movement_type === 'ingreso' ? 'selected' : ''}>Ingreso / venta</option></select></label><label class="field"><span>Importe en pesos *</span><input type="number" step="0.01" min="0.01" name="amount_ars" required value="${h(editing?.amount_ars || '')}" data-amount-ars placeholder="0,00"></label><label class="field"><span>Cotización del dólar *</span><input type="number" step="0.0001" min="0.0001" name="usd_rate" required value="${h(editing?.usd_rate || '')}" data-usd-rate placeholder="Ej.: 1350"></label><div class="calculated-total accounting-usd"><small>Equivalente guardado</small><strong data-amount-usd>${moneyUSD(editing?.amount_usd || 0)}</strong></div><label class="field"><span>Descripción</span><textarea name="description" rows="4" placeholder="Qué se compró, vendió o pagó">${h(editing?.description || '')}</textarea></label><label class="field"><span>Comprobante</span><input type="file" name="receipt" accept="image/jpeg,image/png,image/webp,application/pdf"><small>${editing?.receipt_original_name ? `Actual: ${h(editing.receipt_original_name)}. Cargue otro para reemplazarlo.` : 'PDF, JPG, PNG o WEBP.'}</small></label><div class="form-actions"><button class="btn btn-primary" type="submit">${editing ? 'Guardar cambios' : '+ Agregar movimiento'}</button>${editing ? '<a class="btn btn-ghost" href="#/accounting">Cancelar</a>' : ''}</div></form></section><section class="panel"><div class="panel-header"><div><h2>Movimientos</h2><p>Resultado de los filtros seleccionados</p></div></div>${(data.entries || []).length ? `<div class="table-wrap"><table class="data-table accounting-table"><thead><tr><th>Fecha</th><th>Persona</th><th>Concepto</th><th>Descripción</th><th>Pesos</th><th>Dólares</th><th>Comprobante</th><th></th></tr></thead><tbody>${data.entries.map(entry => `<tr><td>${formatDate(entry.entry_date)}</td><td><strong>${h(entry.person_name)}</strong></td><td><span class="badge ${entry.movement_type === 'ingreso' ? 'badge-success' : 'badge-danger-soft'}">${h(entry.concept_name)}</span></td><td class="cell-notes">${h(entry.description || '—')}</td><td class="${entry.movement_type === 'ingreso' ? 'income-text' : 'expense-text'}"><strong>${entry.movement_type === 'ingreso' ? '+ ' : '- '}${moneyARS(entry.amount_ars)}</strong></td><td>${moneyUSD(entry.amount_usd)}<small>@ ${moneyARS(entry.usd_rate)}</small></td><td>${entry.receipt_relative_path ? `<button class="file-link file-button" data-command="open-file" data-file-type="receipt" data-id="${entry.id}" data-name="${h(entry.receipt_original_name || 'comprobante')}">Ver archivo</button>` : '—'}</td><td class="row-actions"><a class="icon-button" href="#/accounting?${new URLSearchParams({...filters, edit: entry.id}).toString()}">✎</a><button class="icon-button danger" data-command="accounting-delete" data-id="${entry.id}">×</button></td></tr>`).join('')}</tbody></table></div>` : emptyState('$', 'No hay movimientos', 'No existen registros con estos filtros.')}</section></div>`
@@ -902,10 +942,17 @@
     async function openManagedDocument(appCode, id, name='documento') {
         const action = appCode === 'apicultura' ? 'apiculture_document_file' : 'document_file';
         const params = appCode === 'apicultura' ? { id } : { app_code:appCode, id };
-        const blob = await api(action, { params, blob:true });
-        const url = URL.createObjectURL(blob); state.protectedUrls.push(url);
-        const win = window.open(url, '_blank', 'noopener');
-        if (!win) { const a=document.createElement('a');a.href=url;a.download=name;a.click(); }
+        const preview = window.open('about:blank', '_blank');
+        if (preview) preview.opener = null;
+        try {
+            const blob = await api(action, { params, blob:true });
+            const url = URL.createObjectURL(blob); state.protectedUrls.push(url);
+            if (preview) preview.location.href = url;
+            else toast('El navegador bloqueó la vista del documento. Habilite ventanas emergentes para abrirlo.', 'error');
+        } catch (error) {
+            if (preview) preview.close();
+            throw error;
+        }
     }
 
     function openDocumentModal(appCode, document={}) {
@@ -975,22 +1022,44 @@
     }
 
     async function hydrateProtectedImages() {
-        const images = [...document.querySelectorAll('[data-protected-image]')];
-        await Promise.all(images.map(async image => {
-            try {
-                const key = `${image.dataset.fileType}:${image.dataset.id}`;
-                let url = state.imageCache.get(key);
-                if (!url) {
-                    const blob = await api('file', { params: { type: image.dataset.fileType, id: image.dataset.id }, blob: true });
-                    url = URL.createObjectURL(blob);
-                    state.imageCache.set(key, url);
+        const images = [...document.querySelectorAll('[data-protected-image]')].filter(image => !image.dataset.imageHydrating);
+        if (!images.length) return;
+        images.forEach(image => { image.dataset.imageHydrating = '1'; image.classList.add('image-loading'); });
+        let cursor = 0;
+        const worker = async () => {
+            while (cursor < images.length) {
+                const image = images[cursor++];
+                try {
+                    const key = `${image.dataset.fileType}:${image.dataset.id}`;
+                    let url = state.imageCache.get(key);
+                    if (!url) {
+                        let lastError;
+                        for (let attempt = 0; attempt < 3 && !url; attempt++) {
+                            try {
+                                const blob = await api('file', { params: { type: image.dataset.fileType, id: image.dataset.id }, blob: true });
+                                url = URL.createObjectURL(blob);
+                                state.imageCache.set(key, url);
+                            } catch (error) {
+                                lastError = error;
+                                if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 220 * (attempt + 1)));
+                            }
+                        }
+                        if (!url && lastError) throw lastError;
+                    }
+                    if (image.isConnected && image.src !== url) image.src = url;
+                    image.classList.add('image-ready');
+                } catch (_) {
+                    if (image.isConnected) {
+                        image.alt = 'Imagen no disponible';
+                        image.classList.add('image-error');
+                    }
+                } finally {
+                    delete image.dataset.imageHydrating;
+                    image.classList.remove('image-loading');
                 }
-                if (image.src !== url) image.src = url;
-                image.classList.add('image-ready');
-            } catch (_) {
-                image.alt = 'No se pudo cargar la imagen';
             }
-        }));
+        };
+        await Promise.all(Array.from({length: Math.min(4, images.length)}, () => worker()));
     }
 
     async function downloadBlob(action, params, filename, method = 'GET', formData = null) {
@@ -1006,11 +1075,18 @@
     }
 
     async function openProtectedFile(type, id, name) {
-        const blob = await api('file', { params: { type, id }, blob: true });
-        const url = URL.createObjectURL(blob);
-        state.protectedUrls.push(url);
-        const windowRef = window.open(url, '_blank', 'noopener');
-        if (!windowRef) await downloadBlob('file', { type, id }, name || 'archivo');
+        const preview = window.open('about:blank', '_blank');
+        if (preview) preview.opener = null;
+        try {
+            const blob = await api('file', { params: { type, id }, blob: true });
+            const url = URL.createObjectURL(blob);
+            state.protectedUrls.push(url);
+            if (preview) preview.location.href = url;
+            else toast('El navegador bloqueó la vista del archivo. Habilite ventanas emergentes para abrirlo.', 'error');
+        } catch (error) {
+            if (preview) preview.close();
+            throw error;
+        }
     }
 
     async function route() {
@@ -1042,7 +1118,7 @@
             if (path === '/queen-rearing') return await renderQueenRearing(params);
             if (path === '/apiario-la-ruda') return await renderLaRuda(params);
             if (path === '/documents') return await renderDocuments(params);
-            if (path === '/calendar') return await renderCalendar(params);
+            if (path === '/calendar') { go('/activities'); return; }
             if (path === '/backups') return await renderBackups();
             if (path === '/profile') return await renderProfile();
             go('/dashboard');
