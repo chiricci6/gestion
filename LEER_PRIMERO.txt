@@ -1,9 +1,18 @@
-ACTUALIZACIÓN GITHUB v23
+GESTIÓN APÍCOLA v23.1 · AJUSTE VISUAL
 
-Reemplazar solamente:
+Cambios únicamente de frontend:
+- Manejo técnico sale del menú lateral.
+- Se accede desde un botón superior dentro de Colmenas.
+- Dentro de Manejo técnico, Colmenas queda marcado como módulo activo.
+- Paleta y tarjetas de inspecciones adaptadas al estilo miel/verde de Gestión Apícola.
+
+Reemplazar en GitHub Pages:
 - index.html
 - assets/js/app.js
 - assets/css/app.css
 
-NO reemplazar assets/js/config.js ni CNAME.
-Después del commit usar Ctrl+F5.
+No reemplazar:
+- assets/js/config.js
+- CNAME
+
+Después del commit, usar Ctrl+F5.

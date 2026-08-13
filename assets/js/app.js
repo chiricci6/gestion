@@ -200,7 +200,6 @@
     const navItems = [
         ['/dashboard', '⌂', 'Inicio', 'dashboard'],
         ['/hives', '▦', 'Colmenas', 'hives'],
-        ['/technical', '◉', 'Manejo técnico', 'technical'],
         ['/activities', '✓', 'Actividades', 'activities'],
         ['/materials', '⬡', 'Materiales', 'materials'],
         ['/accounting', '$', 'Contabilidad', 'accounting'],
@@ -369,7 +368,7 @@
 
     async function renderDashboard() {
         loading('Cargando el resumen…');
-        const [data, technical] = await Promise.all([api('dashboard'), api('apiary_overview')]);
+        const data = await api('dashboard');
         const materials = data.stats.materials || {};
         const purchases = data.stats.purchase_plans || {};
         const accounting = data.stats.accounting || {};
@@ -398,7 +397,6 @@
                 </section>
                 <section class="dashboard-grid">
                     <a class="dashboard-card card-hives" href="#/hives"><div class="dashboard-card-icon">▦</div><div><span>Colmenas</span><strong>${Number(data.stats.hives || 0)}</strong><small>Fichas e historial</small></div></a>
-                    <a class="dashboard-card card-technical" href="#/technical"><div class="dashboard-card-icon">◉</div><div><span>Manejo técnico</span><strong>${h(technical.season?.name || '—')}</strong><small>${integerQty(technical.summary?.inspections || 0)} inspecciones · ${Number(technical.summary?.harvest_kg || 0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg cosechados</small></div></a>
                     <a class="dashboard-card card-activities" href="#/activities"><div class="dashboard-card-icon">✓</div><div><span>Actividades pendientes</span><strong>${Number(data.stats.pending_activities || 0)}</strong><small>Para hacer o en proceso</small></div></a>
                     <a class="dashboard-card card-materials" href="#/materials"><div class="dashboard-card-icon">⬡</div><div><span>Materiales</span><strong>${Number(materials.total || 0)}</strong><small>${Number(materials.available || 0)} disponibles · ${Number(materials.in_use || 0)} en uso · ${Number(materials.repair || 0)} en reparación</small></div></a>
                     <a class="dashboard-card card-purchases" href="#/purchases"><div class="dashboard-card-icon">▤</div><div><span>Compras pendientes</span><strong>${Number(purchases.total || 0)}</strong><small>Total planificado: ${moneyARS(purchases.amount)}</small></div></a>
@@ -419,7 +417,7 @@
         const data = await api('hives', { params: { q, status } });
         shell({
             title: 'Colmenas', subtitle: 'Estado, reina, observaciones, actividades, historial y fotografías', active: 'hives',
-            actions: '<a class="btn btn-primary" href="#/hive-edit">+ Nueva colmena</a>',
+            actions: '<a class="btn btn-secondary hives-technical-button" href="#/technical"><span>◉</span> Manejo técnico</a><a class="btn btn-primary" href="#/hive-edit">+ Nueva colmena</a>',
             content: `
                 <form class="filter-bar" data-form="hive-filter">
                     <label class="search-field"><span>⌕</span><input type="search" name="q" value="${h(q)}" placeholder="Buscar colmena"></label>
@@ -1162,7 +1160,7 @@
             page=`<section class="season-grid">${(d.seasons||[]).map(x=>`<article class="season-card ${Number(x.is_active)?'active':''}"><div><span class="eyebrow">${Number(x.is_active)?'TEMPORADA ACTIVA':'TEMPORADA'}</span><h2>${h(x.name)}</h2><p>${formatDate(x.start_date)} → ${formatDate(x.end_date)}</p></div><div class="season-metrics"><span><b>${integerQty(x.inspections)}</b> inspecciones</span><span><b>${Number(x.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})}</b> kg</span><span><b>${integerQty(x.health_records)}</b> sanidad</span><span><b>${integerQty(x.feedings)}</b> alimentación</span></div><div class="form-actions"><button class="btn btn-small btn-secondary" data-command="apiary-season-edit" data-id="${x.id}">Editar</button>${!Number(x.is_active)?`<button class="btn btn-small btn-ghost" data-command="apiary-season-activate" data-id="${x.id}">Activar</button><button class="icon-button danger" data-command="apiary-season-delete" data-id="${x.id}">×</button>`:''}</div></article>`).join('')}</section>`;
         }
         const filter=view==='seasons'?'':`<label class="field compact-field technical-season-filter"><span>Temporada</span><select data-command="apiary-season-filter" data-view="${view}">${(base.seasons||[]).map(x=>`<option value="${x.id}" ${String(x.id)===String(seasonFilter)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label>`;
-        shell({title:'Manejo técnico',subtitle:'Inspecciones, producción, sanidad y alimentación por temporada',active:'technical',actions:`${filter}${actions}`,content:`${technicalTabs(view)}${page}`});hydrateProtectedImages();
+        shell({title:'Manejo técnico',subtitle:'Seguimiento técnico de las colmenas por temporada',active:'hives',actions:`<a class="btn btn-ghost" href="#/hives">← Colmenas</a>${filter}${actions}`,content:`${technicalTabs(view)}${page}`});hydrateProtectedImages();
     }
 
     async function route() {

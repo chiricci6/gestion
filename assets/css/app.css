@@ -682,3 +682,61 @@ body.app-community .material-photo-placeholder{background:linear-gradient(145deg
 @media(max-width:900px){.hive-technical-strip{grid-template-columns:1fr}.hive-technical-actions{justify-content:flex-start}.technical-summary-grid{grid-template-columns:1fr}.performance-hero{align-items:stretch;flex-direction:column}.technical-modal-layout{grid-template-columns:1fr}}
 @media(max-width:620px){.hive-technical-metrics{grid-template-columns:1fr 1fr}.technical-card-grid{grid-template-columns:1fr}.performance-summary{grid-template-columns:1fr}.harvest-hive-grid{grid-template-columns:1fr}}
 .hive-technical-recent{grid-column:1/-1;border-top:1px solid rgba(120,130,60,.16);padding-top:.85rem}.hive-technical-recent>strong{display:block;margin-bottom:.55rem;color:#485238}.hive-technical-recent>div{display:flex;gap:.45rem;overflow:auto;padding-bottom:.1rem}.technical-event{min-width:175px;padding:.55rem .65rem;border-radius:11px;background:rgba(255,255,255,.7);display:grid;gap:.12rem;font-size:.8rem;color:#5f674a}.technical-event b{font-size:.72rem;color:#858b6d}.technical-event small{color:#8c9179;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.technical-event-harvest{border-left:3px solid #c6a52f}.technical-event-health{border-left:3px solid #79934f}.technical-event-feeding{border-left:3px solid #bd8b4f}.technical-event-inspection{border-left:3px solid #8a9843}
+
+
+/* ===== v23.1 · Manejo técnico integrado en Colmenas ===== */
+.hives-technical-button{background:#fff8df;color:#705210;border:1px solid #ead79d;box-shadow:0 6px 16px rgba(185,117,17,.08)}
+.hives-technical-button:hover{background:#fff2c7;border-color:#ddb753;box-shadow:0 9px 20px rgba(185,117,17,.13)}
+.hives-technical-button span{font-size:1rem;color:#a46b09}
+
+.technical-tabs{background:#fffaf0;border-color:#eadfbe;box-shadow:0 6px 18px rgba(73,66,34,.04)}
+.technical-tabs a{color:#5b624b}
+.technical-tabs a:hover{background:#fff2c7;color:#79590c}
+.technical-tabs a.active{background:linear-gradient(135deg,#f3b52f,#d99913);color:#302b1d;box-shadow:0 8px 20px rgba(195,132,10,.18)}
+.technical-summary-grid article,.performance-summary article{position:relative;overflow:hidden;background:#fff;border-color:#e8e1d1;box-shadow:var(--shadow)}
+.technical-summary-grid article::before,.performance-summary article::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(#f3b52f,#96a950)}
+.technical-summary-grid small,.performance-summary small{color:var(--muted)}
+.technical-summary-grid strong,.performance-summary strong{color:var(--text)}
+
+.technical-record-card{background:#fff;border-color:#e7e2d5;box-shadow:0 10px 28px rgba(53,53,34,.07)}
+.technical-record-card:hover{border-color:#ddc781;box-shadow:0 16px 34px rgba(80,67,28,.12)}
+.inspection-card{position:relative;background:linear-gradient(160deg,#fff,#fffdf7)}
+.inspection-card::before{content:'';position:absolute;left:0;top:18px;bottom:18px;width:4px;border-radius:0 5px 5px 0;background:#e2a51e}
+.inspection-card h3{color:#354136}
+.inspection-quick-metrics{gap:.5rem}
+.inspection-quick-metrics span{background:#fff4ce;color:#665018;border:1px solid #f0dfaa}
+.inspection-quick-metrics span:nth-child(even){background:#edf5e8;color:#41613e;border-color:#d5e7ce}
+.technical-record-card small{color:#7a8175}
+.technical-warning{background:#fff4df;color:#8a5c0b!important;border:1px solid #f1dca8}
+.harvest-card{background:linear-gradient(160deg,#fff,#fff9e8);border-color:#eadcaf}
+.harvest-total strong,.harvest-total span{color:#a16c08}
+.health-card{background:linear-gradient(160deg,#fff,#f4faf4);border-color:#dce9da}
+.feeding-card{background:linear-gradient(160deg,#fff,#fff8e9);border-color:#eadfbe}
+.feeding-amount strong{color:#8b6517}
+.technical-chip-row span{background:#f7f5ea;color:#566151;border:1px solid #e7e2d5}
+
+.technical-check-row{padding:.9rem 1rem;margin:.35rem 0 1rem;border-radius:14px;background:#fffaf0;border:1px solid #eee1bc}
+.technical-check-row label,.checkbox-field{color:#475248}
+.technical-check-row input,.technical-hive-option input{accent-color:var(--primary)}
+.technical-hive-option{background:#fff;border-color:#e4e1d7}
+.technical-hive-option:hover{border-color:#e1c569;background:#fffdf6}
+.technical-hive-option:has(input:checked){border-color:#d5ad38;background:#fff4ce;box-shadow:inset 0 0 0 1px rgba(217,153,19,.12)}
+.harvest-hive-row{background:#fff;border-color:#e4e1d7}
+.harvest-hive-row:has(input[type=checkbox]:checked){border-color:#d5ad38;background:#fffaf0}
+.harvest-hive-row input[type=number]{border-color:#ddd7c8}
+
+.hive-technical-strip{background:linear-gradient(120deg,#fffaf0,#f4f8eb);border-color:#e6dfc6}
+.hive-technical-title p{color:var(--muted)}
+.hive-technical-metrics article{background:#fff;border-color:#e7e2d5}
+.hive-technical-metrics small{color:var(--muted)}
+.hive-technical-metrics strong{color:var(--text)}
+.hive-technical-recent{border-top-color:#e6dfc6}
+.hive-technical-recent>strong{color:#3e493f}
+.technical-event{background:#fff;border:1px solid #ebe6da;color:#515d52}
+.technical-event b,.technical-event small{color:#7b8379}
+.technical-event-inspection{border-left-color:#d99913}
+.technical-event-harvest{border-left-color:#e2b42d}
+.technical-event-health{border-left-color:#397a52}
+.technical-event-feeding{border-left-color:#b97a2b}
+
+@media(max-width:700px){.hives-technical-button{flex:1}.topbar-actions .hives-technical-button+.btn-primary{flex:1}}
