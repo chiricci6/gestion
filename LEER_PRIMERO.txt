@@ -1,9 +1,9 @@
-ACTUALIZACIÓN v21 · GITHUB PAGES
+ACTUALIZACIÓN GITHUB v23
 
-Reemplace únicamente:
+Reemplazar solamente:
 - index.html
 - assets/js/app.js
 - assets/css/app.css
 
-No reemplace assets/js/config.js ni CNAME.
-Después del commit, abra la web y presione Ctrl + F5.
+NO reemplazar assets/js/config.js ni CNAME.
+Después del commit usar Ctrl+F5.
