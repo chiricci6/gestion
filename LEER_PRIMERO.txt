@@ -1,18 +1,23 @@
-GESTIÓN APÍCOLA v23.1 · AJUSTE VISUAL
+Mellifera Technology v24.0.0
 
-Cambios únicamente de frontend:
-- Manejo técnico sale del menú lateral.
-- Se accede desde un botón superior dentro de Colmenas.
-- Dentro de Manejo técnico, Colmenas queda marcado como módulo activo.
-- Paleta y tarjetas de inspecciones adaptadas al estilo miel/verde de Gestión Apícola.
+CAMBIOS PRINCIPALES
+- Rendimiento general: la API ya no ejecuta todas las migraciones/esquemas en cada petición. Desde v24 comprueba una única versión de esquema y sólo migra cuando cambia la versión.
+- Imágenes en las TRES aplicaciones (Apicultura, Ganadería y Comunidad): miniaturas privadas, ETag/revalidación HTTP, carga diferida según visibilidad, máximo 4 descargas simultáneas, caché de sesión y reintentos automáticos.
+- La fotografía original sólo se solicita al abrirla. Si GD no está disponible, se conserva la carga diferida y la API sirve la imagen original como respaldo.
+- Índices adicionales para consultas frecuentes.
+- Comunidad Apícola simplificada: menú únicamente con Inicio, Colmenas, Actividades, Crianza de reinas y Copias de seguridad.
+- Comunidad: Materiales, Compras, Contabilidad, Contabilidad propia y Documentos desaparecen de la interfaz. Sus tablas históricas NO se borran de MariaDB.
+- Comunidad: Colmenas incorpora Manejo como en Gestión Apícola, con Inspecciones, Cosechas, Sanidad, Alimentación, Rendimiento y Temporadas dentro de Colmenas.
+- Inspecciones simplificadas en Apicultura y Comunidad: se eliminan de la interfaz cría abierta, cría operculada, alzas colocadas y signos sanitarios observados.
+- Reservas de miel y polen pasan a estados: Sin evaluar, Buena, OK, Escasa o Insuficiente.
+- El nombre visible “Manejo técnico” pasa a “Manejo”.
+- Los archivos protegidos se abren en el navegador; si el navegador bloquea la pestaña NO se descargan automáticamente.
+- La copia operativa de Comunidad incluye los módulos actuales y sus archivos. Los datos históricos de los módulos retirados permanecen preservados en la base, pero no forman parte de la copia operativa actual.
 
-Reemplazar en GitHub Pages:
-- index.html
-- assets/js/app.js
-- assets/css/app.css
-
-No reemplazar:
-- assets/js/config.js
-- CNAME
-
-Después del commit, usar Ctrl+F5.
+ACTUALIZACION
+1. Descargar antes una copia de seguridad completa.
+2. Laragon: Stop All, copiar la carpeta apicultura del paquete de actualización sobre C:\laragon\www\apicultura, aceptar reemplazos y Start All.
+3. Comprobar health: https://api.mellifera-technology.com/apicultura/api/index.php?action=health -> version 24.0.0.
+4. GitHub: reemplazar index.html, ganaderia.html, comunidad.html, assets/css/app.css, assets/js/app.js, assets/js/ganaderia.js y assets/js/comunidad.js.
+5. NO reemplazar assets/js/config.js ni CNAME.
+6. Hacer commit y luego Ctrl+F5 en la web.

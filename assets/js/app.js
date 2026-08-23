@@ -79,9 +79,10 @@
     }
 
     function invalidateImageCache(fileType = '', id = '') {
-        const prefix = fileType ? `${fileType}:` : '';
         [...state.imageCache.entries()].forEach(([key, url]) => {
-            if ((!prefix || key.startsWith(prefix)) && (!id || key === `${fileType}:${id}`)) {
+            const matchesType = !fileType || key.includes(`:${fileType}:`) || key.startsWith(`${fileType}:`);
+            const matchesId = !id || key.endsWith(`:${id}`) || key === `${fileType}:${id}`;
+            if (matchesType && matchesId) {
                 URL.revokeObjectURL(url);
                 state.imageCache.delete(key);
             }
@@ -111,7 +112,7 @@
         });
         const headers = { ...(options.headers || {}) };
         if (state.token && !options.noAuth) headers.Authorization = `Bearer ${state.token}`;
-        const fetchOptions = { method, headers, cache: 'no-store' };
+        const fetchOptions = { method, headers, cache: options.blob ? 'default' : 'no-store' };
         if (options.formData) {
             fetchOptions.body = options.formData;
         } else if (options.data !== undefined) {
@@ -417,7 +418,7 @@
         const data = await api('hives', { params: { q, status } });
         shell({
             title: 'Colmenas', subtitle: 'Estado, reina, observaciones, actividades, historial y fotografías', active: 'hives',
-            actions: '<a class="btn btn-secondary hives-technical-button" href="#/technical"><span>◉</span> Manejo técnico</a><a class="btn btn-primary" href="#/hive-edit">+ Nueva colmena</a>',
+            actions: '<a class="btn btn-secondary hives-technical-button" href="#/technical"><span>⬡</span> Manejo</a><a class="btn btn-primary" href="#/hive-edit">+ Nueva colmena</a>',
             content: `
                 <form class="filter-bar" data-form="hive-filter">
                     <label class="search-field"><span>⌕</span><input type="search" name="q" value="${h(q)}" placeholder="Buscar colmena"></label>
@@ -457,7 +458,7 @@
                         <div class="hive-summary-stat"><small>Materiales en uso</small><strong>${(data.materials || []).length}</strong></div>
                     </div>
                 </section>
-                ${(() => { const t=data.technical||{}, si=t.season||{}, li=t.last_inspection||{}; return `<section class="hive-technical-strip panel"><div class="hive-technical-title"><span class="eyebrow">MANEJO TÉCNICO</span><h2>${h(si.name||'Sin temporada activa')}</h2><p>${li.inspection_date?`Última inspección: ${formatDate(li.inspection_date)}`:'Todavía no hay inspecciones registradas.'}</p></div><div class="hive-technical-metrics"><article><small>Cosecha</small><strong>${Number(t.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></article><article><small>Sanidad</small><strong>${integerQty(t.health_count||0)}</strong></article><article><small>Alimentaciones</small><strong>${integerQty(t.feeding_count||0)}</strong></article></div><div class="hive-technical-actions"><button class="btn btn-small btn-primary" type="button" data-command="apiary-inspection-new" data-hive-id="${hive.id}">+ Inspección</button><button class="btn btn-small btn-secondary" type="button" data-command="apiary-health-new" data-hive-id="${hive.id}">Sanidad</button><button class="btn btn-small btn-secondary" type="button" data-command="apiary-feeding-new" data-hive-id="${hive.id}">Alimentación</button><a class="btn btn-small btn-ghost" href="#/technical?view=performance">Ver rendimiento</a></div>${(t.timeline||[]).length?`<div class="hive-technical-recent"><strong>Historial técnico reciente</strong><div>${(t.timeline||[]).slice(0,5).map(ev=>`<span class="technical-event technical-event-${h(ev.kind)}"><b>${formatDate(ev.event_date)}</b>${h(ev.title)}${ev.detail?`<small>${h(ev.detail)}</small>`:''}</span>`).join('')}</div></div>`:''}</section>`; })()}
+                ${(() => { const t=data.technical||{}, si=t.season||{}, li=t.last_inspection||{}; return `<section class="hive-technical-strip panel"><div class="hive-technical-title"><span class="eyebrow">MANEJO</span><h2>${h(si.name||'Sin temporada activa')}</h2><p>${li.inspection_date?`Última inspección: ${formatDate(li.inspection_date)}`:'Todavía no hay inspecciones registradas.'}</p></div><div class="hive-technical-metrics"><article><small>Cosecha</small><strong>${Number(t.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></article><article><small>Sanidad</small><strong>${integerQty(t.health_count||0)}</strong></article><article><small>Alimentaciones</small><strong>${integerQty(t.feeding_count||0)}</strong></article></div><div class="hive-technical-actions"><button class="btn btn-small btn-primary" type="button" data-command="apiary-inspection-new" data-hive-id="${hive.id}">+ Inspección</button><button class="btn btn-small btn-secondary" type="button" data-command="apiary-health-new" data-hive-id="${hive.id}">Sanidad</button><button class="btn btn-small btn-secondary" type="button" data-command="apiary-feeding-new" data-hive-id="${hive.id}">Alimentación</button><a class="btn btn-small btn-ghost" href="#/technical?view=performance">Ver rendimiento</a></div>${(t.timeline||[]).length?`<div class="hive-technical-recent"><strong>Historial técnico reciente</strong><div>${(t.timeline||[]).slice(0,5).map(ev=>`<span class="technical-event technical-event-${h(ev.kind)}"><b>${formatDate(ev.event_date)}</b>${h(ev.title)}${ev.detail?`<small>${h(ev.detail)}</small>`:''}</span>`).join('')}</div></div>`:''}</section>`; })()}
                 <section class="panel queen-history-panel" data-queen-history hidden>
                     <div class="panel-header"><div><span class="eyebrow">TRAZABILIDAD</span><h2>Historial de reinas</h2><p>Cada cambio queda registrado sin perder las reinas anteriores.</p></div><button class="icon-button" type="button" data-command="queen-history-toggle" aria-label="Cerrar">×</button></div>
                     <form class="queen-entry-form" data-form="hive-queen-save"><input type="hidden" name="hive_id" value="${hive.id}"><label class="field"><span>Fecha del cambio</span><input type="date" name="change_date" value="${today()}" required></label><label class="field"><span>Año de la nueva reina</span><input type="number" name="queen_year" min="1990" max="${new Date().getFullYear()+1}" value="${new Date().getFullYear()}" required></label><label class="field queen-notes"><span>Observaciones</span><input type="text" name="notes" maxlength="500" placeholder="Origen, color, genética o detalle opcional"></label><button class="btn btn-primary" type="submit">+ Agregar reina</button></form>
@@ -1023,45 +1024,78 @@
         });
     }
 
-    async function hydrateProtectedImages() {
-        const images = [...document.querySelectorAll('[data-protected-image]')].filter(image => !image.dataset.imageHydrating);
-        if (!images.length) return;
-        images.forEach(image => { image.dataset.imageHydrating = '1'; image.classList.add('image-loading'); });
-        let cursor = 0;
-        const worker = async () => {
-            while (cursor < images.length) {
-                const image = images[cursor++];
-                try {
-                    const key = `${image.dataset.fileType}:${image.dataset.id}`;
-                    let url = state.imageCache.get(key);
-                    if (!url) {
-                        let lastError;
-                        for (let attempt = 0; attempt < 3 && !url; attempt++) {
-                            try {
-                                const blob = await api('file', { params: { type: image.dataset.fileType, id: image.dataset.id }, blob: true });
-                                url = URL.createObjectURL(blob);
-                                state.imageCache.set(key, url);
-                            } catch (error) {
-                                lastError = error;
-                                if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 220 * (attempt + 1)));
-                            }
-                        }
-                        if (!url && lastError) throw lastError;
-                    }
-                    if (image.isConnected && image.src !== url) image.src = url;
-                    image.classList.add('image-ready');
-                } catch (_) {
-                    if (image.isConnected) {
-                        image.alt = 'Imagen no disponible';
-                        image.classList.add('image-error');
-                    }
-                } finally {
-                    delete image.dataset.imageHydrating;
-                    image.classList.remove('image-loading');
+    let protectedImageActive = 0;
+    const protectedImageQueue = [];
+    function withProtectedImageSlot(task) {
+        return new Promise((resolve, reject) => {
+            const run = async () => {
+                protectedImageActive += 1;
+                try { resolve(await task()); }
+                catch (error) { reject(error); }
+                finally {
+                    protectedImageActive -= 1;
+                    const next = protectedImageQueue.shift();
+                    if (next) next();
                 }
+            };
+            if (protectedImageActive < 4) run();
+            else protectedImageQueue.push(run);
+        });
+    }
+
+    const protectedImageObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            protectedImageObserver.unobserve(entry.target);
+            loadProtectedImage(entry.target);
+        });
+    }, { rootMargin: '420px 0px' }) : null;
+
+    async function loadProtectedImage(image) {
+        if (!image || image.dataset.imageLoaded === '1' || image.dataset.imageHydrating === '1') return;
+        image.dataset.imageHydrating = '1';
+        image.classList.add('image-loading');
+        try {
+            const key = `thumb:${image.dataset.fileType}:${image.dataset.id}`;
+            let url = state.imageCache.get(key);
+            if (!url) {
+                let lastError;
+                for (let attempt = 0; attempt < 3 && !url; attempt++) {
+                    try {
+                        const blob = await withProtectedImageSlot(() => api('file', { params: { type: image.dataset.fileType, id: image.dataset.id, thumb: 1 }, blob: true }));
+                        url = URL.createObjectURL(blob);
+                        state.imageCache.set(key, url);
+                    } catch (error) {
+                        lastError = error;
+                        if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 280 * (attempt + 1)));
+                    }
+                }
+                if (!url && lastError) throw lastError;
             }
-        };
-        await Promise.all(Array.from({length: Math.min(4, images.length)}, () => worker()));
+            if (image.isConnected) {
+                image.src = url;
+                image.dataset.imageLoaded = '1';
+                image.classList.add('image-ready');
+            }
+        } catch (_) {
+            if (image.isConnected) {
+                image.alt = 'Imagen no disponible';
+                image.classList.add('image-error');
+            }
+        } finally {
+            delete image.dataset.imageHydrating;
+            image.classList.remove('image-loading');
+        }
+    }
+
+    async function hydrateProtectedImages() {
+        const images = [...document.querySelectorAll('[data-protected-image]')].filter(image => image.dataset.imageLoaded !== '1' && image.dataset.imageObserved !== '1');
+        if (!images.length) return;
+        images.forEach(image => {
+            image.dataset.imageObserved = '1';
+            if (protectedImageObserver) protectedImageObserver.observe(image);
+            else loadProtectedImage(image);
+        });
     }
 
     async function downloadBlob(action, params, filename, method = 'GET', formData = null) {
@@ -1112,7 +1146,8 @@
         const hives=base.hives||[]; const seasons=base.seasons||[];
         let files=[]; if(item.id){ try{const d=await api('apiary_inspection_get',{params:{id:item.id}});item=d.inspection||item;files=d.files||[];}catch(_){} }
         const selectedHive=item.hive_id||defaults.hiveId||'';
-        showAppModal(item.id?'Editar inspección':'Nueva inspección', `<div class="modal-form-layout technical-modal-layout"><form data-form="apiary-inspection-save"><input type="hidden" name="id" value="${item.id||''}"><div class="form-grid three-columns"><label class="field"><span>Colmena *</span><select name="hive_id" required><option value="">Seleccione</option>${hives.map(x=>`<option value="${x.id}" ${String(x.id)===String(selectedHive)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Fecha *</span><input type="date" name="inspection_date" value="${item.inspection_date||today()}" required></label><label class="field"><span>Temporada</span><select name="season_id">${seasonOptions(seasons,item.season_id||base.season?.id)}</select></label></div><div class="technical-check-row"><label><input type="checkbox" name="queen_seen" value="1" ${Number(item.queen_seen)?'checked':''}> Reina vista</label><label><input type="checkbox" name="swarm_signs" value="1" ${Number(item.swarm_signs)?'checked':''}> Signos de enjambrazón</label></div><div class="form-grid three-columns"><label class="field"><span>Postura</span><select name="laying_status">${[['sin_evaluar','Sin evaluar'],['buena','Buena'],['irregular','Irregular'],['sin_postura','Sin postura']].map(([v,l])=>`<option value="${v}" ${(item.laying_status||'sin_evaluar')===v?'selected':''}>${l}</option>`).join('')}</select></label><label class="field"><span>Cuadros cubiertos de abejas</span><input type="number" min="0" step="1" name="frames_bees" value="${item.frames_bees??''}"></label><label class="field"><span>Cría abierta</span><input type="number" min="0" step="1" name="frames_open_brood" value="${item.frames_open_brood??''}"></label><label class="field"><span>Cría operculada</span><input type="number" min="0" step="1" name="frames_capped_brood" value="${item.frames_capped_brood??''}"></label><label class="field"><span>Reservas de miel</span><input type="number" min="0" step="1" name="honey_reserve_frames" value="${item.honey_reserve_frames??''}"></label><label class="field"><span>Reservas de polen</span><input type="number" min="0" step="1" name="pollen_reserve_frames" value="${item.pollen_reserve_frames??''}"></label><label class="field"><span>Celdas reales</span><input type="number" min="0" step="1" name="queen_cells" value="${item.queen_cells??''}"></label><label class="field"><span>Alzas colocadas</span><input type="number" min="0" step="1" name="supers_count" value="${item.supers_count??''}"></label><label class="field"><span>Temperamento</span><select name="temperament"><option value="">Sin evaluar</option>${['mansa','normal','nerviosa','agresiva'].map(v=>`<option value="${v}" ${item.temperament===v?'selected':''}>${capitalize(v)}</option>`).join('')}</select></label></div><label class="field"><span>Signos sanitarios observados</span><textarea name="health_signs" rows="2" placeholder="Varroa visible, cría irregular, diarrea, etc.">${h(item.health_signs||'')}</textarea></label><label class="field"><span>Observaciones</span><textarea name="notes" rows="3">${h(item.notes||'')}</textarea></label>${item.id?'':`<label class="field"><span>Fotos o PDF</span><input type="file" name="inspection_files" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></label>`}<div class="form-actions"><button class="btn btn-primary">Guardar inspección</button>${item.id?`<button class="btn btn-danger" type="button" data-command="apiary-inspection-delete" data-id="${item.id}">Eliminar</button>`:''}</div></form>${item.id?`<aside class="modal-side-panel"><h3>Fotos y archivos</h3><form data-form="apiary-inspection-file-upload" enctype="multipart/form-data"><input type="hidden" name="inspection_id" value="${item.id}"><input type="file" name="file" accept="image/jpeg,image/png,image/webp,application/pdf" required><button class="btn btn-small btn-secondary">Agregar</button></form><div class="modal-attachment-grid">${files.map(f=>`<article>${String(f.mime_type).startsWith('image/')?`<img data-protected-image data-file-type="apiary_inspection" data-id="${f.id}" alt="${h(f.original_name)}">`:'<div class="pdf-preview">PDF</div>'}<button class="file-link" type="button" data-command="open-file" data-file-type="apiary_inspection" data-id="${f.id}" data-name="${h(f.original_name)}">${h(f.original_name)}</button><button class="icon-button danger" type="button" data-command="apiary-inspection-file-delete" data-id="${f.id}" data-inspection-id="${item.id}">×</button></article>`).join('')}</div></aside>`:''}</div>`);
+        const reserveOptions=value=>[['','Sin evaluar'],['buena','Buena'],['ok','OK'],['escasa','Escasa'],['insuficiente','Insuficiente']].map(([v,l])=>`<option value="${v}" ${String(value||'')===v?'selected':''}>${l}</option>`).join('');
+        showAppModal(item.id?'Editar inspección':'Nueva inspección', `<div class="modal-form-layout technical-modal-layout"><form data-form="apiary-inspection-save"><input type="hidden" name="id" value="${item.id||''}"><div class="form-grid three-columns"><label class="field"><span>Colmena *</span><select name="hive_id" required><option value="">Seleccione</option>${hives.map(x=>`<option value="${x.id}" ${String(x.id)===String(selectedHive)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label><label class="field"><span>Fecha *</span><input type="date" name="inspection_date" value="${item.inspection_date||today()}" required></label><label class="field"><span>Temporada</span><select name="season_id">${seasonOptions(seasons,item.season_id||base.season?.id)}</select></label></div><div class="technical-check-row"><label><input type="checkbox" name="queen_seen" value="1" ${Number(item.queen_seen)?'checked':''}> Reina vista</label><label><input type="checkbox" name="swarm_signs" value="1" ${Number(item.swarm_signs)?'checked':''}> Signos de enjambrazón</label></div><div class="form-grid three-columns"><label class="field"><span>Postura</span><select name="laying_status">${[['sin_evaluar','Sin evaluar'],['buena','Buena'],['irregular','Irregular'],['sin_postura','Sin postura']].map(([v,l])=>`<option value="${v}" ${(item.laying_status||'sin_evaluar')===v?'selected':''}>${l}</option>`).join('')}</select></label><label class="field"><span>Cuadros cubiertos de abejas</span><input type="number" min="0" step="1" name="frames_bees" value="${item.frames_bees??''}"></label><label class="field"><span>Reservas de miel</span><select name="honey_reserve_status">${reserveOptions(item.honey_reserve_status)}</select></label><label class="field"><span>Reservas de polen</span><select name="pollen_reserve_status">${reserveOptions(item.pollen_reserve_status)}</select></label><label class="field"><span>Celdas reales</span><input type="number" min="0" step="1" name="queen_cells" value="${item.queen_cells??''}"></label><label class="field"><span>Temperamento</span><select name="temperament"><option value="">Sin evaluar</option>${['mansa','normal','nerviosa','agresiva'].map(v=>`<option value="${v}" ${item.temperament===v?'selected':''}>${capitalize(v)}</option>`).join('')}</select></label></div><label class="field"><span>Observaciones</span><textarea name="notes" rows="4">${h(item.notes||'')}</textarea></label>${item.id?'':`<label class="field"><span>Fotos o PDF</span><input type="file" name="inspection_files" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></label>`}<div class="form-actions"><button class="btn btn-primary">Guardar inspección</button>${item.id?`<button class="btn btn-danger" type="button" data-command="apiary-inspection-delete" data-id="${item.id}">Eliminar</button>`:''}</div></form>${item.id?`<aside class="modal-side-panel"><h3>Fotos y archivos</h3><form data-form="apiary-inspection-file-upload" enctype="multipart/form-data"><input type="hidden" name="inspection_id" value="${item.id}"><input type="file" name="file" accept="image/jpeg,image/png,image/webp,application/pdf" required><button class="btn btn-small btn-secondary">Agregar</button></form><div class="modal-attachment-grid">${files.map(f=>`<article>${String(f.mime_type).startsWith('image/')?`<img data-protected-image data-file-type="apiary_inspection" data-id="${f.id}" alt="${h(f.original_name)}">`:'<div class="pdf-preview">PDF</div>'}<button class="file-link" type="button" data-command="open-file" data-file-type="apiary_inspection" data-id="${f.id}" data-name="${h(f.original_name)}">${h(f.original_name)}</button><button class="icon-button danger" type="button" data-command="apiary-inspection-file-delete" data-id="${f.id}" data-inspection-id="${item.id}">×</button></article>`).join('')}</div></aside>`:''}</div>`);
     }
 
     function openHarvestModal(item={}) {
@@ -1135,14 +1170,14 @@
     }
 
     async function renderTechnical(params) {
-        loading('Cargando manejo técnico…');
+        loading('Cargando manejo…');
         const view=params.get('view')||'inspections'; const seasonId=Number(params.get('season_id')||0);
         const base=await api('apiary_overview'); state.apiaryTechnical={...base};
         const seasonFilter=seasonId||base.season?.id||'';
         let page=''; let actions='';
         if(view==='inspections'){
             const d=await api('apiary_inspections_list',{params:{season_id:seasonFilter}});state.apiaryTechnical={...state.apiaryTechnical,...d};actions='<button class="btn btn-primary" data-command="apiary-inspection-new">+ Nueva inspección</button>';
-            page=`<section class="technical-summary-grid"><article><small>Temporada</small><strong>${h(base.season?.name||'—')}</strong></article><article><small>Inspecciones</small><strong>${integerQty((base.summary||{}).inspections||0)}</strong></article><article><small>Cosecha registrada</small><strong>${Number((base.summary||{}).harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></article></section><section class="technical-card-grid">${(d.inspections||[]).length?(d.inspections||[]).map(x=>`<button class="technical-record-card inspection-card" data-command="apiary-inspection-edit" data-id="${x.id}"><div><span class="eyebrow">${formatDate(x.inspection_date)}</span><h3>${h(x.hive_name)}</h3></div><div class="inspection-quick-metrics"><span>Reina ${Number(x.queen_seen)?'✓':'—'}</span><span>Abejas ${integerQty(x.frames_bees||0)} c.</span><span>Cría ${integerQty(Number(x.frames_open_brood||0)+Number(x.frames_capped_brood||0))} c.</span><span>Celdas ${integerQty(x.queen_cells||0)}</span></div>${x.health_signs?`<p class="technical-warning">${h(x.health_signs)}</p>`:''}<small>${x.file_count?`${integerQty(x.file_count)} archivos · `:''}${h(x.created_by_name||'')}</small></button>`).join(''):emptyState('◉','Todavía no hay inspecciones','Registre una visita para comenzar el historial técnico.')}</section>`;
+            page=`<section class="technical-summary-grid"><article><small>Temporada</small><strong>${h(base.season?.name||'—')}</strong></article><article><small>Inspecciones</small><strong>${integerQty((base.summary||{}).inspections||0)}</strong></article><article><small>Cosecha registrada</small><strong>${Number((base.summary||{}).harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></article></section><section class="technical-card-grid">${(d.inspections||[]).length?(d.inspections||[]).map(x=>`<button class="technical-record-card inspection-card" data-command="apiary-inspection-edit" data-id="${x.id}"><div><span class="eyebrow">${formatDate(x.inspection_date)}</span><h3>${h(x.hive_name)}</h3></div><div class="inspection-quick-metrics"><span>Reina ${Number(x.queen_seen)?'✓':'—'}</span><span>Abejas ${integerQty(x.frames_bees||0)} c.</span><span>Miel ${h(capitalize(x.honey_reserve_status||'sin evaluar'))}</span><span>Polen ${h(capitalize(x.pollen_reserve_status||'sin evaluar'))}</span><span>Celdas ${integerQty(x.queen_cells||0)}</span></div><small>${x.file_count?`${integerQty(x.file_count)} archivos · `:''}${h(x.created_by_name||'')}</small></button>`).join(''):emptyState('◉','Todavía no hay inspecciones','Registre una visita para comenzar el historial técnico.')}</section>`;
         } else if(view==='harvests'){
             const d=await api('apiary_harvests_list',{params:{season_id:seasonFilter}});state.apiaryTechnical={...state.apiaryTechnical,...d};actions='<button class="btn btn-primary" data-command="apiary-harvest-new">+ Registrar cosecha</button>';
             page=`<section class="technical-card-grid harvest-grid">${(d.harvests||[]).length?d.harvests.map(x=>`<button class="technical-record-card harvest-card" data-command="apiary-harvest-edit" data-id="${x.id}"><span class="eyebrow">${formatDate(x.harvest_date)} · ${h(x.season_name||'')}</span><div class="harvest-total"><strong>${Number(x.total_kg||0).toLocaleString('es-AR',{maximumFractionDigits:3})}</strong><span>kg</span></div><h3>${h(x.batch_code||'Cosecha sin lote')}</h3><p>${h(x.honey_type||'Tipo de miel sin indicar')} · ${integerQty(x.hive_count||0)} colmenas</p>${x.moisture_pct?`<small>Humedad ${Number(x.moisture_pct).toLocaleString('es-AR')}%</small>`:''}</button>`).join(''):emptyState('⬢','No hay cosechas registradas','Registre una extracción para comenzar la trazabilidad de producción.')}</section>`;
@@ -1154,13 +1189,13 @@
             page=`<section class="technical-card-grid">${(d.feedings||[]).length?d.feedings.map(x=>`<button class="technical-record-card feeding-card" data-command="apiary-feeding-edit" data-id="${x.id}"><span class="eyebrow">${formatDate(x.feeding_date)}</span><h3>${h(x.feed_type)}</h3><div class="feeding-amount"><strong>${Number(x.quantity_per_hive||0).toLocaleString('es-AR',{maximumFractionDigits:3})}</strong><span>${h(x.unit)} / colmena</span></div><p>${integerQty(x.hive_count||0)} colmenas${x.reason?` · ${h(x.reason)}`:''}</p></button>`).join(''):emptyState('◒','No hay alimentaciones','Registre jarabe, fondant o suplemento para conservar el historial.')}</section>`;
         } else if(view==='performance'){
             const d=await api('apiary_performance',{params:{season_id:seasonFilter}});state.apiaryTechnical={...state.apiaryTechnical,...d};const rows=d.rows||[];
-            page=`<section class="performance-hero panel"><div><span class="eyebrow">TEMPORADA ${h(d.season?.name||'')}</span><h2>Comparación por colmena</h2><p>Producción, inspecciones, sanidad y alimentación sin inventar un puntaje: cada indicador queda visible por separado.</p></div><div class="performance-summary"><article><small>Miel cosechada</small><strong>${Number(d.summary?.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></article><article><small>Inspecciones</small><strong>${integerQty(d.summary?.inspections||0)}</strong></article></div></section>${rows.length?`<div class="table-wrap panel"><table class="data-table performance-table"><thead><tr><th>Colmena</th><th>Miel</th><th>Inspecciones</th><th>Abejas prom.</th><th>Cría prom.</th><th>Sanidad</th><th>Alimentación</th><th>Reinas</th></tr></thead><tbody>${rows.map(x=>`<tr><td><a href="#/hive/${x.id}"><strong>${h(x.name)}</strong></a><small>${x.last_inspection?`Última inspección ${formatDate(x.last_inspection)}`:'Sin inspecciones'}</small></td><td><strong>${Number(x.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></td><td>${integerQty(x.inspections||0)}</td><td>${Number(x.avg_bees||0).toLocaleString('es-AR',{maximumFractionDigits:1})} c.</td><td>${Number(x.avg_brood||0).toLocaleString('es-AR',{maximumFractionDigits:1})} c.</td><td>${integerQty(x.health_events||0)}</td><td>${integerQty(x.feeding_events||0)}</td><td>${integerQty(x.queen_changes||0)}</td></tr>`).join('')}</tbody></table></div>`:emptyState('◫','Sin datos comparables','Las métricas aparecerán cuando registre inspecciones, cosechas, sanidad o alimentación.')}`;
+            page=`<section class="performance-hero panel"><div><span class="eyebrow">TEMPORADA ${h(d.season?.name||'')}</span><h2>Comparación por colmena</h2><p>Producción, inspecciones, sanidad y alimentación sin inventar un puntaje: cada indicador queda visible por separado.</p></div><div class="performance-summary"><article><small>Miel cosechada</small><strong>${Number(d.summary?.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></article><article><small>Inspecciones</small><strong>${integerQty(d.summary?.inspections||0)}</strong></article></div></section>${rows.length?`<div class="table-wrap panel"><table class="data-table performance-table"><thead><tr><th>Colmena</th><th>Miel</th><th>Inspecciones</th><th>Abejas prom.</th><th>Reserva miel</th><th>Reserva polen</th><th>Sanidad</th><th>Alimentación</th><th>Reinas</th></tr></thead><tbody>${rows.map(x=>`<tr><td><a href="#/hive/${x.id}"><strong>${h(x.name)}</strong></a><small>${x.last_inspection?`Última inspección ${formatDate(x.last_inspection)}`:'Sin inspecciones'}</small></td><td><strong>${Number(x.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})} kg</strong></td><td>${integerQty(x.inspections||0)}</td><td>${Number(x.avg_bees||0).toLocaleString('es-AR',{maximumFractionDigits:1})} c.</td><td>${h(capitalize(x.latest_honey_reserve||'—'))}</td><td>${h(capitalize(x.latest_pollen_reserve||'—'))}</td><td>${integerQty(x.health_events||0)}</td><td>${integerQty(x.feeding_events||0)}</td><td>${integerQty(x.queen_changes||0)}</td></tr>`).join('')}</tbody></table></div>`:emptyState('◫','Sin datos comparables','Las métricas aparecerán cuando registre inspecciones, cosechas, sanidad o alimentación.')}`;
         } else {
             const d=await api('apiary_seasons_list');state.apiaryTechnical={...state.apiaryTechnical,...d};actions='<button class="btn btn-primary" data-command="apiary-season-new">+ Nueva temporada</button>';
             page=`<section class="season-grid">${(d.seasons||[]).map(x=>`<article class="season-card ${Number(x.is_active)?'active':''}"><div><span class="eyebrow">${Number(x.is_active)?'TEMPORADA ACTIVA':'TEMPORADA'}</span><h2>${h(x.name)}</h2><p>${formatDate(x.start_date)} → ${formatDate(x.end_date)}</p></div><div class="season-metrics"><span><b>${integerQty(x.inspections)}</b> inspecciones</span><span><b>${Number(x.harvest_kg||0).toLocaleString('es-AR',{maximumFractionDigits:2})}</b> kg</span><span><b>${integerQty(x.health_records)}</b> sanidad</span><span><b>${integerQty(x.feedings)}</b> alimentación</span></div><div class="form-actions"><button class="btn btn-small btn-secondary" data-command="apiary-season-edit" data-id="${x.id}">Editar</button>${!Number(x.is_active)?`<button class="btn btn-small btn-ghost" data-command="apiary-season-activate" data-id="${x.id}">Activar</button><button class="icon-button danger" data-command="apiary-season-delete" data-id="${x.id}">×</button>`:''}</div></article>`).join('')}</section>`;
         }
         const filter=view==='seasons'?'':`<label class="field compact-field technical-season-filter"><span>Temporada</span><select data-command="apiary-season-filter" data-view="${view}">${(base.seasons||[]).map(x=>`<option value="${x.id}" ${String(x.id)===String(seasonFilter)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label>`;
-        shell({title:'Manejo técnico',subtitle:'Seguimiento técnico de las colmenas por temporada',active:'hives',actions:`<a class="btn btn-ghost" href="#/hives">← Colmenas</a>${filter}${actions}`,content:`${technicalTabs(view)}${page}`});hydrateProtectedImages();
+        shell({title:'Manejo',subtitle:'Seguimiento de las colmenas por temporada',active:'hives',actions:`<a class="btn btn-ghost" href="#/hives">← Colmenas</a>${filter}${actions}`,content:`${technicalTabs(view)}${page}`});hydrateProtectedImages();
     }
 
     async function route() {
