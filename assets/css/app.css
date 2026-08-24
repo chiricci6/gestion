@@ -3201,3 +3201,58 @@ img,
     background:#fff0f4;
     color:#9a4059;
 }
+
+
+/* ============================================================
+   V24.4.2 · Gestión Apícola = misma lógica de uso que Comunidad
+   ============================================================ */
+/* Entrada y navegación: Colmenas es el punto de partida */
+.app-shell:not(.community-app):not(.livestock-app) .nav-menu a.active{
+    box-shadow:inset 3px 0 0 #b18424;
+}
+
+/* Jerarquía de la ficha: acción primero, consulta después */
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-create.create-first{
+    border-width:1px;
+    box-shadow:0 8px 20px rgba(112,82,24,.05);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-create.create-first > small{
+    color:#836415;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-create.create-first .btn-primary{
+    font-weight:900;
+}
+
+/* La temporada debe leerse antes de los números */
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar{
+    box-shadow:0 6px 16px rgba(72,62,31,.035);
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar.activa{
+    border-color:#d5dfc4;
+    background:linear-gradient(180deg,#fbfdf7,#f6faef);
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar.histórica,
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar.historica{
+    border-color:#dedbd5;
+    background:#f7f6f4;
+}
+
+/* Gramática de color fija */
+.app-shell:not(.community-app):not(.livestock-app) .inspection-card{border-top-color:#d6ae43;}
+.app-shell:not(.community-app):not(.livestock-app) .health-card{border-top-color:#57936c;}
+.app-shell:not(.community-app):not(.livestock-app) .feeding-card{border-top-color:#cc7d45;}
+.app-shell:not(.community-app):not(.livestock-app) .harvest-card{border-top-color:#b38a2c;}
+
+/* Tocar tarjeta = consultar; + = registrar */
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-trigger{
+    text-align:left;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-trigger .technical-card-footer b{
+    font-weight:900;
+}
+
+@media(max-width:760px){
+    .app-shell:not(.community-app):not(.livestock-app) .topbar-heading p{
+        max-width:42ch;
+    }
+}

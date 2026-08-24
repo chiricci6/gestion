@@ -160,7 +160,7 @@
     }
 
     function parseHash() {
-        const raw = (location.hash || '#/dashboard').slice(1);
+        const raw = (location.hash || '#/hives').slice(1);
         const [pathPart, queryPart = ''] = raw.split('?');
         const path = pathPart.startsWith('/') ? pathPart : `/${pathPart}`;
         return { path, params: new URLSearchParams(queryPart) };
@@ -193,13 +193,12 @@
         const currentLabel = current === 'ganaderia' ? 'Gestión Ganadera' : current === 'comunidad' ? 'Comunidad Apícola' : 'Gestión Apícola';
         const currentIcon = current === 'ganaderia' ? '⌾' : current === 'comunidad' ? '✦' : '🐝';
         if (apps.length < 2) {
-            return `<a class="brand" href="${current === 'ganaderia' ? 'ganaderia.html#/ganaderia' : '#/dashboard'}"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Acceso privado</small></span></a>`;
+            return `<a class="brand" href="${current === 'ganaderia' ? 'ganaderia.html#/ganaderia' : '#/hives'}"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Acceso privado</small></span></a>`;
         }
         return `<div class="app-switcher"><button class="brand app-switcher-trigger" type="button" data-command="app-switch-toggle" aria-expanded="false"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Cambiar de vista</small></span><span class="app-switch-chevron">⌄</span></button><div class="app-switch-menu" hidden>${apps.includes('apicultura') ? `<button type="button" data-command="switch-app" data-app="apicultura" class="${current === 'apicultura' ? 'active' : ''}"><span>🐝</span><div><strong>Gestión Apícola</strong><small>Colmenas y apiario</small></div></button>` : ''}${apps.includes('ganaderia') ? `<button type="button" data-command="switch-app" data-app="ganaderia" class="${current === 'ganaderia' ? 'active' : ''}"><span>⌾</span><div><strong>Gestión Ganadera</strong><small>Animales y parcelas</small></div></button>` : ''}${apps.includes('comunidad') ? `<button type="button" data-command="switch-app" data-app="comunidad" class="${current === 'comunidad' ? 'active' : ''}"><span>⬢</span><div><strong>Comunidad Apícola</strong><small>Trabajo compartido</small></div></button>` : ''}</div></div>`;
     }
 
     const navItems = [
-        ['/dashboard', '⌂', 'Inicio', 'dashboard'],
         ['/hives', '▦', 'Colmenas', 'hives'],
         ['/activities', '✓', 'Actividades', 'activities'],
         ['/materials', '⬡', 'Materiales', 'materials'],
@@ -1298,7 +1297,7 @@
         }
         const filter=view==='seasons'?'':`<label class="field compact-field technical-season-filter"><span>Temporada</span><select data-command="apiary-season-filter" data-view="${view}" data-hive-id="${hiveId}">${focusedHive?`<option value="0" ${!seasonFilter?'selected':''}>Todas las temporadas</option>`:''}${(base.seasons||[]).map(x=>`<option value="${x.id}" ${String(x.id)===String(seasonFilter)?'selected':''}>${h(x.name)}</option>`).join('')}</select></label>`;
         const back=focusedHive?`<a class="btn btn-ghost" href="#/hive/${focusedHive.id}">← ${h(focusedHive.name)}</a>`:'<a class="btn btn-ghost" href="#/hives">← Colmenas</a>';
-        const selectedSeason=seasonFilter?(base.seasons||[]).find(x=>String(x.id)===String(seasonFilter)):null,activeSeasonId=String(base.season?.id||''),seasonState=!seasonFilter?'TODAS':String(seasonFilter)===activeSeasonId?'ACTIVA':'HISTÓRICA',seasonContext=`<section class="season-context-bar ${seasonState.toLowerCase()}"><div><small>ESTÁ VIENDO</small><strong>${!seasonFilter?'Todas las temporadas':h(selectedSeason?.name||base.season?.name||'Temporada')}</strong></div><span>${seasonState}</span></section>`;shell({title:'Manejo',subtitle:focusedHive?`Consulta rápida · ${focusedHive.name}`:'Seguimiento de las colmenas por temporada',active:'hives',actions:`${back}${filter}${actions}`,content:`${seasonContext}${technicalTabs(view,hiveId,seasonFilter)}${focusBanner}${page}`});hydrateProtectedImages();
+        const selectedSeason=seasonFilter?(base.seasons||[]).find(x=>String(x.id)===String(seasonFilter)):null,activeSeasonId=String(base.season?.id||''),seasonState=!seasonFilter?'TODAS':String(seasonFilter)===activeSeasonId?'ACTIVA':'HISTÓRICA',seasonContext=`<section class="season-context-bar ${seasonState.toLowerCase()}"><div><small>ESTÁ VIENDO</small><strong>${!seasonFilter?'Todas las temporadas':h(selectedSeason?.name||base.season?.name||'Temporada')}</strong></div><span>${seasonState}</span></section>`;shell({title:'Manejo',subtitle:focusedHive?`${focusedHive.name} · inspecciones, cosecha, sanidad y alimentación`:'Inspecciones, cosecha, sanidad y alimentación',active:'hives',actions:`${back}${filter}${actions}`,content:`${seasonContext}${technicalTabs(view,hiveId,seasonFilter)}${focusBanner}${page}`});hydrateProtectedImages();
     }
 
     async function route() {
@@ -1309,7 +1308,7 @@
         const { path, params } = parseHash();
         try {
             await ensureNavigationOrder();
-            if (path === '/' || path === '/dashboard') return await renderDashboard();
+            if (path === '/' || path === '/dashboard') { go('/hives'); return; }
             if (path === '/hives') return await renderHives(params);
             if (path === '/technical') return await renderTechnical(params);
             if (/^\/hive\/\d+$/.test(path)) return await renderHive(Number(path.split('/')[2]));
@@ -1334,7 +1333,7 @@
             if (path === '/calendar') { go('/activities'); return; }
             if (path === '/backups') return await renderBackups();
             if (path === '/profile') return await renderProfile();
-            go('/dashboard');
+            go('/hives');
         } catch (error) {
             if (!state.token) return;
             shell({ title: 'No se pudo abrir', subtitle: 'Problema de conexión con el servidor local', active: '', content: `<section class="panel api-offline-box"><div class="empty-state"><div>!</div><h3>${h(error.message)}</h3><p>La interfaz está publicada, pero necesita que la computadora con Laragon y Cloudflare Tunnel esté encendida.</p><div class="inline-buttons"><button class="btn btn-primary" data-command="retry-route">Volver a intentar</button></div></div></section>` });
@@ -1364,7 +1363,7 @@
                 const result = await api('login', { method: 'POST', noAuth: true, data: { username: form.elements.username.value, password: form.elements.password.value } });
                 saveSession(result.token, result.user);
                 if (!availableApps(result.user).includes('apicultura')) { if (availableApps(result.user).includes('ganaderia')) { window.location.href='ganaderia.html'; return; } if (availableApps(result.user).includes('comunidad')) { window.location.href='comunidad.html#/comunidad'; return; } }
-                if (!location.hash || location.hash === '#/') location.hash = '#/dashboard'; else await route();
+                if (!location.hash || location.hash === '#/') location.hash = '#/hives'; else await route();
             } else if (type === 'hive-filter') {
                 const fd = new FormData(form); go('/hives', Object.fromEntries(fd.entries()));
             } else if (type === 'hive-save') {
@@ -1467,7 +1466,7 @@
             } else if (command === 'switch-app') {
                 const target = commandElement.dataset.app;
                 if (target === 'ganaderia' && canAccessApp('ganaderia')) window.location.href = 'ganaderia.html#/ganaderia';
-                if (target === 'apicultura' && canAccessApp('apicultura')) window.location.href = 'index.html#/dashboard';
+                if (target === 'apicultura' && canAccessApp('apicultura')) window.location.href = 'index.html#/hives';
                 if (target === 'comunidad' && canAccessApp('comunidad')) window.location.href = 'comunidad.html#/comunidad';
             } else if (command === 'apiary-season-filter') {
                 go('/technical',{view:commandElement.dataset.view,season_id:commandElement.value,hive_id:commandElement.dataset.hiveId||''});
@@ -1692,7 +1691,7 @@
             state.user = result.user;
             localStorage.setItem(STORAGE.user, JSON.stringify(state.user));
             if (!canAccessApp('apicultura')) { if (canAccessApp('ganaderia')) { window.location.href='ganaderia.html'; return; } if (canAccessApp('comunidad')) { window.location.href='comunidad.html#/comunidad'; return; } }
-            if (!location.hash) location.hash = '#/dashboard'; else await route();
+            if (!location.hash) location.hash = '#/hives'; else await route();
         } catch (_) {
             clearSession();
             renderLogin();
