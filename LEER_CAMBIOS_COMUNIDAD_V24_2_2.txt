@@ -1,0 +1,8 @@
+Comunidad Apícola v24.2.2
+
+Ajustes hechos:
+- Colmenas volvió a una vista más corta y equilibrada (no tan largas).
+- Manejo dentro de la colmena se compactó para ocupar menos espacio.
+- Observaciones, Actividades e Historial se ordenaron y simplificaron.
+- Fotos dentro de la colmena más chicas y prolijas.
+- Se mantiene que Actividades abra primero en modo vista y no edición.
