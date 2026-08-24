@@ -1128,13 +1128,14 @@
         image.dataset.imageHydrating = '1';
         image.classList.add('image-loading');
         try {
-            const key = `thumb:${image.dataset.fileType}:${image.dataset.id}`;
+            const useThumb = image.dataset.fileType !== 'hive';
+            const key = `${useThumb ? 'thumb' : 'full'}:${image.dataset.fileType}:${image.dataset.id}`;
             let url = state.imageCache.get(key);
             if (!url) {
                 let lastError;
                 for (let attempt = 0; attempt < 3 && !url; attempt++) {
                     try {
-                        const blob = await withProtectedImageSlot(() => api('file', { params: { type: image.dataset.fileType, id: image.dataset.id, thumb: 1 }, blob: true }));
+                        const blob = await withProtectedImageSlot(() => api('file', { params: { type: image.dataset.fileType, id: image.dataset.id, thumb: useThumb ? 1 : 0 }, blob: true }));
                         const normalizedBlob = await normalizeImageBlob(blob);
                         url = URL.createObjectURL(normalizedBlob);
                         state.imageCache.set(key, url);

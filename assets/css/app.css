@@ -2922,3 +2922,20 @@ img,
 
 /* V24.3.2 · orden de manejo + corrección visual de fotos */
 .community-app .hive-management-center .hive-management-create.create-first{order:-1;}
+
+
+/* V24.3.3 · Fotos de colmena sin acostarse + Comunidad arranca en colmenas */
+.app-shell:not(.livestock-app) .photo-grid img,
+.community-app .photo-grid img{
+    object-fit:contain !important;
+    background:#f5f1e7;
+    image-orientation:from-image;
+}
+.app-shell:not(.livestock-app) .photo-grid article,
+.community-app .photo-grid article{
+    background:#fff;
+}
+.app-shell:not(.livestock-app) .photo-grid .pdf-preview,
+.community-app .photo-grid .pdf-preview{
+    background:#f5f1e7;
+}

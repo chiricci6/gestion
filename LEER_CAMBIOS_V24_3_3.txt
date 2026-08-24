@@ -1,0 +1,6 @@
+v24.3.3
+
+- Comunidad ahora abre directo en Colmenas, sin pasar por Inicio.
+- Si se entra a #/comunidad, redirige visualmente a Colmenas.
+- Fotos de colmena en Comunidad y Gestión Apícola: para tipo hive se carga la imagen original en lugar de la miniatura del backend, para respetar mejor la orientación vertical.
+- Miniaturas de fotos en galerías ahora usan object-fit: contain para no deformar ni recortar raro.
