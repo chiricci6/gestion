@@ -1,0 +1,7 @@
+Comunidad Apícola v24.2.5
+
+Cambios:
+- Observaciones ahora va arriba y ocupa todo el ancho.
+- Actividades e Historial quedaron abajo.
+- Manejo se reorganizó con tarjetas medianas, evitando bloques estirados a todo el ancho.
+- Solo cambios estéticos.
