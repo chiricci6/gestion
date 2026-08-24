@@ -1,0 +1,4 @@
+v24.4.5
+
+- Gestión Apícola > Apiario La Ruda: se eliminó únicamente el bloque superior “Fabricar, valorar el stock y vender”.
+- Pedidos activos, Fabricación, Stock y productos, Modelos 3D, Artículos publicados, Entregados y el resto del sistema quedan sin cambios.
