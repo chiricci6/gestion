@@ -1199,8 +1199,8 @@
     async function renderTechnical(params) {
         loading('Cargando manejo…');
         const view=params.get('view')||'inspections'; const seasonId=Number(params.get('season_id')||0); const hiveId=params.get('hive_id')||'';
-        const base=await api('apiary_overview'); state.apiaryTechnical={...base};
-        const seasonFilter=seasonId||(hiveId?'':base.season?.id||''); const focusedHive=hiveId?(base.hives||[]).find(x=>String(x.id)===String(hiveId)):null; const hiveCoverById=Object.fromEntries((base.hives||[]).map(x=>[String(x.id),x.cover_photo_id||x.photo_id||'']));
+        const [base,hiveList]=await Promise.all([api('apiary_overview'),api('hives',{params:{}})]); state.apiaryTechnical={...base};
+        const seasonFilter=seasonId||(hiveId?'':base.season?.id||''); const focusedHive=hiveId?(base.hives||[]).find(x=>String(x.id)===String(hiveId)):null; const hiveCoverById=Object.fromEntries((hiveList.hives||[]).map(x=>[String(x.id),x.cover_photo_id||'']));
         let page=''; let actions='';
         const focusBanner=focusedHive?`<section class="technical-focus-banner panel"><div><span class="eyebrow">HISTORIAL DE COLMENA</span><h2>${h(focusedHive.name)}</h2><p>Está viendo únicamente los registros de esta colmena. Puede cambiar de sección sin perder el filtro.</p></div><a class="btn btn-secondary" href="#/hive/${focusedHive.id}">Volver a la ficha</a></section>`:'';
         if(view==='inspections'){
