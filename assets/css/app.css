@@ -3256,3 +3256,33 @@ img,
         max-width:42ch;
     }
 }
+
+
+/* ============================================================
+   V24.4.3 · Gestión Apícola: Materiales al lado de Observaciones
+   ============================================================ */
+.app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel{
+    grid-column:1 / span 8;
+    grid-row:1;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel{
+    grid-column:9 / -1;
+    grid-row:1;
+    padding-top:18px;
+    padding-bottom:18px;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel .simple-list{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel .simple-list > div{
+    padding:10px 11px;
+}
+@media(max-width:980px){
+    .app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel,
+    .app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel{
+        grid-column:1/-1;
+        grid-row:auto;
+    }
+}
