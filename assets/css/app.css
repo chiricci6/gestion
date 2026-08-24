@@ -1364,3 +1364,216 @@ img,
     .app-shell:not(.livestock-app) .technical-view-actions{grid-column:1/-1;justify-content:stretch}
     .app-shell:not(.livestock-app) .technical-view-actions .btn{flex:1}
 }
+
+
+/* ============================================================
+   V24.2.1 · Ajustes finos Comunidad Apícola
+   ============================================================ */
+.community-app .community-simple-dashboard{
+    margin-top:0;
+}
+.community-app .card-grid{
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+}
+.community-app .hive-visual-card{
+    overflow:hidden;
+    border-radius:20px;
+}
+.community-app .hive-card-cover{
+    position:relative;
+    min-height:260px;
+    height:260px;
+    padding:0;
+    background:linear-gradient(180deg,#f5f2e8,#eee9d8);
+}
+.community-app .hive-card-cover.has-photo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center;
+}
+.community-app .hive-card-placeholder{
+    min-height:260px;
+}
+.community-app .hive-card-body{
+    padding:15px 16px 16px;
+}
+.community-app .hive-card-body h2{
+    margin:0 0 10px;
+    font-size:1.03rem;
+}
+.community-app .entity-meta{
+    display:grid;
+    gap:5px;
+}
+.community-app .entity-counters{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+    margin-top:12px;
+}
+.community-app .entity-counters span{
+    justify-content:space-between;
+    border-radius:12px;
+    padding:7px 10px;
+    background:#f8f7f1;
+}
+
+.community-app .hive-management-center{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(135deg,#fffdf4,#f7f3e3 72%);
+}
+.community-app .hive-management-center::after{
+    content:'';
+    position:absolute;
+    inset:auto -50px -60px auto;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(226,200,93,.17),rgba(226,200,93,0));
+    pointer-events:none;
+}
+.community-app .hive-management-shortcuts{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+}
+.community-app .hive-management-shortcut{
+    position:relative;
+    padding:15px 16px;
+    border:1px solid rgba(210,202,176,.7);
+}
+.community-app .hive-management-shortcut > span:first-child{
+    width:38px;
+    height:38px;
+    display:grid;
+    place-items:center;
+    border-radius:13px;
+    background:#f3edcf;
+    color:#7a6714;
+    font-size:1.05rem;
+}
+.community-app .hive-management-shortcut small{
+    max-width:26ch;
+}
+
+.community-app .detail-grid .panel{
+    min-width:0;
+}
+.community-app .detail-grid .panel > .muted{
+    margin:0;
+}
+.community-app .community-history-list,
+.community-app .history-list{
+    gap:10px;
+}
+.community-app .history-list > div,
+.community-app .history-list > button,
+.community-app .history-list > a{
+    align-items:flex-start;
+}
+.community-app .history-list > div > div,
+.community-app .history-list > button > div{
+    min-width:0;
+}
+.community-app .history-list strong{
+    display:block;
+    line-height:1.35;
+}
+.community-app .history-list p{
+    word-break:break-word;
+}
+.community-app .form-grid[data-form],
+.community-app form.form-grid{
+    gap:10px;
+}
+.community-app form[data-form="note-save"]{
+    display:grid;
+    grid-template-columns:150px minmax(0,1fr) auto;
+    gap:10px;
+    align-items:end;
+    padding:14px;
+    border:1px dashed rgba(181,170,128,.48);
+    border-radius:18px;
+    background:linear-gradient(180deg,#fcfbf5,#f6f2e7);
+    margin-bottom:14px;
+}
+.community-app form[data-form="note-save"] textarea{
+    min-height:86px;
+}
+
+.community-app .photo-grid{
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+}
+.community-app .photo-grid article{
+    border-radius:16px;
+}
+.community-app .photo-grid img,
+.community-app .photo-grid .pdf-preview{
+    height:118px;
+}
+.community-app .photo-grid strong{
+    margin-top:9px;
+    font-size:.8rem;
+}
+.community-app .photo-grid small{
+    font-size:.69rem;
+}
+.community-app .photo-grid article > div:last-child{
+    padding:10px 12px 12px;
+}
+.community-app .photo-grid article > div:last-child .btn{
+    flex:1 1 100%;
+}
+.community-app .photo-upload-form{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;
+}
+
+.community-app .history-activity-button{
+    position:relative;
+    padding-right:42px !important;
+}
+.community-app .history-activity-button::after{
+    content:'→';
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    width:26px;
+    height:26px;
+    display:grid;
+    place-items:center;
+    border-radius:999px;
+    background:#f2eedf;
+    color:#836f29;
+    font-weight:900;
+}
+
+.community-app .community-activity-view .technical-view-grid{
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+}
+.community-app .community-activity-view .technical-view-field small{
+    display:block;
+    margin-bottom:6px;
+}
+.community-app .community-activity-view .history-list > div{
+    justify-content:flex-start;
+}
+
+@media(max-width:920px){
+    .community-app .hive-management-shortcuts{grid-template-columns:1fr}
+    .community-app form[data-form="note-save"],
+    .community-app .photo-upload-form{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+    .community-app .card-grid{grid-template-columns:1fr 1fr}
+    .community-app .hive-card-cover,
+    .community-app .hive-card-placeholder{min-height:210px;height:210px}
+}
+@media(max-width:560px){
+    .community-app .card-grid,
+    .community-app .photo-grid{grid-template-columns:1fr}
+}
