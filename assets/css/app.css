@@ -3376,3 +3376,288 @@ img,
         width:max-content;
     }
 }
+
+/* ============================================================
+   V24.4.6 · Gestión Apícola verde + vistas de solo lectura
+   ============================================================ */
+/* Identidad general de Gestión Apícola: verdes medios, sin tocar Comunidad/Ganadería */
+.app-shell:not(.community-app):not(.livestock-app){
+    --primary:#638a6c;
+    --primary-dark:#416b50;
+    --primary-soft:#e6efe7;
+    --line:#dbe4dc;
+}
+.app-shell:not(.community-app):not(.livestock-app) .main-area{
+    background:
+      radial-gradient(circle at 92% 0%,rgba(135,170,143,.16),transparent 28rem),
+      #f4f7f3;
+}
+.app-shell:not(.community-app):not(.livestock-app) .sidebar{
+    background:#30493a;
+}
+.app-shell:not(.community-app):not(.livestock-app) .brand-icon,
+.app-shell:not(.community-app):not(.livestock-app) .sidebar-avatar,
+.app-shell:not(.community-app):not(.livestock-app) .user-chip span{
+    background:#789e7e;
+    color:#fff;
+    box-shadow:none;
+}
+.app-shell:not(.community-app):not(.livestock-app) .nav-menu a.active{
+    background:#719579;
+    color:#fff;
+    box-shadow:0 8px 20px rgba(20,51,31,.18),inset 3px 0 0 #b8d0bc;
+}
+.app-shell:not(.community-app):not(.livestock-app) .topbar{
+    background:rgba(244,247,243,.88);
+    border-bottom-color:#d8e2da;
+}
+.app-shell:not(.community-app):not(.livestock-app) .btn-primary{
+    background:#638a6c;
+    color:#fff;
+    box-shadow:0 7px 16px rgba(68,107,79,.17);
+}
+.app-shell:not(.community-app):not(.livestock-app) select:focus,
+.app-shell:not(.community-app):not(.livestock-app) input:focus,
+.app-shell:not(.community-app):not(.livestock-app) textarea:focus{
+    border-color:#6e9877;
+    box-shadow:0 0 0 3px rgba(99,138,108,.13);
+}
+
+/* Colmenas y ficha: sacar el amarillo dominante */
+.app-shell:not(.community-app):not(.livestock-app) .hive-card-cover{
+    background:linear-gradient(135deg,#dfeadf,#83a18a);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-profile-placeholder{
+    color:#4f765c;
+    background:#e4eee5;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-center{
+    border-color:rgba(93,133,103,.24);
+    background:
+      radial-gradient(circle at top right,rgba(128,167,138,.18),transparent 29%),
+      linear-gradient(135deg,#f8fbf8 0%,#edf4ee 100%);
+    box-shadow:0 16px 34px rgba(49,82,58,.07);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-center .hive-management-create.create-first{
+    background:linear-gradient(180deg,#f0f6f1,#fbfdfb);
+    border-color:rgba(88,128,98,.42);
+    box-shadow:0 8px 20px rgba(65,103,77,.06);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-create.create-first > small,
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-title .eyebrow{
+    color:#416b50;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-title .eyebrow{
+    background:#dfece2;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-title h2{
+    color:#355943;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-title p,
+.app-shell:not(.community-app):not(.livestock-app) .hive-last-action{
+    color:#66786a;
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-context-chip.active{
+    background:#dcecdf;
+    color:#356246;
+    border-color:#bfd6c4;
+}
+
+/* Métricas y accesos: distintas intensidades de verde, misma familia visual */
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(1),
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(2),
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(3){
+    border-color:rgba(97,137,107,.23);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(1){background:linear-gradient(180deg,#e9f2ea,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(2){background:linear-gradient(180deg,#deece1,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(3){background:linear-gradient(180deg,#eef4e9,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(1) strong{color:#4f765c}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(2) strong{color:#356849}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-metrics article:nth-child(3) strong{color:#657d57}
+
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-inspection,
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-health,
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-feeding,
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-performance{
+    border-color:rgba(91,131,101,.25);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-inspection{background:linear-gradient(180deg,#edf5ee,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-health{background:linear-gradient(180deg,#e4f0e7,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-feeding{background:linear-gradient(180deg,#f0f5eb,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-performance{background:linear-gradient(180deg,#e7efe3,#fff)}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-inspection > span:first-child{background:#dceade;color:#4d7559}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-health > span:first-child{background:#d3e6d8;color:#356849}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-feeding > span:first-child{background:#e5eedf;color:#667f59}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-performance > span:first-child{background:#dbe6d6;color:#58744f}
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-inspection b,
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-health b,
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-feeding b,
+.app-shell:not(.community-app):not(.livestock-app) .hive-management-shortcut.shortcut-performance b{
+    color:#4f765c;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-technical-recent{
+    border-top-color:rgba(92,132,102,.24);
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-event{
+    background:linear-gradient(180deg,#fff,#f1f6f1);
+}
+
+/* Manejo dedicado */
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar{
+    border-color:#cbdcca;
+    background:linear-gradient(180deg,#f7fbf7,#edf4ee);
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar.activa{
+    border-color:#bcd4c1;
+    background:linear-gradient(180deg,#f0f7f1,#e7f1e9);
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-context-bar.todas > span{
+    background:#e1ebe1;
+    color:#4e7057;
+}
+.app-shell:not(.community-app):not(.livestock-app) .inspection-card{border-top-color:#668d70}
+.app-shell:not(.community-app):not(.livestock-app) .health-card{border-top-color:#47745a}
+.app-shell:not(.community-app):not(.livestock-app) .feeding-card{border-top-color:#78936b}
+.app-shell:not(.community-app):not(.livestock-app) .harvest-card{border-top-color:#5d7d57}
+.app-shell:not(.community-app):not(.livestock-app) .technical-record-card:hover{
+    border-color:#8aaa91;
+    box-shadow:0 16px 34px rgba(55,88,64,.11);
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-hero{
+    background:linear-gradient(135deg,#edf5ee,#fff);
+    border-color:#d3e3d6;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-icon,
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-section-title > span{
+    background:#dceade;
+    color:#416b50;
+}
+
+/* Actividades: leer primero, editar después */
+.app-shell:not(.community-app):not(.livestock-app) .apiculture-activity-view .activity-view-hero{
+    background:linear-gradient(135deg,#eaf3eb,#fff);
+}
+
+/* Contabilidad: fila clickeable, sin cambiar sus colores semánticos */
+.app-shell:not(.community-app):not(.livestock-app) .accounting-movement-row{
+    cursor:pointer;
+    transition:background .16s ease,box-shadow .16s ease;
+}
+.app-shell:not(.community-app):not(.livestock-app) .accounting-movement-row:hover,
+.app-shell:not(.community-app):not(.livestock-app) .accounting-movement-row:focus{
+    background:#f0f6f1;
+    outline:none;
+    box-shadow:inset 3px 0 0 #638a6c;
+}
+.app-shell:not(.community-app):not(.livestock-app) .accounting-view-hero{
+    background:linear-gradient(135deg,#edf5ee,#fff);
+    border-color:#d3e3d6;
+}
+
+/* V24.4.6 · completar verde en Manejo técnico de Gestión Apícola */
+.app-shell:not(.community-app):not(.livestock-app) .hive-profile-hero{
+    background:linear-gradient(135deg,#dfeae1,#557961);
+}
+.app-shell:not(.community-app):not(.livestock-app) .queen-history-panel{
+    border-color:#d3e0d5;
+    background:linear-gradient(145deg,#fbfdfb,#edf4ee);
+}
+.app-shell:not(.community-app):not(.livestock-app) .queen-history-item.current{
+    border-color:#8aaa91;
+    background:#f1f7f2;
+}
+.app-shell:not(.community-app):not(.livestock-app) .queen-edit-link{
+    border-color:#d3e0d5;
+    background:#f4f8f4;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hives-technical-button{
+    background:#e7f1e9;
+    color:#416b50;
+    border-color:#c8dacb;
+    box-shadow:0 6px 16px rgba(65,107,80,.08);
+}
+.app-shell:not(.community-app):not(.livestock-app) .hives-technical-button:hover{
+    background:#dceade;
+    border-color:#9fbea6;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-tabs{
+    background:#f3f7f3;
+    border-color:#d5e2d7;
+    box-shadow:0 6px 18px rgba(49,82,58,.04);
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-tabs a:hover{
+    background:#e4eee5;
+    color:#416b50;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-tabs a.active{
+    background:linear-gradient(135deg,#73997b,#557b61);
+    color:#fff;
+    box-shadow:0 8px 20px rgba(65,107,80,.17);
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-summary-grid article::before,
+.app-shell:not(.community-app):not(.livestock-app) .performance-summary article::before{
+    background:linear-gradient(#668f71,#9ab19a);
+}
+.app-shell:not(.community-app):not(.livestock-app) .inspection-card{
+    background:linear-gradient(160deg,#fff,#f1f6f2);
+}
+.app-shell:not(.community-app):not(.livestock-app) .inspection-quick-metrics span,
+.app-shell:not(.community-app):not(.livestock-app) .technical-chip-row span{
+    background:#e4eee5;
+    color:#45664e;
+    border-color:#cfdfd1;
+}
+.app-shell:not(.community-app):not(.livestock-app) .harvest-card{
+    background:linear-gradient(160deg,#fff,#edf4eb);
+    border-color:#d4e1d2;
+}
+.app-shell:not(.community-app):not(.livestock-app) .harvest-total strong,
+.app-shell:not(.community-app):not(.livestock-app) .harvest-total span{
+    color:#52725a;
+}
+.app-shell:not(.community-app):not(.livestock-app) .health-card{
+    background:linear-gradient(160deg,#fff,#e8f2ea);
+    border-color:#ccdfd0;
+}
+.app-shell:not(.community-app):not(.livestock-app) .feeding-card{
+    background:linear-gradient(160deg,#fff,#f0f5ec);
+    border-color:#d7e3d2;
+}
+.app-shell:not(.community-app):not(.livestock-app) .feeding-amount strong{
+    color:#61785a;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-check-row{
+    background:#f2f7f3;
+    border-color:#d6e3d8;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-hive-option:hover{
+    border-color:#91b099;
+    background:#f4f8f4;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-hive-option:has(input:checked),
+.app-shell:not(.community-app):not(.livestock-app) .harvest-hive-row:has(input[type=checkbox]:checked){
+    border-color:#719779;
+    background:#e8f1e9;
+    box-shadow:inset 0 0 0 1px rgba(99,138,108,.10);
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-focus-banner{
+    background:linear-gradient(135deg,#eef5ef,#fff);
+    border-color:#d2e0d4;
+}
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-harvest .technical-view-icon,
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-feeding .technical-view-icon,
+.app-shell:not(.community-app):not(.livestock-app) .technical-view-health .technical-view-icon{
+    background:#dceade;
+    color:#416b50;
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-card.active{
+    background:linear-gradient(145deg,#f5faf6,#e4eee5);
+    border-color:#87a88f;
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-metrics span{
+    background:#e9f1ea;
+}
+.app-shell:not(.community-app):not(.livestock-app) .season-metrics b{
+    color:#476751;
+}
