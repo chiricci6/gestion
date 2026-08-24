@@ -210,7 +210,7 @@
         const currentLabel = current === 'ganaderia' ? 'Gestión Ganadera' : current === 'comunidad' ? 'Comunidad Apícola' : 'Gestión Apícola';
         const currentIcon = current === 'ganaderia' ? '⌾' : current === 'comunidad' ? '✦' : '🐝';
         if (apps.length < 2) {
-            return `<a class="brand" href="${current === 'ganaderia' ? 'ganaderia.html#/ganaderia' : '#/hives'}"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Acceso privado</small></span></a>`;
+            return `<a class="brand" href="${current === 'ganaderia' ? 'ganaderia.html#/vacas' : '#/hives'}"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Acceso privado</small></span></a>`;
         }
         return `<div class="app-switcher"><button class="brand app-switcher-trigger" type="button" data-command="app-switch-toggle" aria-expanded="false"><span class="brand-icon ${current === 'ganaderia' ? 'livestock-brand-icon' : ''}">${currentIcon}</span><span><strong>${currentLabel}</strong><small>Cambiar de vista</small></span><span class="app-switch-chevron">⌄</span></button><div class="app-switch-menu" hidden>${apps.includes('apicultura') ? `<button type="button" data-command="switch-app" data-app="apicultura" class="${current === 'apicultura' ? 'active' : ''}"><span>🐝</span><div><strong>Gestión Apícola</strong><small>Colmenas y apiario</small></div></button>` : ''}${apps.includes('ganaderia') ? `<button type="button" data-command="switch-app" data-app="ganaderia" class="${current === 'ganaderia' ? 'active' : ''}"><span>⌾</span><div><strong>Gestión Ganadera</strong><small>Animales y parcelas</small></div></button>` : ''}${apps.includes('comunidad') ? `<button type="button" data-command="switch-app" data-app="comunidad" class="${current === 'comunidad' ? 'active' : ''}"><span>⬢</span><div><strong>Comunidad Apícola</strong><small>Trabajo compartido</small></div></button>` : ''}</div></div>`;
     }
@@ -1521,7 +1521,7 @@
                 if (menu) { menu.hidden = !menu.hidden; commandElement.setAttribute('aria-expanded', String(!menu.hidden)); }
             } else if (command === 'switch-app') {
                 const target = commandElement.dataset.app;
-                if (target === 'ganaderia' && canAccessApp('ganaderia')) window.location.href = 'ganaderia.html#/ganaderia';
+                if (target === 'ganaderia' && canAccessApp('ganaderia')) window.location.href = 'ganaderia.html#/vacas';
                 if (target === 'apicultura' && canAccessApp('apicultura')) window.location.href = 'index.html#/hives';
                 if (target === 'comunidad' && canAccessApp('comunidad')) window.location.href = 'comunidad.html#/comunidad';
             } else if (command === 'apiary-season-filter') {

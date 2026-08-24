@@ -3661,3 +3661,171 @@ img,
 .app-shell:not(.community-app):not(.livestock-app) .season-metrics b{
     color:#476751;
 }
+
+/* ============================================================
+   V24.5.0 · Gestión Ganadera simplificada
+   ============================================================ */
+.livestock-app .livestock-section-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin:0 0 16px;
+    padding:6px;
+    width:max-content;
+    max-width:100%;
+    border:1px solid #ded4c7;
+    border-radius:15px;
+    background:#f8f4ee;
+}
+.livestock-app .livestock-section-tabs a{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:40px;
+    padding:8px 14px;
+    border-radius:11px;
+    color:#6b5947;
+    font-size:.78rem;
+    font-weight:850;
+    white-space:nowrap;
+}
+.livestock-app .livestock-section-tabs a:hover{background:#eee5da;color:#4f3e2f}
+.livestock-app .livestock-section-tabs a.active{
+    background:#6f7f57;
+    color:#fff;
+    box-shadow:0 6px 15px rgba(78,95,59,.16);
+}
+.livestock-simple-summary{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,190px));
+    gap:10px;
+    margin-bottom:14px;
+}
+.livestock-simple-summary>span{
+    display:block;
+    padding:11px 13px;
+    border:1px solid #e3dacf;
+    border-radius:14px;
+    background:#fff;
+}
+.livestock-simple-summary small,.livestock-simple-summary strong{display:block}
+.livestock-simple-summary small{color:#827565;font-size:.68rem;font-weight:800}
+.livestock-simple-summary strong{margin-top:4px;font-size:1.15rem;color:#534435}
+.livestock-simple-summary .warning{background:#fff8ec;border-color:#ead9b7}
+
+/* Toda la tarjeta se puede tocar; los botones de acción siguen funcionando. */
+.livestock-app .rotation-parcel-card,
+.livestock-app .cattle-operation-card{position:relative}
+.livestock-app .livestock-card-overlay{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    border-radius:inherit;
+}
+.livestock-app .rotation-parcel-card .entity-actions,
+.livestock-app .cattle-operation-card .entity-actions{
+    position:relative;
+    z-index:3;
+}
+.livestock-app .rotation-parcel-card:hover,
+.livestock-app .cattle-operation-card:hover{cursor:pointer}
+.parcel-area-badge{
+    position:absolute;
+    right:12px;
+    bottom:12px;
+    z-index:3;
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    padding:7px 10px;
+    border-radius:11px;
+    background:rgba(255,255,255,.92);
+    color:#4e5f3d;
+    box-shadow:0 5px 18px rgba(43,49,31,.14);
+    backdrop-filter:blur(5px);
+}
+.parcel-area-badge b{font-size:1rem}
+.parcel-area-badge small{font-size:.62rem;font-weight:900;text-transform:uppercase}
+
+/* Sanidad: lectura en dos pasos, extras opcionales. */
+.livestock-app .health-register-simple{padding:20px}
+.livestock-app .health-register-simple>form{display:grid;gap:14px}
+.livestock-app .health-step{
+    display:grid;
+    grid-template-columns:38px minmax(0,1fr);
+    gap:13px;
+    padding:16px;
+    border:1px solid #e1d8cc;
+    border-radius:17px;
+    background:#fbf9f5;
+}
+.livestock-app .health-step-number{
+    width:34px;
+    height:34px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#6f7f57;
+    color:#fff;
+    font-weight:950;
+}
+.livestock-app .health-step-content{min-width:0}
+.livestock-app .health-step-content>h3{margin:4px 0 13px;font-size:1rem}
+.livestock-app .health-optional-details{
+    margin-top:12px;
+    padding:10px 12px;
+    border:1px dashed #cfc3b4;
+    border-radius:13px;
+    background:#fff;
+}
+.livestock-app .health-optional-details summary{
+    cursor:pointer;
+    color:#60704f;
+    font-size:.76rem;
+    font-weight:850;
+}
+.livestock-app .health-optional-details[open] summary{margin-bottom:12px}
+.livestock-app .health-save-main{justify-self:start;min-height:42px}
+.livestock-app .livestock-health-readable{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+/* Actividades: abrir significa ver; editar queda como segunda acción. */
+.livestock-activity-view{display:grid;gap:15px}
+.livestock-activity-view .activity-view-head{
+    padding:3px 2px 14px;
+    border-bottom:1px solid #e8e1d7;
+}
+.livestock-activity-view .activity-view-head>div{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.livestock-activity-view .activity-view-head h2{margin:0 0 7px;font-size:1.45rem}
+.livestock-activity-view .activity-view-head p{margin:0;color:#62594f;line-height:1.55;white-space:pre-line}
+.activity-view-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+}
+.activity-view-grid>span{
+    padding:11px 12px;
+    border:1px solid #e5ddd2;
+    border-radius:12px;
+    background:#faf8f4;
+}
+.activity-view-grid small,.activity-view-grid strong{display:block}
+.activity-view-grid small{color:#897d70;font-size:.66rem;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+.activity-view-grid strong{margin-top:5px;font-size:.86rem}
+.activity-view-section{padding:13px;border:1px solid #e5ddd2;border-radius:14px;background:#fff}
+.activity-view-section h3{margin:0 0 10px;font-size:.92rem}
+.activity-view-actions{justify-content:flex-end}
+
+/* Contabilidad: la fila completa abre el detalle. */
+.livestock-accounting-row{cursor:pointer;transition:background .16s ease}
+.livestock-accounting-row:hover{background:#f5f7f1}
+.livestock-accounting-view{display:grid;gap:14px}
+.livestock-accounting-view>header h2{margin:8px 0 4px}
+.livestock-accounting-view>header p{margin:0;color:#6d645b;white-space:pre-line}
+
+@media(max-width:760px){
+    .livestock-app .livestock-section-tabs{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+    .livestock-simple-summary{grid-template-columns:1fr 1fr}
+    .livestock-app .health-step{grid-template-columns:1fr}
+    .livestock-app .health-step-number{width:30px;height:30px}
+    .activity-view-grid{grid-template-columns:1fr}
+}

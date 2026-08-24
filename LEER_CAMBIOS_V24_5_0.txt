@@ -1,0 +1,13 @@
+v24.5.0 · Gestión Ganadera simplificada
+
+- Se elimina Inicio del menú y Ganadería abre directamente en Animales.
+- Menú principal reducido a: Animales, Actividades, Parcelas, Suelos, Contabilidad, Documentos y Copias.
+- Sanidad y Rodeos/Lotes pasan a estar dentro de Animales mediante pestañas.
+- Calendario pasa a estar dentro de Actividades mediante pestañas.
+- Clima y lluvias pasa a estar dentro de Suelos mediante pestañas.
+- Sanidad se simplifica visualmente en dos pasos: a qué animales / qué se hizo. Los datos menos frecuentes quedan desplegables.
+- Actividades: tocar una actividad abre vista de lectura; Editar es una acción secundaria.
+- Parcelas: la tarjeta completa abre la ficha y se muestran las hectáreas sobre la imagen.
+- Animales: la tarjeta completa abre la ficha.
+- Contabilidad: tocar una fila abre un detalle de lectura del movimiento.
+- Se mantiene la carga rápida de imágenes por miniaturas.
