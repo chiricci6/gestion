@@ -950,8 +950,7 @@
         if (preview) preview.opener = null;
         try {
             const blob = await api(action, { params, blob:true });
-            const normalizedBlob = await normalizeImageBlob(blob);
-            const url = URL.createObjectURL(normalizedBlob); state.protectedUrls.push(url);
+            const url = URL.createObjectURL(blob); state.protectedUrls.push(url);
             if (preview) preview.location.href = url;
             else toast('El navegador bloqueó la vista del documento. Habilite ventanas emergentes para abrirlo.', 'error');
         } catch (error) {
@@ -1129,14 +1128,13 @@
         image.dataset.imageHydrating = '1';
         image.classList.add('image-loading');
         try {
-            const useThumb = image.dataset.fileType !== 'hive';
-            const key = `${useThumb ? 'thumb' : 'full'}:${image.dataset.fileType}:${image.dataset.id}`;
+            const key = `thumb:${image.dataset.fileType}:${image.dataset.id}`;
             let url = state.imageCache.get(key);
             if (!url) {
                 let lastError;
                 for (let attempt = 0; attempt < 3 && !url; attempt++) {
                     try {
-                        const blob = await withProtectedImageSlot(() => api('file', { params: { type: image.dataset.fileType, id: image.dataset.id, thumb: useThumb ? 1 : 0 }, blob: true }));
+                        const blob = await withProtectedImageSlot(() => api('file', { params: { type: image.dataset.fileType, id: image.dataset.id, thumb: 1 }, blob: true }));
                         const normalizedBlob = await normalizeImageBlob(blob);
                         url = URL.createObjectURL(normalizedBlob);
                         state.imageCache.set(key, url);
@@ -1175,8 +1173,7 @@
 
     async function downloadBlob(action, params, filename, method = 'GET', formData = null) {
         const blob = await api(action, { params, method, formData, blob: true });
-        const normalizedBlob = await normalizeImageBlob(blob);
-        const url = URL.createObjectURL(normalizedBlob);
+        const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
         anchor.download = filename || 'archivo';
