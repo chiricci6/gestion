@@ -2939,3 +2939,265 @@ img,
 .community-app .photo-grid .pdf-preview{
     background:#f5f1e7;
 }
+
+
+/* ============================================================
+   V24.4.0 · Usabilidad: jerarquía, temporada y lectura simple
+   ============================================================ */
+/* Temporada siempre visible */
+.hive-season-heading{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:7px;
+}
+.season-context-chip{
+    display:inline-flex;
+    align-items:center;
+    min-height:24px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:.62rem;
+    font-weight:950;
+    letter-spacing:.07em;
+    line-height:1;
+}
+.season-context-chip.active{
+    background:#e7f3e8;
+    color:#2f7046;
+    border:1px solid #cbe3cf;
+}
+.hive-last-action{
+    display:block;
+    margin-top:9px;
+    padding-top:8px;
+    border-top:1px solid rgba(154,145,106,.18);
+    color:#76725c;
+    font-size:.72rem;
+    line-height:1.4;
+}
+.community-app .hive-last-action{
+    border-top-color:rgba(117,93,170,.15);
+    color:#7a7098;
+}
+
+.season-context-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:12px;
+    padding:11px 14px;
+    border-radius:15px;
+    border:1px solid #ded8c5;
+    background:#fffdf7;
+}
+.season-context-bar > div{
+    min-width:0;
+}
+.season-context-bar small,
+.season-context-bar strong{
+    display:block;
+}
+.season-context-bar small{
+    margin-bottom:3px;
+    color:#8b876f;
+    font-size:.62rem;
+    font-weight:900;
+    letter-spacing:.08em;
+}
+.season-context-bar strong{
+    font-size:.92rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.season-context-bar > span{
+    flex:0 0 auto;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:.65rem;
+    font-weight:950;
+    letter-spacing:.06em;
+}
+.season-context-bar.activa > span{
+    background:#e7f3e8;
+    color:#2f7046;
+}
+.season-context-bar.histórica > span,
+.season-context-bar.historica > span{
+    background:#ecebea;
+    color:#6a6864;
+}
+.season-context-bar.todas > span{
+    background:#f1ead8;
+    color:#7a6424;
+}
+.community-app .season-context-bar{
+    border-color:rgba(128,104,181,.20);
+    background:linear-gradient(180deg,#fbf8ff,#f6f1fc);
+}
+.community-app .season-context-bar small{color:#7b7099}
+.community-app .season-context-bar.todas > span{
+    background:#ece4f8;
+    color:#624e99;
+}
+
+/* Ficha Gestión Apícola: mismo orden mental que Comunidad */
+.app-shell:not(.community-app):not(.livestock-app) .hive-detail-grid{
+    display:grid;
+    grid-template-columns:repeat(12,minmax(0,1fr));
+    gap:16px;
+    align-items:start;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel{
+    grid-column:1/-1;
+    grid-row:1;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-activities-panel{
+    grid-column:span 8;
+    grid-row:2;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-history-panel{
+    grid-column:span 4;
+    grid-row:2;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-photos-panel{
+    grid-column:1/-1;
+    grid-row:3;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel{
+    grid-column:1/-1;
+    grid-row:4;
+    padding-top:14px;
+    padding-bottom:14px;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel .simple-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel .simple-list > div{
+    padding:8px 10px;
+}
+
+/* Observaciones: escribir primero, fecha y acción claros */
+.app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel .inline-entry-form{
+    display:grid;
+    grid-template-columns:150px minmax(0,1fr) auto;
+    gap:10px;
+    align-items:stretch;
+    margin-bottom:15px;
+    padding:12px;
+    border:1px solid rgba(214,204,168,.62);
+    border-radius:17px;
+    background:#fcfaf3;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel textarea{
+    min-height:88px;
+    resize:vertical;
+}
+.app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel .inline-entry-form .btn{
+    min-width:130px;
+}
+
+/* Navegación y acciones más fáciles de tocar */
+.app-shell:not(.livestock-app) .technical-tabs a{
+    min-height:42px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:9px 13px;
+    font-weight:800;
+}
+.app-shell:not(.livestock-app) .technical-view-trigger{
+    cursor:pointer;
+}
+.app-shell:not(.livestock-app) .technical-card-footer b{
+    white-space:nowrap;
+}
+
+/* Comunidad: menos opciones superfluas, foco en Colmenas */
+.community-app .nav-menu > a:first-of-type{
+    margin-top:2px;
+}
+.community-app .nav-menu a.active{
+    box-shadow:inset 3px 0 0 #7558b5;
+}
+.community-app .hive-card-open-hint{
+    font-weight:850;
+}
+
+/* Jerarquía de Registrar ahora */
+.app-shell:not(.livestock-app) .hive-management-create.create-first{
+    position:relative;
+}
+.app-shell:not(.livestock-app) .hive-management-create.create-first > small{
+    font-size:.68rem;
+    font-weight:950;
+    letter-spacing:.09em;
+}
+.app-shell:not(.livestock-app) .hive-management-create.create-first .btn{
+    min-height:38px;
+}
+.community-app .hive-management-create.create-first > small{
+    color:#67519e;
+}
+
+/* Responsive: una sola lectura vertical en pantallas chicas */
+@media(max-width:980px){
+    .app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel,
+    .app-shell:not(.community-app):not(.livestock-app) .hive-activities-panel,
+    .app-shell:not(.community-app):not(.livestock-app) .hive-history-panel,
+    .app-shell:not(.community-app):not(.livestock-app) .hive-photos-panel,
+    .app-shell:not(.community-app):not(.livestock-app) .hive-materials-panel{
+        grid-column:1/-1;
+        grid-row:auto;
+    }
+}
+@media(max-width:760px){
+    .season-context-bar{
+        align-items:flex-start;
+    }
+    .app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel .inline-entry-form{
+        grid-template-columns:1fr;
+    }
+    .app-shell:not(.community-app):not(.livestock-app) .hive-observations-panel .inline-entry-form .btn{
+        min-width:0;
+    }
+    .app-shell:not(.livestock-app) .technical-tabs{
+        display:flex;
+        overflow-x:auto;
+        gap:7px;
+        padding-bottom:4px;
+        scrollbar-width:thin;
+    }
+    .app-shell:not(.livestock-app) .technical-tabs a{
+        flex:0 0 auto;
+    }
+}
+
+.hive-next-action{
+    display:block;
+    margin-top:6px;
+    padding:7px 9px;
+    border-radius:10px;
+    background:#fff7e5;
+    color:#785e19;
+    font-size:.72rem;
+    font-weight:800;
+    line-height:1.35;
+}
+.hive-next-action.is-overdue{
+    background:#fff0ee;
+    color:#9a4038;
+}
+.community-app .hive-next-action{
+    background:#f2ecfb;
+    color:#67529c;
+}
+.community-app .hive-next-action.is-overdue{
+    background:#fff0f4;
+    color:#9a4059;
+}
