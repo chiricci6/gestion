@@ -2413,3 +2413,199 @@ img,
         flex:1 1 auto;
     }
 }
+
+
+/* ============================================================
+   V24.2.8 · Comunidad con lógica visual + manejo menos plano
+   ============================================================ */
+/* 1) Comunidad conserva su identidad violeta */
+.community-app .detail-grid > .panel{
+    border-color:rgba(141,120,191,.16);
+    box-shadow:0 10px 24px rgba(79,61,120,.05);
+}
+.community-app .detail-grid > .panel:nth-child(2){
+    background:linear-gradient(180deg,#fcfaff 0%,#f7f4fc 100%);
+    border:1px solid rgba(140,119,190,.22);
+}
+.community-app .detail-grid > .panel:nth-child(2) .panel-header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:14px;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(150,131,198,.16);
+}
+.community-app .detail-grid > .panel:nth-child(2) .panel-header h2{
+    color:#5a4786;
+    letter-spacing:.01em;
+}
+.community-app .detail-grid > .panel:nth-child(2) .panel-header p,
+.community-app .detail-grid > .panel:nth-child(2) .panel-header small{
+    color:#746b92;
+}
+/* Observaciones: que no se vea como un bloque pesado clavado en un rincón */
+.community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"]{
+    display:grid;
+    grid-template-columns:140px minmax(0,1fr) auto;
+    gap:10px;
+    align-items:stretch;
+    margin:14px 0 16px;
+    padding:12px;
+    border:1px solid rgba(155,136,203,.18);
+    border-radius:18px;
+    background:rgba(255,255,255,.88);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 8px 18px rgba(91,70,140,.04);
+}
+.community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"] input[type="date"]{
+    min-height:46px;
+    border-radius:14px;
+    background:#f4effb;
+    border:1px solid rgba(157,141,201,.16);
+}
+.community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"] textarea{
+    min-height:96px;
+    border-radius:14px;
+    border:1px solid rgba(157,141,201,.16);
+    background:#fff;
+    resize:vertical;
+}
+.community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"] .btn{
+    align-self:stretch;
+    min-width:132px;
+    border-radius:14px;
+    background:#6f5bb7;
+    border-color:#6f5bb7;
+    box-shadow:0 10px 18px rgba(89,67,146,.14);
+}
+.community-app .detail-grid > .panel:nth-child(2) .history-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:12px;
+}
+.community-app .detail-grid > .panel:nth-child(2) .history-list > div{
+    min-height:0;
+    padding:14px 15px;
+    border:1px solid rgba(157,141,201,.14);
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 8px 20px rgba(91,70,140,.04);
+}
+.community-app .detail-grid > .panel:nth-child(2) .history-list > div strong{
+    color:#5d4a8d;
+}
+.community-app .detail-grid > .panel:nth-child(2) .history-list > div p{
+    margin:7px 0 0;
+    color:#4e5a56;
+}
+.community-app .detail-grid > .panel:nth-child(2) .icon-button.danger{
+    margin-left:auto;
+    background:#fff4f5;
+}
+
+/* 2) Manejo con secciones más claras y menos monocromáticas */
+/* Gestión apícola: paleta miel / natural */
+.app-shell:not(.livestock-app):not(.community-app) .hive-management-center{
+    border:1px solid rgba(194,177,117,.24);
+    background:
+      radial-gradient(circle at top right, rgba(255,220,118,.24), transparent 28%),
+      linear-gradient(135deg,#fffef8 0%,#faf6ea 100%);
+}
+/* Comunidad: paleta violeta */
+.community-app .hive-management-center{
+    border:1px solid rgba(122,99,176,.22);
+    background:
+      radial-gradient(circle at top right, rgba(160,137,217,.22), transparent 28%),
+      linear-gradient(135deg,#fcf9ff 0%,#f4effb 100%);
+    box-shadow:0 16px 34px rgba(79,61,120,.08);
+}
+.community-app .hive-technical-title .eyebrow{
+    background:#eee8fa;
+    color:#6a54b1;
+}
+.community-app .hive-technical-title h2{color:#58458a}
+.community-app .hive-technical-title p{color:#756c95}
+.community-app .hive-management-create{
+    background:linear-gradient(180deg,#faf7ff,#f1eafb);
+    border-color:rgba(126,104,180,.28);
+}
+.community-app .hive-technical-recent{
+    border-top:1px solid rgba(136,115,190,.16);
+}
+
+/* Métricas con color por sentido */
+.app-shell:not(.livestock-app) .hive-technical-metrics article:nth-child(1){
+    background:linear-gradient(180deg,#fff8e7,#fff);
+    border-color:rgba(219,183,74,.30);
+}
+.app-shell:not(.livestock-app) .hive-technical-metrics article:nth-child(2){
+    background:linear-gradient(180deg,#eef8f0,#fff);
+    border-color:rgba(86,151,110,.25);
+}
+.app-shell:not(.livestock-app) .hive-technical-metrics article:nth-child(3){
+    background:linear-gradient(180deg,#fff2e9,#fff);
+    border-color:rgba(202,123,67,.24);
+}
+.app-shell:not(.livestock-app) .hive-technical-metrics article:nth-child(1) strong{color:#8b6f18}
+.app-shell:not(.livestock-app) .hive-technical-metrics article:nth-child(2) strong{color:#2f6d49}
+.app-shell:not(.livestock-app) .hive-technical-metrics article:nth-child(3) strong{color:#9a5d2c}
+
+/* Accesos rápidos con color por función */
+.app-shell:not(.livestock-app) .hive-management-shortcut{
+    border-width:1px;
+    box-shadow:0 8px 18px rgba(72,63,36,.04);
+}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-inspection{
+    background:linear-gradient(180deg,#fff8e7,#fff);
+    border-color:rgba(214,178,73,.34);
+}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-health{
+    background:linear-gradient(180deg,#eef8f0,#fff);
+    border-color:rgba(87,151,111,.28);
+}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-feeding{
+    background:linear-gradient(180deg,#fff2e8,#fff);
+    border-color:rgba(202,124,67,.24);
+}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-performance{
+    background:linear-gradient(180deg,#f0f4e8,#fff);
+    border-color:rgba(130,152,81,.26);
+}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-inspection > span:first-child{background:#f6e8b6;color:#8b6f1a}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-health > span:first-child{background:#dff0e3;color:#2f6d49}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-feeding > span:first-child{background:#ffe6d7;color:#9a5d2c}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-performance > span:first-child{background:#e8efda;color:#6b7f33}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-inspection b{color:#8b6f1a}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-health b{color:#2f6d49}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-feeding b{color:#9a5d2c}
+.app-shell:not(.livestock-app) .hive-management-shortcut.shortcut-performance b{color:#6b7f33}
+/* Comunidad: mismo lenguaje, pero con guiño violeta adicional */
+.community-app .hive-management-shortcut{
+    box-shadow:0 10px 20px rgba(80,62,120,.05);
+}
+.community-app .hive-management-shortcut.shortcut-inspection{
+    background:linear-gradient(180deg,#faf5ff,#fff7e9 88%);
+}
+.community-app .hive-management-shortcut.shortcut-health{
+    background:linear-gradient(180deg,#f7f2ff,#eef8f0 88%);
+}
+.community-app .hive-management-shortcut.shortcut-feeding{
+    background:linear-gradient(180deg,#faf3ff,#fff2e8 88%);
+}
+.community-app .hive-management-shortcut.shortcut-performance{
+    background:linear-gradient(180deg,#f6f0ff,#f0f4e8 88%);
+}
+
+/* 3) Más prolijidad responsive */
+@media(max-width:980px){
+    .community-app .detail-grid > .panel:nth-child(2) .history-list{
+        grid-template-columns:1fr;
+    }
+}
+@media(max-width:760px){
+    .community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"]{
+        grid-template-columns:1fr;
+    }
+    .community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"] .btn{
+        min-width:0;
+    }
+}

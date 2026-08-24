@@ -1,0 +1,7 @@
+v24.2.8
+
+- Comunidad mantiene identidad violeta.
+- Observaciones de colmena en Comunidad: panel más liviano, formulario integrado y notas mejor distribuidas.
+- Manejo: menos monocromático, con color por tipo de acceso y métricas más claras.
+- Gestión Apícola y Comunidad comparten el mismo lenguaje visual de Manejo, con la paleta propia de cada módulo.
+- Ajustes responsive menores para Observaciones.
