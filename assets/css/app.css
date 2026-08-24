@@ -3286,3 +3286,93 @@ img,
         grid-row:auto;
     }
 }
+
+
+/* ============================================================
+   V24.4.4 · Próximos pendientes por etiqueta
+   ============================================================ */
+.hive-next-actions{
+    display:grid;
+    gap:6px;
+    margin-top:10px;
+    padding-top:9px;
+    border-top:1px solid rgba(154,145,106,.18);
+}
+.hive-next-actions>small{
+    color:#8b8263;
+    font-size:.61rem;
+    font-weight:950;
+    letter-spacing:.08em;
+}
+.hive-next-actions>div{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+}
+.hive-next-actions .hive-next-action{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:7px;
+    margin:0;
+    padding:7px 9px;
+    border:1px solid color-mix(in srgb,var(--pending-color,#b58b2b) 35%,#fff);
+    background:color-mix(in srgb,var(--pending-color,#b58b2b) 9%,#fff);
+    color:#514a35;
+    min-width:220px;
+    max-width:100%;
+    box-shadow:none;
+}
+.hive-next-actions .hive-next-action b{
+    display:inline-flex;
+    align-items:center;
+    min-height:23px;
+    padding:4px 7px;
+    border-radius:7px;
+    background:color-mix(in srgb,var(--pending-color,#b58b2b) 16%,#fff);
+    color:color-mix(in srgb,var(--pending-color,#b58b2b) 82%,#263126);
+    font-size:.62rem;
+    white-space:nowrap;
+}
+.hive-next-actions .hive-next-action b::before{
+    content:'';
+    width:6px;
+    height:6px;
+    margin-right:5px;
+    border-radius:50%;
+    background:var(--pending-color,#b58b2b);
+}
+.hive-next-actions .hive-next-action strong{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:.72rem;
+}
+.hive-next-actions .hive-next-action em{
+    color:#827c68;
+    font-size:.62rem;
+    font-style:normal;
+    white-space:nowrap;
+}
+.hive-next-actions .hive-next-action.is-overdue{
+    --pending-color:#b94c43 !important;
+    border-color:#edcbc8;
+    background:#fff3f2;
+}
+.community-app .hive-next-actions{
+    border-top-color:rgba(117,93,170,.15);
+}
+.community-app .hive-next-actions>small{
+    color:#766a96;
+}
+@media(max-width:760px){
+    .hive-next-actions .hive-next-action{
+        grid-template-columns:1fr auto;
+        min-width:100%;
+    }
+    .hive-next-actions .hive-next-action b{
+        grid-column:1/-1;
+        width:max-content;
+    }
+}
