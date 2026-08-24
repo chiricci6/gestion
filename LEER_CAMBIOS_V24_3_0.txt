@@ -1,0 +1,11 @@
+v24.3.0
+
+- Gestión Apícola / Colmenas: se reordenó Manejo dentro de la ficha para que tenga un flujo lógico: Registrar ahora → Manejo de esta temporada → accesos → historial.
+- Gestión Apícola y Comunidad: tarjetas de Manejo unificadas y con miniatura de la colmena en Inspecciones cuando exista foto de portada.
+- Gestión Apícola: paleta cálida amarilla para Manejo, sin mezclar con violeta.
+- Comunidad: mantiene identidad violeta.
+- Ajustes responsive en el bloque de Manejo y en tarjetas técnicas.
+
+Temporadas:
+- Al activar una nueva temporada, la sección Manejo dentro de la ficha pasa a mostrar la temporada activa nueva.
+- El historial anterior no se pierde: sigue disponible en Manejo usando el filtro de temporada o viendo “Todas” cuando corresponde.
