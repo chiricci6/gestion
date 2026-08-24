@@ -1,0 +1,9 @@
+Mellifera Technology v24.2.0
+
+Cambios visuales sin tocar lógica:
+- Rediseño de la ficha interna de colmenas para que se vea más clara y ordenada.
+- Paneles de observaciones, actividades, historial y archivos con mejor lectura.
+- Tarjetas técnicas más limpias en inspecciones, sanidad, alimentación y cosechas.
+- Modales de consulta con layout más entendible.
+- Corrección visual para que las imágenes respeten la orientación de la foto.
+- Se actualizaron los query strings a v24.2.0 para evitar caché vieja.
