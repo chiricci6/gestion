@@ -1,0 +1,5 @@
+v24.3.2
+
+- Dentro de cada colmena: Registrar ahora queda primero, antes del bloque de temporada/manejo.
+- Corrección de orientación para fotos verticales en Comunidad y Gestión Apícola: las imágenes JPEG con EXIF ahora se auto-rotan en el frontend al cargarse.
+- No se tocó lógica ni backend.

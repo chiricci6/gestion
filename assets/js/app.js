@@ -949,7 +949,8 @@
         if (preview) preview.opener = null;
         try {
             const blob = await api(action, { params, blob:true });
-            const url = URL.createObjectURL(blob); state.protectedUrls.push(url);
+            const normalizedBlob = await normalizeImageBlob(blob);
+            const url = URL.createObjectURL(normalizedBlob); state.protectedUrls.push(url);
             if (preview) preview.location.href = url;
             else toast('El navegador bloqueó la vista del documento. Habilite ventanas emergentes para abrirlo.', 'error');
         } catch (error) {
@@ -1043,6 +1044,77 @@
         });
     }
 
+    async function readExifOrientation(blob) {
+        try {
+            if (!blob || !/jpe?g/i.test(blob.type || '')) return 1;
+            const buffer = await blob.slice(0, 256 * 1024).arrayBuffer();
+            const view = new DataView(buffer);
+            if (view.getUint16(0, false) !== 0xFFD8) return 1;
+            let offset = 2;
+            while (offset + 4 < view.byteLength) {
+                const marker = view.getUint16(offset, false);
+                offset += 2;
+                if (marker === 0xFFE1) {
+                    const app1Length = view.getUint16(offset, false);
+                    offset += 2;
+                    if (view.getUint32(offset, false) !== 0x45786966) return 1;
+                    const tiff = offset + 6;
+                    const little = view.getUint16(tiff, false) === 0x4949;
+                    const firstIfd = view.getUint32(tiff + 4, little);
+                    let dir = tiff + firstIfd;
+                    const tags = view.getUint16(dir, little);
+                    dir += 2;
+                    for (let i = 0; i < tags; i++) {
+                        const entry = dir + i * 12;
+                        if (view.getUint16(entry, little) === 0x0112) return view.getUint16(entry + 8, little) || 1;
+                    }
+                    return 1;
+                } else if ((marker & 0xFF00) !== 0xFF00 || marker === 0xFFDA) {
+                    break;
+                } else {
+                    offset += view.getUint16(offset, false);
+                }
+            }
+        } catch (_) {}
+        return 1;
+    }
+
+    async function normalizeImageBlob(blob) {
+        const orientation = await readExifOrientation(blob);
+        if (!blob || orientation === 1 || !/jpe?g/i.test(blob.type || '')) return blob;
+        const tempUrl = URL.createObjectURL(blob);
+        try {
+            const img = await new Promise((resolve, reject) => {
+                const element = new Image();
+                element.onload = () => resolve(element);
+                element.onerror = reject;
+                element.src = tempUrl;
+            });
+            const swap = [5, 6, 7, 8].includes(orientation);
+            const canvas = document.createElement('canvas');
+            canvas.width = swap ? img.naturalHeight : img.naturalWidth;
+            canvas.height = swap ? img.naturalWidth : img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            switch (orientation) {
+                case 2: ctx.transform(-1, 0, 0, 1, canvas.width, 0); break;
+                case 3: ctx.transform(-1, 0, 0, -1, canvas.width, canvas.height); break;
+                case 4: ctx.transform(1, 0, 0, -1, 0, canvas.height); break;
+                case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+                case 6: ctx.transform(0, 1, -1, 0, canvas.width, 0); break;
+                case 7: ctx.transform(0, -1, -1, 0, canvas.width, canvas.height); break;
+                case 8: ctx.transform(0, -1, 1, 0, 0, canvas.height); break;
+                default: break;
+            }
+            ctx.drawImage(img, 0, 0);
+            const fixedBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+            return fixedBlob || blob;
+        } catch (_) {
+            return blob;
+        } finally {
+            URL.revokeObjectURL(tempUrl);
+        }
+    }
+
     const protectedImageObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) return;
@@ -1063,7 +1135,8 @@
                 for (let attempt = 0; attempt < 3 && !url; attempt++) {
                     try {
                         const blob = await withProtectedImageSlot(() => api('file', { params: { type: image.dataset.fileType, id: image.dataset.id, thumb: 1 }, blob: true }));
-                        url = URL.createObjectURL(blob);
+                        const normalizedBlob = await normalizeImageBlob(blob);
+                        url = URL.createObjectURL(normalizedBlob);
                         state.imageCache.set(key, url);
                     } catch (error) {
                         lastError = error;
@@ -1100,7 +1173,8 @@
 
     async function downloadBlob(action, params, filename, method = 'GET', formData = null) {
         const blob = await api(action, { params, method, formData, blob: true });
-        const url = URL.createObjectURL(blob);
+        const normalizedBlob = await normalizeImageBlob(blob);
+        const url = URL.createObjectURL(normalizedBlob);
         const anchor = document.createElement('a');
         anchor.href = url;
         anchor.download = filename || 'archivo';
@@ -1115,7 +1189,8 @@
         if (preview) preview.opener = null;
         try {
             const blob = await api('file', { params: { type, id }, blob: true });
-            const url = URL.createObjectURL(blob);
+            const normalizedBlob = await normalizeImageBlob(blob);
+            const url = URL.createObjectURL(normalizedBlob);
             state.protectedUrls.push(url);
             if (preview) preview.location.href = url;
             else toast('El navegador bloqueó la vista del archivo. Habilite ventanas emergentes para abrirlo.', 'error');

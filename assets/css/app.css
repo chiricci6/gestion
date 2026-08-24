@@ -2918,3 +2918,7 @@ img,
         height:62px;
     }
 }
+
+
+/* V24.3.2 · orden de manejo + corrección visual de fotos */
+.community-app .hive-management-center .hive-management-create.create-first{order:-1;}
