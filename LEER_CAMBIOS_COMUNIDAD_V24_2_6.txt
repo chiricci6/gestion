@@ -1,0 +1,5 @@
+Comunidad Apícola v24.2.6
+
+- Se volvió al diseño de ficha de colmena de v24.2.4.
+- Observaciones/Actividades/Historial quedan como estaban en v24.2.4.
+- Único cambio nuevo: dentro de Manejo, los registros se muestran como tarjetas medianas, alineadas desde la izquierda, sin estirarse a todo el ancho.
