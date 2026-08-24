@@ -1,0 +1,8 @@
+Comunidad Apícola v24.2.3
+
+Cambios:
+- Observaciones ahora ocupa más lugar que Actividades abiertas dentro de la colmena.
+- Actividades abiertas quedó más compacta.
+- Historial quedó acompañando sin competir con Observaciones.
+- Las fotos inferiores se achicaron bastante más.
+- Bump de versión para forzar recarga del navegador.

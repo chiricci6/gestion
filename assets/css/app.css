@@ -1838,3 +1838,115 @@ img,
     .community-app .card-grid,
     .community-app .photo-grid{grid-template-columns:1fr}
 }
+
+
+/* ============================================================
+   V24.2.3 · Observaciones protagonistas + miniaturas más chicas
+   ============================================================ */
+.community-app .detail-grid{
+    grid-template-columns:repeat(12,minmax(0,1fr));
+    gap:16px;
+}
+/* 1er bloque: actividades abiertas */
+.community-app .detail-grid > .panel.span-2:first-child{
+    grid-column:span 5;
+}
+/* 2do bloque: observaciones, más grande */
+.community-app .detail-grid > .panel:nth-child(2){
+    grid-column:span 7;
+}
+/* 3er bloque: historial */
+.community-app .detail-grid > .panel:nth-child(3){
+    grid-column:span 5;
+}
+/* 4to bloque: fotos */
+.community-app .detail-grid > .panel.span-3:last-child{
+    grid-column:1/-1;
+}
+.community-app .detail-grid > .panel:nth-child(2) .panel-header h2{
+    font-size:1.08rem;
+}
+.community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"]{
+    grid-template-columns:130px minmax(0,1fr) auto;
+}
+.community-app .detail-grid > .panel:nth-child(2) form[data-form="note-save"] textarea{
+    min-height:96px;
+}
+.community-app .detail-grid > .panel:nth-child(2) .history-list > div{
+    min-height:94px;
+}
+.community-app .detail-grid > .panel:nth-child(2) .history-list p{
+    font-size:.92rem;
+    line-height:1.5;
+}
+.community-app .detail-grid > .panel:first-child .activity-preview-grid{
+    grid-template-columns:1fr;
+    gap:10px;
+}
+.community-app .detail-grid > .panel:first-child .activity-preview-card{
+    min-height:146px;
+    padding:14px 15px;
+}
+.community-app .detail-grid > .panel:nth-child(3) .history-list{
+    gap:8px;
+}
+
+/* Fotos inferiores: miniaturas realmente chicas */
+.community-app .photo-grid{
+    grid-template-columns:repeat(auto-fit,minmax(112px,122px));
+    justify-content:flex-start;
+    gap:9px;
+}
+.community-app .photo-grid article{
+    max-width:122px;
+}
+.community-app .photo-grid img,
+.community-app .photo-grid .pdf-preview{
+    height:66px;
+}
+.community-app .photo-grid strong,
+.community-app .photo-grid small{
+    padding-left:8px;
+    padding-right:8px;
+}
+.community-app .photo-grid strong{
+    margin-top:7px;
+    font-size:.72rem;
+    line-height:1.25;
+}
+.community-app .photo-grid small{
+    font-size:.62rem;
+    line-height:1.2;
+}
+.community-app .photo-grid article > div:last-child{
+    padding:8px;
+    gap:5px;
+}
+.community-app .photo-grid article > div:last-child .btn{
+    min-height:28px;
+    padding:6px 8px;
+    font-size:.68rem;
+}
+.community-app .photo-grid .icon-button.danger{
+    width:28px;
+    min-width:28px;
+    height:28px;
+}
+
+@media(max-width:980px){
+    .community-app .detail-grid > .panel.span-2:first-child,
+    .community-app .detail-grid > .panel:nth-child(2),
+    .community-app .detail-grid > .panel:nth-child(3){
+        grid-column:1/-1;
+    }
+}
+@media(max-width:700px){
+    .community-app .photo-grid{
+        grid-template-columns:repeat(2,minmax(0,118px));
+    }
+}
+@media(max-width:560px){
+    .community-app .photo-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
