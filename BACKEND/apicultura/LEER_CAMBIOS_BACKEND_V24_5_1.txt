@@ -1,0 +1,11 @@
+v24.5.1 · BACKEND
+
+Reemplazar los archivos conservando la estructura de carpetas.
+
+Cambios:
+- Reparto automático de ingresos de Apiario La Ruda entre Chiara/Felipe.
+- Regla por saldos negativos y 50/50 una vez compensados.
+- Venta La Ruda: reparto automático de ganancia tras recuperación de materiales.
+- Actividad individual devuelve estado, colmena y etiqueta en Gestión y Comunidad.
+- Nueva etiqueta Control sanitario en Gestión Apícola.
+- Comunidad migra etiqueta Comunidad a Control sanitario.
