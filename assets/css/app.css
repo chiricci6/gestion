@@ -3852,3 +3852,21 @@ img,
 
 /* V24.5.2 · La Ruda: venta desacoplada de Contabilidad */
 .sale-stock-only-note{display:flex;align-items:center;gap:10px;margin:14px 0;padding:11px 13px;border:1px solid #d8e5d8;border-radius:14px;background:#f5faf5;color:#425b48}.sale-stock-only-note strong{flex:0 0 auto}.sale-stock-only-note span{font-size:.76rem;line-height:1.4;color:#65756a}
+
+
+/* V24.5.3 · Contabilidad limpia: alta/edición en modal */
+.accounting-movements-layout{display:block;margin-top:16px}
+.accounting-modal-form{display:grid;gap:18px}
+.accounting-entry-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px;border-radius:18px;background:#edf3ed}
+.accounting-entry-tab{display:flex;align-items:center;gap:11px;min-height:72px;padding:12px 14px;border:1px solid transparent;border-radius:15px;background:transparent;color:#5d6b60;text-align:left;cursor:pointer;transition:.18s ease}
+.accounting-entry-tab>span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#fff;font-size:1.35rem;font-weight:950;box-shadow:0 3px 10px rgba(45,74,54,.08)}
+.accounting-entry-tab strong,.accounting-entry-tab small{display:block}
+.accounting-entry-tab strong{font-size:.94rem}.accounting-entry-tab small{margin-top:3px;color:#7d897f;font-size:.69rem}
+.accounting-entry-tab.active{background:#fff;border-color:#cbdacb;box-shadow:0 8px 18px rgba(45,74,54,.09);color:#315d3d}
+.accounting-entry-tab.income.active>span{background:#e7f3e8;color:#347047}
+.accounting-entry-tab.expense.active>span{background:#f5ece9;color:#98533e}
+.accounting-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.accounting-modal-grid .accounting-income-allocation,.accounting-modal-description,.accounting-modal-receipt{grid-column:1/-1}
+.accounting-modal-actions{justify-content:flex-end;padding-top:4px;border-top:1px solid #e4ebe4}
+.accounting-modal-form .accounting-usd{min-height:68px;align-self:end}
+@media(max-width:700px){.accounting-entry-tabs,.accounting-modal-grid{grid-template-columns:1fr}.accounting-entry-tab{min-height:62px}.accounting-modal-grid .accounting-income-allocation,.accounting-modal-description,.accounting-modal-receipt{grid-column:auto}.accounting-modal-actions{display:grid;grid-template-columns:1fr}.accounting-modal-actions .btn{width:100%}}

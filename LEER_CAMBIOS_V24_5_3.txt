@@ -1,0 +1,11 @@
+v24.5.3
+
+CONTABILIDAD · GESTIÓN APÍCOLA
+- Se elimina el formulario fijo de Agregar movimiento de la pantalla principal.
+- Se agrega + Nuevo movimiento arriba.
+- El alta y la edición se abren en una ventana, igual que Actividades.
+- La ventana comienza con dos opciones grandes: Gasto / Ingreso-Venta.
+- En Ingreso-Venta se mantiene el cálculo automático y visible del reparto Chiara/Felipe con porcentajes.
+- La tabla de movimientos queda limpia y a todo el ancho.
+- Tocar un movimiento sigue abriendo la vista de detalle.
+- No hay cambios de backend ni de lógica contable.

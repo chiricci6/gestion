@@ -20,6 +20,7 @@
         navigationOrder: null,
         archivedActivities: [],
         accountingEntries: [],
+        accountingConcepts: [],
         laRudaData: null,
         materialCategories: [],
         apiaryTechnical: {}
@@ -946,6 +947,33 @@
         quantity.addEventListener('input', update); price.addEventListener('input', update); update();
     }
 
+    function openAccountingModal(editing = null) {
+        const concepts = state.accountingConcepts || [];
+        const people = (state.accountingPeople || []).filter(person => ['chiara','felipe'].includes(String(person.name || '').toLowerCase()));
+        const movementType = editing?.movement_type || 'egreso';
+        showAppModal(editing ? 'Editar movimiento' : 'Nuevo movimiento', `<form class="accounting-modal-form" data-form="accounting-save" data-accounting-form data-editing="${editing ? 1 : 0}" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="${editing?.id || ''}">
+            <input type="hidden" name="movement_type" value="${h(movementType)}" data-movement-type>
+            <div class="accounting-entry-tabs" data-accounting-entry-tabs>
+                <button class="accounting-entry-tab expense ${movementType === 'egreso' ? 'active' : ''}" type="button" data-accounting-type-button data-value="egreso"><span>−</span><div><strong>Gasto</strong><small>Registrar un egreso</small></div></button>
+                <button class="accounting-entry-tab income ${movementType === 'ingreso' ? 'active' : ''}" type="button" data-accounting-type-button data-value="ingreso"><span>+</span><div><strong>Ingreso / venta</strong><small>Ingreso de Apiario La Ruda</small></div></button>
+            </div>
+            <div class="accounting-modal-grid">
+                <label class="field"><span>Fecha *</span><input type="date" name="entry_date" required value="${h(editing?.entry_date || today())}"></label>
+                <label class="field" data-accounting-person-field><span>Persona *</span><select name="person_id" required><option value="">Seleccione</option>${people.map(person => `<option value="${person.id}" ${Number(editing?.person_id || 0) === Number(person.id) ? 'selected' : ''}>${h(person.name)}</option>`).join('')}</select></label>
+                <label class="field"><span>Concepto *</span><select name="concept_id" required data-concept-select><option value="">Seleccione</option>${concepts.map(concept => `<option value="${concept.id}" data-default-type="${h(concept.default_type)}" ${Number(editing?.concept_id || 0) === Number(concept.id) ? 'selected' : ''}>${h(concept.name)}</option>`).join('')}</select></label>
+                <label class="field"><span>Importe en pesos *</span><input type="number" step="0.01" min="0.01" name="amount_ars" required value="${h(editing?.amount_ars || '')}" data-amount-ars placeholder="0,00"></label>
+                <label class="field"><span>Cotización del dólar *</span><input type="number" step="0.0001" min="0.0001" name="usd_rate" required value="${h(editing?.usd_rate || '')}" data-usd-rate placeholder="Ej.: 1350"></label>
+                <div class="calculated-total accounting-usd"><small>Equivalente guardado</small><strong data-amount-usd>${moneyUSD(editing?.amount_usd || 0)}</strong></div>
+                <section class="accounting-income-allocation" data-income-allocation ${editing ? 'hidden' : ''}><div class="accounting-income-source"><small>ORIGEN DEL INGRESO</small><strong>Apiario La Ruda</strong><span>El reparto se calcula automáticamente según los saldos de Chiara y Felipe.</span></div><div class="accounting-income-split" data-income-split></div></section>
+                <label class="field accounting-modal-description"><span>Descripción</span><textarea name="description" rows="4" placeholder="Qué se compró, vendió o pagó">${h(editing?.description || '')}</textarea></label>
+                <label class="field accounting-modal-receipt"><span>Comprobante</span><input type="file" name="receipt" accept="image/jpeg,image/png,image/webp,application/pdf"><small>${editing?.receipt_original_name ? `Actual: ${h(editing.receipt_original_name)}. Cargue otro para reemplazarlo.` : 'PDF, JPG, PNG o WEBP.'}</small></label>
+            </div>
+            <div class="form-actions accounting-modal-actions"><button class="btn btn-primary" type="submit">${editing ? 'Guardar cambios' : '+ Agregar movimiento'}</button><button class="btn btn-ghost" type="button" data-command="modal-close">Cancelar</button></div>
+        </form>`, true);
+        initAccountingCalculation();
+    }
+
     async function renderAccounting(params) {
         loading('Cargando contabilidad…');
         const filters = Object.fromEntries(params.entries());
@@ -955,24 +983,25 @@
         state.accountingEntries = data.entries || [];
         state.accountingPeople = data.people || [];
         state.accountingBalances = data.balances || [];
+        state.accountingConcepts = data.concepts || [];
         const editing = edit ? (data.entries || []).find(item => Number(item.id) === edit) || null : null;
         const summary = data.summary || {};
         shell({
             title: 'Contabilidad', subtitle: 'Toda la existencia del proyecto con filtros por período', active: 'accounting',
-            actions: '<a class="btn btn-secondary accounting-purchases-button" href="#/purchases"><span>▤</span> Compras pendientes</a>',
+            actions: '<button class="btn btn-primary" type="button" data-command="accounting-new">+ Nuevo movimiento</button><a class="btn btn-secondary accounting-purchases-button" href="#/purchases"><span>▤</span> Compras pendientes</a>',
             content: `<section class="accounting-hero apiculture-accounting-hero"><div><span>Balance del resultado</span><strong>${moneyUSD(Number(summary.income_usd || 0)-Number(summary.expense_usd || 0))}</strong><small>${moneyARS(Number(summary.income_ars || 0)-Number(summary.expense_ars || 0))}</small></div><div class="accounting-hero-split"><span><b>${moneyUSD(summary.income_usd)}</b><small>Ingresos</small></span><span><b>${moneyUSD(summary.expense_usd)}</b><small>Egresos</small></span><span class="accounting-count"><b>${Number(summary.total || 0)}</b><small>Movimientos</small></span></div></section><section class="balance-strip accounting-balances"><div class="balance-strip-title"><span>Saldo histórico por persona</span><small>Siempre muestra toda la existencia del proyecto</small></div>${(data.balances || []).map(balance => `<div class="person-balance ${Number(balance.balance_ars) < 0 ? 'negative' : 'positive'}"><strong>${h(balance.name)}</strong><span>${moneyUSD(balance.balance_usd)}</span><small>${moneyARS(balance.balance_ars)}</small></div>`).join('')}</section>
                 <form class="filter-panel panel" data-form="accounting-filter"><div class="filter-panel-title"><strong>Filtrar movimientos</strong><small>Por ejemplo: desde octubre hasta noviembre de cualquier año</small></div><label class="field"><span>Desde</span><input type="date" name="date_from" value="${h(filters.date_from || '')}"></label><label class="field"><span>Hasta</span><input type="date" name="date_to" value="${h(filters.date_to || '')}"></label><label class="field"><span>Persona</span><select name="person_id"><option value="">Todas</option>${(data.people || []).map(person => `<option value="${person.id}" ${String(person.id) === String(filters.person_id || '') ? 'selected' : ''}>${h(person.name)}</option>`).join('')}</select></label><label class="field"><span>Tipo</span><select name="movement_type"><option value="">Ingresos y egresos</option><option value="ingreso" ${filters.movement_type === 'ingreso' ? 'selected' : ''}>Ingresos</option><option value="egreso" ${filters.movement_type === 'egreso' ? 'selected' : ''}>Egresos</option></select></label><label class="field"><span>Concepto</span><select name="concept_id"><option value="">Todos</option>${(data.concepts || []).map(concept => `<option value="${concept.id}" ${String(concept.id) === String(filters.concept_id || '') ? 'selected' : ''}>${h(concept.name)}</option>`).join('')}</select></label><label class="field filter-search"><span>Texto</span><input type="search" name="q" value="${h(filters.q || '')}" placeholder="Buscar en descripción"></label><div class="filter-actions"><button class="btn btn-secondary" type="submit">Aplicar filtros</button><a class="btn btn-ghost" href="#/accounting">Ver todo</a></div></form>
-                <div class="split-layout accounting-layout"><section class="panel sticky-panel"><div class="panel-header"><div><h2>${editing ? 'Editar movimiento' : 'Agregar movimiento'}</h2><p>La conversión a dólares se calcula sola</p></div></div><form data-form="accounting-save" data-accounting-form data-editing="${editing?1:0}" enctype="multipart/form-data"><input type="hidden" name="id" value="${editing?.id || ''}"><label class="field"><span>Fecha *</span><input type="date" name="entry_date" required value="${h(editing?.entry_date || today())}"></label><label class="field" data-accounting-person-field><span>Persona *</span><select name="person_id" required><option value="">Seleccione</option>${(data.people || []).filter(person=>['chiara','felipe'].includes(String(person.name||'').toLowerCase())).map(person => `<option value="${person.id}" ${Number(editing?.person_id || 0) === Number(person.id) ? 'selected' : ''}>${h(person.name)}</option>`).join('')}</select></label><label class="field"><span>Concepto *</span><select name="concept_id" required data-concept-select><option value="">Seleccione</option>${(data.concepts || []).map(concept => `<option value="${concept.id}" data-default-type="${h(concept.default_type)}" ${Number(editing?.concept_id || 0) === Number(concept.id) ? 'selected' : ''}>${h(concept.name)}</option>`).join('')}</select></label><label class="field"><span>Tipo *</span><select name="movement_type" required data-movement-type><option value="egreso" ${(editing?.movement_type || 'egreso') === 'egreso' ? 'selected' : ''}>Egreso / gasto</option><option value="ingreso" ${editing?.movement_type === 'ingreso' ? 'selected' : ''}>Ingreso / venta</option></select></label><section class="accounting-income-allocation" data-income-allocation ${editing?'hidden':''}><div class="accounting-income-source"><small>ORIGEN DEL INGRESO</small><strong>Apiario La Ruda</strong><span>El reparto se calcula automáticamente según los saldos de Chiara y Felipe.</span></div><div class="accounting-income-split" data-income-split></div></section><label class="field"><span>Importe en pesos *</span><input type="number" step="0.01" min="0.01" name="amount_ars" required value="${h(editing?.amount_ars || '')}" data-amount-ars placeholder="0,00"></label><label class="field"><span>Cotización del dólar *</span><input type="number" step="0.0001" min="0.0001" name="usd_rate" required value="${h(editing?.usd_rate || '')}" data-usd-rate placeholder="Ej.: 1350"></label><div class="calculated-total accounting-usd"><small>Equivalente guardado</small><strong data-amount-usd>${moneyUSD(editing?.amount_usd || 0)}</strong></div><label class="field"><span>Descripción</span><textarea name="description" rows="4" placeholder="Qué se compró, vendió o pagó">${h(editing?.description || '')}</textarea></label><label class="field"><span>Comprobante</span><input type="file" name="receipt" accept="image/jpeg,image/png,image/webp,application/pdf"><small>${editing?.receipt_original_name ? `Actual: ${h(editing.receipt_original_name)}. Cargue otro para reemplazarlo.` : 'PDF, JPG, PNG o WEBP.'}</small></label><div class="form-actions"><button class="btn btn-primary" type="submit">${editing ? 'Guardar cambios' : '+ Agregar movimiento'}</button>${editing ? '<a class="btn btn-ghost" href="#/accounting">Cancelar</a>' : ''}</div></form></section><section class="panel"><div class="panel-header"><div><h2>Movimientos</h2><p>Resultado de los filtros seleccionados</p></div></div>${(data.entries || []).length ? `<div class="table-wrap"><table class="data-table accounting-table"><thead><tr><th>Fecha</th><th>Persona</th><th>Concepto</th><th>Descripción</th><th>Pesos</th><th>Dólares</th><th>Comprobante</th><th></th></tr></thead><tbody>${data.entries.map(entry => `<tr class="accounting-movement-row" data-accounting-row data-id="${entry.id}" tabindex="0" aria-label="Abrir movimiento ${h(entry.concept_name)} del ${formatDate(entry.entry_date)}"><td>${formatDate(entry.entry_date)}</td><td><strong>${h(entry.person_name)}</strong></td><td><span class="badge ${entry.movement_type === 'ingreso' ? 'badge-success' : 'badge-danger-soft'}">${h(entry.concept_name)}</span></td><td class="cell-notes">${h(entry.description || '—')}</td><td class="${entry.movement_type === 'ingreso' ? 'income-text' : 'expense-text'}"><strong>${entry.movement_type === 'ingreso' ? '+ ' : '- '}${moneyARS(entry.amount_ars)}</strong></td><td>${moneyUSD(entry.amount_usd)}<small>@ ${moneyARS(entry.usd_rate)}</small></td><td>${entry.receipt_relative_path ? `<button class="file-link file-button" data-command="open-file" data-file-type="receipt" data-id="${entry.id}" data-name="${h(entry.receipt_original_name || 'comprobante')}">Ver archivo</button>` : '—'}</td><td class="row-actions"><a class="icon-button" href="#/accounting?${new URLSearchParams({...filters, edit: entry.id}).toString()}">✎</a><button class="icon-button danger" data-command="accounting-delete" data-id="${entry.id}">×</button></td></tr>`).join('')}</tbody></table></div>` : emptyState('$', 'No hay movimientos', 'No existen registros con estos filtros.')}</section></div>`
+                <div class="accounting-movements-layout"><section class="panel"><div class="panel-header"><div><h2>Movimientos</h2><p>Resultado de los filtros seleccionados</p></div></div>${(data.entries || []).length ? `<div class="table-wrap"><table class="data-table accounting-table"><thead><tr><th>Fecha</th><th>Persona</th><th>Concepto</th><th>Descripción</th><th>Pesos</th><th>Dólares</th><th>Comprobante</th><th></th></tr></thead><tbody>${data.entries.map(entry => `<tr class="accounting-movement-row" data-accounting-row data-id="${entry.id}" tabindex="0" aria-label="Abrir movimiento ${h(entry.concept_name)} del ${formatDate(entry.entry_date)}"><td>${formatDate(entry.entry_date)}</td><td><strong>${h(entry.person_name)}</strong></td><td><span class="badge ${entry.movement_type === 'ingreso' ? 'badge-success' : 'badge-danger-soft'}">${h(entry.concept_name)}</span></td><td class="cell-notes">${h(entry.description || '—')}</td><td class="${entry.movement_type === 'ingreso' ? 'income-text' : 'expense-text'}"><strong>${entry.movement_type === 'ingreso' ? '+ ' : '- '}${moneyARS(entry.amount_ars)}</strong></td><td>${moneyUSD(entry.amount_usd)}<small>@ ${moneyARS(entry.usd_rate)}</small></td><td>${entry.receipt_relative_path ? `<button class="file-link file-button" data-command="open-file" data-file-type="receipt" data-id="${entry.id}" data-name="${h(entry.receipt_original_name || 'comprobante')}">Ver archivo</button>` : '—'}</td><td class="row-actions"><button class="icon-button" type="button" data-command="accounting-edit" data-id="${entry.id}">✎</button><button class="icon-button danger" data-command="accounting-delete" data-id="${entry.id}">×</button></td></tr>`).join('')}</tbody></table></div>` : emptyState('$', 'No hay movimientos', 'No existen registros con estos filtros.')}</section></div>`
         });
-        initAccountingCalculation();
         initAccountingRowViews();
+        if (editing) openAccountingModal(editing);
     }
 
     function openAccountingView(entry) {
         if (!entry) return;
         const isIncome = entry.movement_type === 'ingreso';
         showAppModal(`Movimiento · ${entry.concept_name || 'Contabilidad'}`, `<div class="technical-view accounting-movement-view">
-            <section class="technical-view-hero accounting-view-hero"><div class="technical-view-icon">$</div><div><span class="eyebrow">MOVIMIENTO</span><h2>${h(entry.concept_name || 'Sin concepto')}</h2><p>${isIncome ? 'Ingreso' : 'Egreso'} · ${h(entry.person_name || 'Sin persona')}</p></div><div class="technical-view-actions"><a class="btn btn-secondary" href="#/accounting?edit=${entry.id}">Editar</a><button class="btn btn-ghost" type="button" data-command="modal-close">Cerrar</button></div></section>
+            <section class="technical-view-hero accounting-view-hero"><div class="technical-view-icon">$</div><div><span class="eyebrow">MOVIMIENTO</span><h2>${h(entry.concept_name || 'Sin concepto')}</h2><p>${isIncome ? 'Ingreso' : 'Egreso'} · ${h(entry.person_name || 'Sin persona')}</p></div><div class="technical-view-actions"><button class="btn btn-secondary" type="button" data-command="accounting-edit" data-id="${entry.id}">Editar</button><button class="btn btn-ghost" type="button" data-command="modal-close">Cerrar</button></div></section>
             <section class="technical-view-grid"><div class="technical-view-field"><small>Fecha</small><strong>${formatDate(entry.entry_date)}</strong></div><div class="technical-view-field"><small>Persona</small><strong>${h(entry.person_name || '—')}</strong></div><div class="technical-view-field"><small>Tipo</small><strong>${isIncome ? 'Ingreso / venta' : 'Egreso / gasto'}</strong></div><div class="technical-view-field"><small>Concepto</small><strong>${h(entry.concept_name || '—')}</strong></div><div class="technical-view-field"><small>Importe en pesos</small><strong class="${isIncome ? 'income-text' : 'expense-text'}">${isIncome ? '+ ' : '- '}${moneyARS(entry.amount_ars)}</strong></div><div class="technical-view-field"><small>Equivalente</small><strong>${moneyUSD(entry.amount_usd)}</strong></div><div class="technical-view-field"><small>Cotización utilizada</small><strong>${moneyARS(entry.usd_rate)}</strong></div><div class="technical-view-field"><small>Comprobante</small><strong>${entry.receipt_relative_path ? 'Adjunto' : 'Sin comprobante'}</strong></div></section>
             ${entry.description ? `<section class="technical-view-notes"><small>DESCRIPCIÓN</small><p>${nl2br(entry.description)}</p></section>` : ''}
             ${entry.receipt_relative_path ? `<section class="technical-view-section"><div class="technical-view-section-title"><span>▤</span><div><small>COMPROBANTE</small><h3>${h(entry.receipt_original_name || 'Archivo adjunto')}</h3></div></div><button class="btn btn-secondary" type="button" data-command="open-file" data-file-type="receipt" data-id="${entry.id}" data-name="${h(entry.receipt_original_name || 'comprobante')}">Abrir comprobante</button></section>` : ''}
@@ -1000,6 +1029,9 @@
         const allocationBox = form.querySelector('[data-income-allocation]');
         const allocationRows = form.querySelector('[data-income-split]');
         const editing = form.dataset.editing === '1';
+        const typeButtons = [...form.querySelectorAll('[data-accounting-type-button]')];
+        const syncTypeTabs = () => typeButtons.forEach(button => button.classList.toggle('active', button.dataset.value === type.value));
+        typeButtons.forEach(button => button.addEventListener('click', () => { type.value = button.dataset.value; type.dispatchEvent(new Event('change')); }));
         const update = () => {
             usd.textContent = moneyUSD((Number(rate.value) || 0) > 0 ? (Number(ars.value) || 0) / Number(rate.value) : 0);
             const automaticIncome = !editing && type.value === 'ingreso';
@@ -1011,9 +1043,9 @@
                 allocationRows.innerHTML = rows.length ? rows.map(row => `<article><div><small>${h(row.name)} · saldo actual ${moneyARS(row.balance)}</small><strong>${moneyARS(row.amount)}</strong></div><span>${row.percent.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}%</span></article>`).join('') : '<p>Ingrese el importe para ver el reparto.</p>';
             }
         };
-        ars.addEventListener('input', update); rate.addEventListener('input', update); type.addEventListener('change', update);
+        ars.addEventListener('input', update); rate.addEventListener('input', update); type.addEventListener('change', () => { syncTypeTabs(); update(); });
         concept.addEventListener('change', () => { const selected = concept.selectedOptions[0]; if (selected?.dataset.defaultType) { type.value = selected.dataset.defaultType; type.dispatchEvent(new Event('change')); } });
-        update();
+        syncTypeTabs(); update();
     }
 
 
@@ -1500,7 +1532,7 @@
             } else if (type === 'accounting-filter') {
                 go('/accounting', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'accounting-save') {
-                await api('accounting_save', { method: 'POST', formData: new FormData(form) }); toast('Movimiento guardado'); go('/accounting');
+                await api('accounting_save', { method: 'POST', formData: new FormData(form) }); closeAppModal(); toast('Movimiento guardado'); go('/accounting');
             } else if (type === 'document-filter') {
                 go('/documents', Object.fromEntries(new FormData(form).entries()));
             } else if (type === 'document-save') {
@@ -1722,6 +1754,11 @@
             } else if (command === 'purchase-item-delete') {
                 if (!confirm('¿Eliminar este renglón?')) return;
                 await api('purchase_item_delete', { method: 'POST', data: { id: commandElement.dataset.id, plan_id: commandElement.dataset.planId } }); toast('Renglón eliminado'); await route();
+            } else if (command === 'accounting-new') {
+                openAccountingModal();
+            } else if (command === 'accounting-edit') {
+                const entry = (state.accountingEntries || []).find(item => Number(item.id) === Number(commandElement.dataset.id));
+                if (entry) openAccountingModal(entry);
             } else if (command === 'accounting-delete') {
                 if (!confirm('¿Eliminar este movimiento y su comprobante?')) return;
                 await api('accounting_delete', { method: 'POST', data: { id: commandElement.dataset.id } }); toast('Movimiento eliminado'); await route();
