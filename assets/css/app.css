@@ -3848,3 +3848,7 @@ img,
 
 .sale-auto-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:14px 0 9px}
 .sale-auto-heading h3{margin:0 0 3px}.sale-auto-heading p{margin:0;color:var(--muted);font-size:.73rem;line-height:1.45}.sale-auto-heading>span{flex:0 0 auto;padding:5px 9px;border-radius:999px;background:#e7f3e8;color:#346347;font-size:.66rem;font-weight:900}
+
+
+/* V24.5.2 · La Ruda: venta desacoplada de Contabilidad */
+.sale-stock-only-note{display:flex;align-items:center;gap:10px;margin:14px 0;padding:11px 13px;border:1px solid #d8e5d8;border-radius:14px;background:#f5faf5;color:#425b48}.sale-stock-only-note strong{flex:0 0 auto}.sale-stock-only-note span{font-size:.76rem;line-height:1.4;color:#65756a}
