@@ -3829,3 +3829,22 @@ img,
     .livestock-app .health-step-number{width:30px;height:30px}
     .activity-view-grid{grid-template-columns:1fr}
 }
+
+
+/* V24.5.1 · Reparto automático de ingresos Apiario La Ruda */
+.accounting-income-allocation{grid-column:1/-1;display:grid;gap:10px;padding:13px 14px;border:1px solid #cfe0d2;border-radius:16px;background:#f5faf5}
+.accounting-income-allocation[hidden]{display:none!important}
+.accounting-income-source small,.accounting-income-source strong,.accounting-income-source span{display:block}
+.accounting-income-source small{font-size:.62rem;font-weight:950;letter-spacing:.08em;color:#5f8068}
+.accounting-income-source strong{margin:3px 0;font-size:1rem;color:#315d3d}
+.accounting-income-source span{font-size:.75rem;color:#6f7d70}
+.accounting-income-split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.accounting-income-split article{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 11px;border:1px solid #d9e7da;border-radius:12px;background:#fff}
+.accounting-income-split article small,.accounting-income-split article strong{display:block}
+.accounting-income-split article small{font-size:.67rem;color:#738075}
+.accounting-income-split article strong{margin-top:3px;color:#315d3d}
+.accounting-income-split article>span{font-weight:950;color:#4f7759}
+@media(max-width:640px){.accounting-income-split{grid-template-columns:1fr}}
+
+.sale-auto-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:14px 0 9px}
+.sale-auto-heading h3{margin:0 0 3px}.sale-auto-heading p{margin:0;color:var(--muted);font-size:.73rem;line-height:1.45}.sale-auto-heading>span{flex:0 0 auto;padding:5px 9px;border-radius:999px;background:#e7f3e8;color:#346347;font-size:.66rem;font-weight:900}
