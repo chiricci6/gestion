@@ -1,0 +1,8 @@
+v24.6.1
+
+- Gestión Apícola y Comunidad: dentro de la ficha individual de la colmena se eliminó la lógica de accesos grandes a Inspecciones / Sanidad / Alimentación / Rendimiento.
+- En su lugar aparece un Historial de Manejo con las mismas tarjetas reales que se usan dentro de Manejo.
+- Se mezclan cronológicamente inspecciones, sanidad, alimentación y cosecha, mostrando los 8 registros más recientes.
+- Cada tarjeta abre Ver detalle, igual que en Manejo.
+- Se mantiene Registrar ahora arriba y el enlace discreto Ver historial completo.
+- Responsive móvil conservado.

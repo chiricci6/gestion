@@ -4110,3 +4110,28 @@ img{max-width:100%}
     .hive-card-cover{height:128px}
     .community-purchase-date{align-items:flex-start}
 }
+
+
+/* V24.6.1 · Ficha de colmena: historial con las mismas tarjetas de Manejo */
+.app-shell:not(.livestock-app) .hive-inline-technical-history{
+    grid-column:1/-1;
+    min-width:0;
+    margin-top:4px;
+    padding-top:16px;
+    border-top:1px solid rgba(91,126,98,.15);
+}
+.app-shell:not(.livestock-app) .hive-inline-technical-grid{
+    margin-top:12px;
+}
+.community-app .hive-inline-technical-history{
+    border-top-color:rgba(117,93,170,.16);
+}
+@media(max-width:760px){
+    .app-shell:not(.livestock-app) .hive-inline-technical-grid{
+        grid-template-columns:1fr !important;
+    }
+    .app-shell:not(.livestock-app) .hive-inline-technical-grid .technical-record-card{
+        max-width:none;
+        width:100%;
+    }
+}
