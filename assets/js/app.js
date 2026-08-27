@@ -480,14 +480,21 @@
 
 
     function renderHiveTechnicalHistory(rows,hive,cover){
-        const items=(rows||[]).slice(0,8);
+        const items=(rows||[]);
         const cards=items.map(({kind,row})=>{
-            if(kind==='inspection') return `<button class="technical-record-card inspection-card technical-view-trigger ${cover?'with-thumb':''}" data-command="apiary-inspection-view" data-id="${row.id}"><div class="technical-record-head"><div><span class="eyebrow">${formatDate(row.inspection_date)}</span><h3>${h(row.hive_name||hive.name)}</h3></div>${cover?`<span class="technical-record-thumb"><img class="protected-image" data-protected-image="1" data-file-type="hive" data-id="${cover.id}" alt="${h(hive.name)}"></span>`:''}</div><div class="inspection-quick-metrics inspection-clear-metrics"><span><small>Reina</small><b>${Number(row.queen_seen)?'Vista':'No vista'}</b></span><span><small>Postura</small><b>${h(capitalize(row.laying_status||'sin evaluar'))}</b></span><span><small>Reservas</small><b>${h(capitalize(row.honey_reserve_status||'sin evaluar'))}</b></span><span><small>Polen</small><b>${h(capitalize(row.pollen_reserve_status||'sin evaluar'))}</b></span></div><div class="technical-card-footer"><small>${row.file_count?`${integerQty(row.file_count)} archivos · `:''}${h(row.created_by_name||'')}</small><b>Ver detalle →</b></div></button>`;
-            if(kind==='health') return `<button class="technical-record-card health-card technical-view-trigger" data-command="apiary-health-view" data-id="${row.id}"><span class="eyebrow">${formatDate(row.record_date)} · ${h(technicalTypeLabels[row.treatment_type]||capitalize(row.treatment_type))}</span><h3>${h(row.condition_name||capitalize(row.treatment_type))}</h3><p>${h(row.product||'Sin producto')} ${row.dose?`· ${h(row.dose)}`:''}</p><div class="technical-chip-row">${(row.hives||[]).slice(0,4).map(v=>`<span>${h(v.hive_name)}</span>`).join('')}${Number(row.hive_count)>4?`<span>+${Number(row.hive_count)-4}</span>`:''}</div><div class="technical-card-footer"><small>${row.result?`Resultado: ${h(row.result)}`:'Sin resultado informado'}</small><b>Ver detalle →</b></div></button>`;
-            if(kind==='feeding') return `<button class="technical-record-card feeding-card technical-view-trigger" data-command="apiary-feeding-view" data-id="${row.id}"><span class="eyebrow">${formatDate(row.feeding_date)}</span><h3>${h(row.feed_type)}</h3><div class="feeding-amount"><strong>${Number(row.quantity_per_hive||0).toLocaleString('es-AR',{maximumFractionDigits:3})}</strong><span>${h(row.unit)} / colmena</span></div><p>${integerQty(row.hive_count||0)} colmenas${row.reason?` · ${h(row.reason)}`:''}</p><div class="technical-card-footer"><small>${h(row.notes||'')}</small><b>Ver detalle →</b></div></button>`;
-            return `<button class="technical-record-card harvest-card technical-view-trigger" data-command="apiary-harvest-view" data-id="${row.id}"><span class="eyebrow">${formatDate(row.harvest_date)} · ${h(row.season_name||'')}</span><div class="harvest-total"><strong>${Number(row.total_kg||0).toLocaleString('es-AR',{maximumFractionDigits:3})}</strong><span>kg</span></div><h3>${h(row.batch_code||'Cosecha sin lote')}</h3><p>${h(row.honey_type||'Tipo de miel sin indicar')} · ${integerQty(row.hive_count||0)} colmenas</p><div class="technical-card-footer"><small>${row.moisture_pct?`Humedad ${Number(row.moisture_pct).toLocaleString('es-AR')}%`:''}</small><b>Ver detalle →</b></div></button>`;
+            let command='', label='', cls='';
+            if(kind==='inspection'){
+                command='apiary-inspection-view'; cls='inspection'; label='Inspección';
+            }else if(kind==='health'){
+                command='apiary-health-view'; cls='health'; label=`Sanidad${row.condition_name?` · ${row.condition_name}`:''}`;
+            }else if(kind==='feeding'){
+                command='apiary-feeding-view'; cls='feeding'; label=`Alimentación${row.feed_type?` · ${row.feed_type}`:''}`;
+            }else{
+                command='apiary-harvest-view'; cls='harvest'; label=`Cosecha${row.batch_code?` · ${row.batch_code}`:''}`;
+            }
+            return `<button type="button" class="hive-history-chip hive-history-chip-${cls}" data-command="${command}" data-id="${row.id}"><strong>${h(label)}</strong></button>`;
         }).join('');
-        return `<div class="hive-inline-technical-history"><div class="hive-management-live-head"><div><small>HISTORIAL DE MANEJO</small><strong>${items.length?'Últimos registros de esta colmena':'Todavía sin registros'}</strong></div><a href="#/technical?hive_id=${hive.id}">Ver historial completo →</a></div>${items.length?`<div class="technical-card-grid hive-inline-technical-grid">${cards}</div>`:`<div class="hive-management-live-empty"><span>⬡</span><p>Cuando registre una inspección, un control sanitario, una alimentación o una cosecha, las tarjetas van a aparecer acá.</p></div>`}</div>`;
+        return `<div class="hive-inline-technical-history"><div class="hive-management-live-head"><div><small>HISTORIAL DE MANEJO</small><strong>${items.length?'Historial de esta colmena':'Todavía sin registros'}</strong></div></div>${items.length?`<div class="hive-history-chip-grid">${cards}</div>`:`<div class="hive-management-live-empty"><span>⬡</span><p>Cuando registre una inspección, un control sanitario, una alimentación o una cosecha, aparecerá acá.</p></div>`}</div>`;
     }
 
     async function renderHive(id) {

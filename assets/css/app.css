@@ -4135,3 +4135,84 @@ img{max-width:100%}
         width:100%;
     }
 }
+
+
+/* =========================================================
+   V24.6.2 · Ficha de colmena: Registrar → Temporada → Historial compacto
+   ========================================================= */
+.app-shell:not(.livestock-app) .hive-management-center .hive-management-create.create-first{
+    order:1 !important;
+    grid-column:1/-1;
+}
+.app-shell:not(.livestock-app) .hive-management-center .hive-technical-title{
+    order:2 !important;
+}
+.app-shell:not(.livestock-app) .hive-management-center .hive-technical-metrics{
+    order:2 !important;
+}
+.app-shell:not(.livestock-app) .hive-management-center .hive-inline-technical-history{
+    order:3 !important;
+    grid-column:1/-1;
+    margin-top:2px;
+    padding-top:14px;
+}
+.app-shell:not(.livestock-app) .hive-history-chip-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(155px,220px));
+    gap:8px;
+    justify-content:start;
+    margin-top:10px;
+}
+.app-shell:not(.livestock-app) .hive-history-chip{
+    min-width:0;
+    min-height:42px;
+    padding:9px 12px;
+    border:1px solid #dce6de;
+    border-left:4px solid #5f8069;
+    border-radius:11px;
+    background:#fff;
+    color:#385244;
+    text-align:left;
+    box-shadow:0 4px 11px rgba(43,72,53,.04);
+    cursor:pointer;
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.app-shell:not(.livestock-app) .hive-history-chip:hover{
+    transform:translateY(-1px);
+    border-color:#9bb4a1;
+    box-shadow:0 7px 16px rgba(43,72,53,.08);
+}
+.app-shell:not(.livestock-app) .hive-history-chip strong{
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:.76rem;
+    line-height:1.2;
+}
+.app-shell:not(.livestock-app) .hive-history-chip-inspection{border-left-color:#648c70}
+.app-shell:not(.livestock-app) .hive-history-chip-health{border-left-color:#36714e}
+.app-shell:not(.livestock-app) .hive-history-chip-feeding{border-left-color:#7a936c}
+.app-shell:not(.livestock-app) .hive-history-chip-harvest{border-left-color:#5c7b56}
+.community-app .hive-history-chip{
+    border-color:rgba(123,101,177,.20);
+    border-left-color:#856abb;
+    color:#58458a;
+    box-shadow:0 4px 11px rgba(79,61,120,.04);
+}
+.community-app .hive-history-chip:hover{border-color:#b7a8da;box-shadow:0 7px 16px rgba(79,61,120,.08)}
+.community-app .hive-history-chip-health{border-left-color:#5f8a72}
+.community-app .hive-history-chip-feeding{border-left-color:#ad7b58}
+.community-app .hive-history-chip-harvest{border-left-color:#8f6e49}
+@media(max-width:700px){
+    .app-shell:not(.livestock-app) .hive-management-center .hive-technical-title,
+    .app-shell:not(.livestock-app) .hive-management-center .hive-technical-metrics{
+        grid-column:1/-1 !important;
+    }
+    .app-shell:not(.livestock-app) .hive-history-chip-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media(max-width:430px){
+    .app-shell:not(.livestock-app) .hive-history-chip-grid{grid-template-columns:1fr}
+}
