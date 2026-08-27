@@ -1,0 +1,11 @@
+v24.6.0
+
+- Pasada general de responsive para Gestión Apícola, Comunidad y Gestión Ganadera.
+- Sidebar móvil más cómodo y táctil.
+- Topbar y acciones superiores acomodadas para celular.
+- Tarjetas, paneles, grids y formularios mejor apilados en tablet/celular.
+- Tablas con scroll horizontal controlado en móvil.
+- Tabs técnicas y de La Ruda con scroll horizontal en pantallas chicas.
+- Héroes, modales, galerías, compras, backups, perfiles y resúmenes ajustados para verse mejor en celular.
+
+No se tocó lógica ni backend.

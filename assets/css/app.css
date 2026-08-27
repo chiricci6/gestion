@@ -3870,3 +3870,243 @@ img,
 .accounting-modal-actions{justify-content:flex-end;padding-top:4px;border-top:1px solid #e4ebe4}
 .accounting-modal-form .accounting-usd{min-height:68px;align-self:end}
 @media(max-width:700px){.accounting-entry-tabs,.accounting-modal-grid{grid-template-columns:1fr}.accounting-entry-tab{min-height:62px}.accounting-modal-grid .accounting-income-allocation,.accounting-modal-description,.accounting-modal-receipt{grid-column:auto}.accounting-modal-actions{display:grid;grid-template-columns:1fr}.accounting-modal-actions .btn{width:100%}}
+
+
+/* ============================================================
+   V24.5.4 · Manejo visible dentro de la colmena
+   ============================================================ */
+.app-shell:not(.livestock-app) .hive-management-live{
+    grid-column:1/-1;
+    display:grid;
+    gap:12px;
+    padding-top:4px;
+}
+.app-shell:not(.livestock-app) .hive-management-live-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    padding-top:12px;
+    border-top:1px solid rgba(90,115,93,.18);
+}
+.app-shell:not(.livestock-app) .hive-management-live-head>div{display:grid;gap:2px}
+.app-shell:not(.livestock-app) .hive-management-live-head small{
+    color:#6d7c70;
+    font-size:.62rem;
+    font-weight:950;
+    letter-spacing:.09em;
+}
+.app-shell:not(.livestock-app) .hive-management-live-head strong{
+    font-size:1rem;
+    color:#34483a;
+}
+.app-shell:not(.livestock-app) .hive-management-live-head>a{
+    font-size:.75rem;
+    font-weight:850;
+    color:#4f765c;
+    white-space:nowrap;
+}
+.app-shell:not(.livestock-app) .hive-management-live-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+}
+.app-shell:not(.livestock-app) .hive-live-record{
+    min-width:0;
+    display:grid;
+    gap:8px;
+    padding:13px 14px;
+    border:1px solid rgba(85,124,96,.20);
+    border-left:4px solid #668d70;
+    border-radius:15px;
+    background:rgba(255,255,255,.84);
+    box-shadow:0 7px 18px rgba(50,77,57,.045);
+}
+.app-shell:not(.livestock-app) .hive-live-record-top{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+.app-shell:not(.livestock-app) .hive-live-record-top>span{
+    width:31px;
+    height:31px;
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+    border-radius:10px;
+    background:#e4efe6;
+    color:#416b50;
+    font-weight:950;
+}
+.app-shell:not(.livestock-app) .hive-live-record-top>div{display:grid;gap:1px}
+.app-shell:not(.livestock-app) .hive-live-record-top small{
+    color:#68776c;
+    font-size:.62rem;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.055em;
+}
+.app-shell:not(.livestock-app) .hive-live-record-top b{
+    color:#536159;
+    font-size:.72rem;
+}
+.app-shell:not(.livestock-app) .hive-live-record>strong{
+    font-size:.9rem;
+    line-height:1.25;
+    color:#33463a;
+}
+.app-shell:not(.livestock-app) .hive-live-record>p{
+    min-height:30px;
+    margin:0;
+    color:#78827a;
+    font-size:.74rem;
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+.app-shell:not(.livestock-app) .hive-live-record>a{
+    justify-self:start;
+    color:#55745d;
+    font-size:.7rem;
+    font-weight:850;
+}
+.app-shell:not(.livestock-app) .hive-live-inspection{border-left-color:#648c70}
+.app-shell:not(.livestock-app) .hive-live-health{border-left-color:#36714e}
+.app-shell:not(.livestock-app) .hive-live-feeding{border-left-color:#7a936c}
+.app-shell:not(.livestock-app) .hive-live-harvest{border-left-color:#5c7b56}
+.app-shell:not(.livestock-app) .hive-management-live-empty{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-height:68px;
+    padding:13px 15px;
+    border:1px dashed rgba(88,126,97,.25);
+    border-radius:14px;
+    background:rgba(255,255,255,.6);
+    color:#738078;
+}
+.app-shell:not(.livestock-app) .hive-management-live-empty>span{
+    font-size:24px;
+    color:#6d8b72;
+}
+.app-shell:not(.livestock-app) .hive-management-live-empty p{margin:0;font-size:.78rem;line-height:1.45}
+
+/* Comunidad conserva su identidad violeta */
+.community-app .hive-management-live-head{border-top-color:rgba(117,93,170,.16)}
+.community-app .hive-management-live-head small{color:#7b7099}
+.community-app .hive-management-live-head strong{color:#58458a}
+.community-app .hive-management-live-head>a{color:#6c55a8}
+.community-app .hive-live-record{
+    border-color:rgba(123,101,177,.18);
+    border-left-color:#856abb;
+    background:rgba(255,255,255,.82);
+    box-shadow:0 7px 18px rgba(79,61,120,.04);
+}
+.community-app .hive-live-record-top>span{background:#eee8fa;color:#6851a2}
+.community-app .hive-live-record>strong{color:#504173}
+.community-app .hive-live-record>a{color:#6d57a5}
+.community-app .hive-live-inspection{border-left-color:#8b73c2}
+.community-app .hive-live-health{border-left-color:#5f8a72}
+.community-app .hive-live-feeding{border-left-color:#ad7b58}
+.community-app .hive-live-harvest{border-left-color:#8f6e49}
+.community-app .hive-management-live-empty{border-color:rgba(126,104,180,.25);color:#7a7098}
+.community-app .hive-management-live-empty>span{color:#765eb0}
+
+@media(max-width:1000px){
+    .app-shell:not(.livestock-app) .hive-management-live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+    .app-shell:not(.livestock-app) .hive-management-live-head{align-items:flex-start;flex-direction:column;gap:6px}
+    .app-shell:not(.livestock-app) .hive-management-live-grid{grid-template-columns:1fr}
+}
+
+
+/* =========================================================
+   V24.6.0 · Responsive total para Gestión / Comunidad / Ganadería
+   ========================================================= */
+img{max-width:100%}
+.main-area{min-width:0}
+.topbar-heading,.topbar-actions,.topbar-user-menu,.panel,.form-card,.entity-card,.dashboard-card,.purchase-card,.kanban-card,.parcel-card,.cattle-card{min-width:0}
+.table-wrap{max-width:100%}
+
+@media(max-width:980px){
+    :root{--sidebar:min(86vw,320px)}
+    body{overflow-x:hidden}
+    .sidebar{width:var(--sidebar);max-width:320px;padding:18px 14px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+    .brand{padding:6px 6px 18px}
+    .nav-menu{gap:6px}
+    .nav-menu a{min-height:48px;padding:11px 12px;font-size:14px}
+    .sidebar-user{padding-top:14px}
+    .sidebar-footer{padding:12px 10px 0}
+    .topbar{align-items:flex-start;flex-wrap:wrap;gap:12px;padding:14px 14px 16px}
+    .topbar-heading{flex:1 1 210px}
+    .topbar p{font-size:12px;line-height:1.4}
+    .topbar-actions{order:3;width:100%;margin-left:0;display:flex;flex-wrap:wrap;gap:8px;overflow:visible}
+    .topbar-actions>*{min-width:0}
+    .topbar-actions .btn,.topbar-actions>a.btn,.topbar-actions>button,.topbar-actions>.app-switcher{flex:1 1 180px}
+    .topbar-user-menu{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+    .content{padding:14px 14px 82px}
+    .panel,.form-card{padding:16px}
+    .panel-header{flex-direction:column;align-items:flex-start;gap:10px}
+    .summary-pills,.filter-row-simple,.purchase-summary,.restore-form{flex-wrap:wrap}
+    .balance-strip{display:grid;grid-template-columns:1fr;gap:10px}
+    .balance-strip-title,.person-balance{min-width:0}
+    .filter-bar{display:grid;grid-template-columns:1fr;align-items:stretch}
+    .filter-bar>*{min-width:0}
+    .filter-panel{grid-template-columns:1fr !important;gap:10px}
+    .filter-panel-title,.filter-actions{grid-column:auto !important}
+    .filter-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .search-field{min-width:0}
+    .form-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .form-actions .btn{width:100%}
+    .table-wrap{overflow:auto hidden;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+    .data-table{min-width:720px}
+    .row-actions{flex-wrap:wrap;justify-content:flex-start}
+    .purchase-card-main,.community-purchase-card,.purchase-detail-layout,.backup-hero,.backup-row,.parcel-event-timeline article,.pasture-record-card dl,.community-purchase-items article{min-width:0}
+    .la-ruda-tabs,.technical-tabs,.activities-subtabs,.community-subtabs,.livestock-subtabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;white-space:nowrap}
+    .la-ruda-tabs a,.technical-tabs a,.activities-subtabs a,.community-subtabs a,.livestock-subtabs a{flex:0 0 auto;white-space:nowrap}
+    .app-modal-body{padding:16px}
+    .modal-attachment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:760px){
+    .dashboard-grid,.card-grid,.purchase-card-grid,.accounting-summary-grid,.activity-preview-grid,.archived-activity-grid,.overdue-controls-grid,.pasture-record-grid,.livestock-dashboard-grid,.queen-rearing-grid,.season-grid,.rain-summary-grid,.soil-summary-grid,.soil-v20-grid,.material-visual-grid,.published-products-grid,.models-3d-grid,.fabrication-grid,.la-ruda-order-grid,.la-ruda-product-grid,.health-summary-grid,.health-target-grid,.health-evidence-grid,.herd-card-grid,.cattle-operations-grid,.rotation-parcel-grid,.parcel-detail-grid,.hive-detail-grid,.community-hive-detail-grid,.document-grid,.category-card-grid,.fixed-category-grid,.material-category-grid,.material-state-grid,.attention-grid,.condition-alert-grid,.selection-grid,.nested-grid{grid-template-columns:1fr !important}
+    .purchase-card-main{grid-template-columns:1fr;align-items:flex-start}
+    .purchase-month{width:76px;height:76px}
+    .purchase-total,.community-purchase-amount,.purchase-completed-by{text-align:left;align-items:flex-start}
+    .purchase-card-footer{flex-direction:column;align-items:flex-start;gap:6px}
+    .purchase-detail-layout,.characteristics-layout,.modal-form-layout,.technical-modal-layout,.form-grid.two-columns,.two-columns,.category-selection-grid,.technical-hive-picker,.harvest-hive-grid{grid-template-columns:1fr !important}
+    .backup-row{grid-template-columns:1fr auto;align-items:flex-start}
+    .backup-file-icon{display:none}
+    .community-purchase-card,.community-purchase-items article{grid-template-columns:1fr !important}
+    .hero-upload-form,.queen-entry-form,.inline-entry-form,.upload-form,.photo-upload-form{grid-template-columns:1fr !important}
+    .cattle-profile-hero,.hive-profile-hero,.purchase-total-hero,.performance-hero{grid-template-columns:1fr !important;align-items:flex-start}
+    .cattle-profile-main,.cattle-profile-stats{padding-left:20px;padding-right:20px}
+    .cattle-profile-stats{grid-template-columns:1fr 1fr}
+    .apiculture-hero-overlay{min-height:240px;padding:20px;flex-direction:column;align-items:flex-start;justify-content:flex-end}
+    .hero-upload-form{width:100%}
+    .technical-view-hero,.inspection-view-grid,.activity-view-grid,.accounting-modal-grid{grid-template-columns:1fr !important}
+    .photo-grid,.media-grid,.modal-attachment-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+
+@media(max-width:560px){
+    html{font-size:14px}
+    .menu-button{font-size:23px}
+    .topbar h1{font-size:22px}
+    .topbar{padding:12px 12px 14px}
+    .topbar-actions .btn,.topbar-actions>a.btn,.topbar-actions>button,.topbar-actions>.app-switcher{flex:1 1 100%}
+    .topbar-user-menu{width:100%;justify-content:space-between}
+    .content{padding:12px 12px 72px}
+    .panel,.form-card{padding:14px}
+    .form-actions,.filter-actions{grid-template-columns:1fr}
+    .photo-grid,.media-grid,.modal-attachment-grid,.community-people-balances,.cattle-profile-stats,.technical-summary-grid,.performance-summary{grid-template-columns:1fr !important}
+    .data-table{min-width:640px}
+    .app-modal,.app-modal-wide{max-height:94vh;border-radius:22px 22px 0 0}
+    .app-modal>header{padding:14px 16px}
+    .app-modal>header h2{font-size:18px}
+    .activity-thumb{width:calc(100% + 28px);height:96px;margin:-14px -14px 10px}
+    .hive-card-cover{height:128px}
+    .community-purchase-date{align-items:flex-start}
+}
