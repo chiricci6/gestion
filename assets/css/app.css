@@ -4216,3 +4216,11 @@ img{max-width:100%}
 @media(max-width:430px){
     .app-shell:not(.livestock-app) .hive-history-chip-grid{grid-template-columns:1fr}
 }
+
+
+/* V24.6.3 · Número de cliente Apiario La Ruda */
+.la-ruda-customer-code{display:inline-flex;align-items:center;gap:8px;margin:0 10px 10px 0;padding:7px 10px;border-radius:11px;background:#edf5ef;border:1px solid #d5e7d8;color:#345d40}
+.la-ruda-customer-code small{font-size:.58rem;font-weight:900;letter-spacing:.08em;color:#6e8172}
+.la-ruda-customer-code strong{font-size:.82rem;letter-spacing:.04em}
+.la-ruda-customer-code.compact{display:flex;width:max-content;margin:10px 0 5px;padding:5px 8px;border-radius:9px}
+@media(max-width:560px){.la-ruda-customer-code{width:100%;justify-content:space-between;margin-right:0}.la-ruda-customer-code.compact{width:max-content}}

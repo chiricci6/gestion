@@ -1,0 +1,7 @@
+v24.6.3
+
+- Apiario La Ruda / Pedidos: se agrega número de cliente automático con formato LR-XXXXXXX.
+- El código se genera una sola vez y queda persistente.
+- Si se crea otro pedido con el mismo nombre de cliente, reutiliza el mismo código.
+- Los pedidos existentes reciben código automáticamente al actualizar el backend.
+- Se muestra el número de cliente en las tarjetas de pedidos y dentro del detalle del pedido.
