@@ -1,6 +1,0 @@
-v24.2.7
-
-- Comunidad: Observaciones vuelve arriba y a todo el ancho.
-- Comunidad + Gestión Apícola: Manejo con misma estética, más color y mismas funciones.
-- Comunidad + Gestión Apícola: tarjetas técnicas medianas, no estiradas.
-- Repaso responsive general en topbar, dashboard, filtros y tarjetas.
