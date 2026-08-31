@@ -1,6 +1,0 @@
-v24.3.1
-
-Corrección puntual:
-- Las miniaturas de colmena en Manejo > Inspecciones ahora se obtienen explícitamente desde la lista de colmenas, que sí contiene cover_photo_id.
-- Se aplica tanto en Gestión Apícola como en Comunidad Apícola.
-- No se modificó lógica de negocio ni backend.
