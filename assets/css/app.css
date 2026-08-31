@@ -4224,3 +4224,22 @@ img{max-width:100%}
 .la-ruda-customer-code strong{font-size:.82rem;letter-spacing:.04em}
 .la-ruda-customer-code.compact{display:flex;width:max-content;margin:10px 0 5px;padding:5px 8px;border-radius:9px}
 @media(max-width:560px){.la-ruda-customer-code{width:100%;justify-content:space-between;margin-right:0}.la-ruda-customer-code.compact{width:max-content}}
+
+
+/* V24.6.4 · La Ruda: fotos por pedido + Entregados por temporada */
+.la-ruda-order-photos{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface-soft)}
+.la-ruda-order-photo-form{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:9px;align-items:end;margin-bottom:12px}
+.la-ruda-order-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,160px));gap:10px}
+.la-ruda-order-photo-grid article{position:relative;min-width:0;border:1px solid var(--line);border-radius:13px;background:#fff;padding:6px;overflow:hidden}
+.la-ruda-order-photo-open{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;color:inherit}
+.la-ruda-order-photo-open img{display:block;width:100%;height:92px;object-fit:cover;border-radius:9px;background:#eef1ec}
+.la-ruda-order-photo-open strong{display:block;margin:6px 3px 2px;font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.la-ruda-order-photo-grid .icon-button{position:absolute;top:10px;right:10px;width:27px;height:27px}
+.la-ruda-delivered-filter{display:grid;grid-template-columns:minmax(240px,1fr) minmax(180px,260px) minmax(170px,230px);gap:14px;align-items:end;margin-bottom:16px}
+.la-ruda-delivered-filter h3{margin:2px 0 4px}.la-ruda-delivered-filter p{margin:0;color:var(--muted);font-size:.75rem}
+@media(max-width:850px){.la-ruda-delivered-filter,.la-ruda-order-photo-form{grid-template-columns:1fr}.la-ruda-order-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.la-ruda-order-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.la-ruda-order-photo-open img{height:88px}}
+
+.la-ruda-delivered-filter-actions{display:flex;gap:8px;align-items:end}.la-ruda-delivered-filter-actions .btn{flex:1}
+@media(max-width:850px){.la-ruda-delivered-filter-actions{display:grid;grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.la-ruda-delivered-filter-actions{grid-template-columns:1fr}}

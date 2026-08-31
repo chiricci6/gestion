@@ -1,0 +1,4 @@
+v24.6.4
+- El código LR aparece en el # superior del pedido; ya no se repite como bloque CLIENTE.
+- Fotos dentro de cada pedido, cargadas solo al abrirlo para mantener rápida la lista.
+- Entregados abre por defecto la temporada activa y permite buscar/filtrar temporadas anteriores.
