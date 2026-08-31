@@ -1,9 +1,0 @@
-v24.4.6
-
-GESTIÓN APÍCOLA
-- Se reemplaza la identidad amarilla/miel dominante por tonos verdes medios.
-- Comunidad Apícola conserva intacta su paleta violeta.
-- Al tocar una actividad existente se abre primero una vista de lectura, igual que en Comunidad. Editar queda como acción secundaria.
-- En Contabilidad, al tocar una fila de movimiento se abre una ficha de detalle de solo lectura. El lápiz mantiene la edición explícita.
-- La vista de movimiento muestra fecha, persona, tipo, concepto, importes ARS/USD, cotización, descripción y comprobante.
-- Se mantiene la carga rápida de imágenes mediante miniaturas.
