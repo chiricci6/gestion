@@ -1,8 +1,0 @@
-Comunidad Apícola v24.2.4
-
-Cambios:
-- Observaciones ahora ocupa todo el ancho disponible dentro de la ficha.
-- Historial quedó chico, al costado de Actividades.
-- Inspecciones simplificadas visualmente: Reina, Postura, Reservas y Polen.
-- Manejo retocado solo en estética, sin tocar funciones.
-- Fotos de abajo todavía más chicas.
