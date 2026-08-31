@@ -1,9 +1,0 @@
-v24.4.0 · Pasada de usabilidad
-
-- Comunidad: se eliminó Inicio del menú; Colmenas queda como entrada principal.
-- Comunidad y Gestión Apícola: temporada ACTIVA / HISTÓRICA / TODAS visible en Manejo.
-- Ficha de colmena en Gestión Apícola: Observaciones ocupa todo el ancho; Actividades e Historial quedan debajo; Fotos después; Materiales como información secundaria.
-- Se agregó “Último registro” y “Próximo pendiente” en el bloque de Manejo cuando hay datos disponibles.
-- Botones de registrar y pestañas de Manejo tienen áreas de toque más claras.
-- Responsive: las secciones pasan a una sola columna en pantallas chicas y las pestañas se desplazan horizontalmente.
-- No se modificó backend ni lógica de datos.
