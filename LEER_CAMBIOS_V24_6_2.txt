@@ -1,9 +1,0 @@
-v24.6.2
-
-Gestión Apícola y Comunidad:
-- Orden fijo dentro de la colmena: Registrar ahora → Temporada → Historial.
-- Historial de Manejo con tarjetas mucho más chicas.
-- Cada tarjeta muestra solamente el nombre del registro.
-- Se muestra todo el historial disponible de esa colmena, no solo los últimos 8.
-- Al pulsar una tarjeta se abre la vista completa del registro en modal, sin abandonar la ficha de la colmena.
-- Se conserva el responsive de v24.6.0.
