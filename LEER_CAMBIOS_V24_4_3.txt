@@ -1,6 +1,0 @@
-v24.4.3
-
-Único cambio:
-- Gestión Apícola: Materiales en uso vuelve al costado derecho de Observaciones.
-- En pantallas chicas ambos bloques se apilan para mantener buena lectura.
-- No se modificó Comunidad, Manejo, colores, navegación, lógica ni carga de imágenes.
