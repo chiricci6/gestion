@@ -1,7 +1,0 @@
-v24.4.1
-
-- Se volvió el manejo de imágenes al comportamiento anterior y más liviano, priorizando velocidad de carga.
-- Comunidad y Gestión Apícola vuelven a pedir miniaturas (thumb) para fotos de colmena en lugar de la imagen completa.
-- Se mantienen los cambios de usabilidad de la v24.4.0.
-
-Nota: al volver a miniaturas, algunas fotos pueden respetar menos la orientación original que con la versión lenta, pero la carga vuelve a ser mucho más rápida.
