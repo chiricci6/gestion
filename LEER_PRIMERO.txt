@@ -1,7 +1,0 @@
-ACTUALIZACIÓN v24.5.1
-
-1. Reemplazar BACKEND primero, respetando la carpeta apicultura/.
-2. Reemplazar FRONTEND.
-3. Recargar navegador con Ctrl + F5.
-
-El backend es necesario para el reparto contable automático y para persistir la etiqueta Control sanitario.
