@@ -1,7 +1,0 @@
-v24.5.2
-
-Apiario La Ruda:
-- El formulario "Se vendió" ya no muestra recuperación ni reparto automático.
-- Se aclara que la venta solo descuenta stock.
-- El historial de ventas deja de mostrar reparto Chiara/Felipe.
-- La lógica de Contabilidad manual se mantiene separada.
