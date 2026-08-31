@@ -1,8 +1,0 @@
-v24.5.4
-
-- Gestión Apícola y Comunidad: al crear una actividad desde una colmena, se permanece en la ficha de esa colmena y se refrescan sus actividades.
-- Manejo dentro de la colmena: se reemplazan los cuatro accesos grandes por una vista directa de los últimos registros reales de esa colmena.
-- Se muestran hasta 6 registros recientes con tipo, fecha, título y detalle.
-- Se mantiene un acceso discreto a Manejo completo para consultar el historial completo.
-- Gestión mantiene su paleta verde y Comunidad su paleta violeta.
-- No se modifica backend ni carga rápida de imágenes.
