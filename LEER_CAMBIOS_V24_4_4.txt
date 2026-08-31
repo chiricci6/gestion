@@ -1,7 +1,0 @@
-v24.4.4
-
-- Gestión Apícola y Comunidad: Próximos pendientes muestra actividades abiertas con o sin fecha prevista.
-- Próximos pendientes muestra hasta 3 actividades y destaca su etiqueta visualmente.
-- La etiqueta “Comunidad” se muestra como “Control sanitario”; así deja de aparecer como etiqueta y se reutiliza como la nueva categoría sanitaria.
-- Comunidad: se eliminó el botón / interfaz para vincular Google Calendar y se dejó de sincronizar automáticamente actividades con Google.
-- Se mantienen carga rápida de imágenes y todos los cambios visuales previos.
