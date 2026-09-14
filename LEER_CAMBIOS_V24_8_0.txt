@@ -1,0 +1,8 @@
+APIARIO LA RUDA · FRONTEND V24.8.0
+
+- Pedidos activos: muestra los productos y cantidades como tags debajo de la barra de progreso.
+- Al abrir un pedido entra en modo consulta, sin controles que modifiquen información.
+- Botón "Editar pedido" habilita estados, etapas, altas/bajas de productos, fotos y eliminación.
+- Nueva solapa "Cupones".
+- El cupón es exactamente el número/código de cliente existente.
+- Búsqueda por código o cliente y estados DISPONIBLE / UTILIZADO.
