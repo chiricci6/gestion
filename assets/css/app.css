@@ -4264,3 +4264,86 @@ img{max-width:100%}
 .la-ruda-coupon-head{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-bottom:14px}.la-ruda-coupon-head h2{margin:3px 0 5px}.la-ruda-coupon-head p{margin:0;max-width:720px;color:var(--muted);font-size:11px}.la-ruda-coupon-stats{display:flex;gap:8px}.la-ruda-coupon-stats>span{min-width:92px;padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:#fafbf8;text-align:center}.la-ruda-coupon-stats small,.la-ruda-coupon-stats strong{display:block}.la-ruda-coupon-stats small{color:var(--muted);font-size:9px;text-transform:uppercase;font-weight:850}.la-ruda-coupon-stats strong{margin-top:3px;font-size:21px}.la-ruda-coupon-search{display:grid;grid-template-columns:minmax(260px,1fr) auto auto;gap:9px;align-items:end;margin-bottom:14px}.la-ruda-coupon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.la-ruda-coupon-card{padding:16px;border:1px solid var(--line);border-top:5px solid #5f9668;border-radius:17px;background:#fff;box-shadow:var(--shadow-soft)}.la-ruda-coupon-card.used{border-top-color:#888f87;background:#fafafa}.la-ruda-coupon-card header{display:flex;justify-content:space-between;gap:12px;align-items:start}.la-ruda-coupon-card header small,.la-ruda-coupon-card header strong{display:block}.la-ruda-coupon-card header small{font-size:8px;text-transform:uppercase;color:var(--muted);font-weight:850}.la-ruda-coupon-card header strong{margin-top:3px;font-size:16px;letter-spacing:.02em}.la-ruda-coupon-card header>span{padding:5px 8px;border-radius:999px;background:#e5f4e8;color:#2f6941;font-size:9px;font-weight:900}.la-ruda-coupon-card.used header>span{background:#eceeeb;color:#646b63}.la-ruda-coupon-card h3{margin:13px 0 4px}.la-ruda-coupon-card>p{margin:0 0 13px;color:var(--muted);font-size:10px}.la-ruda-coupon-card>.btn{width:100%}.la-ruda-coupon-used{padding:10px 11px;border-radius:11px;background:#eef0ed}.la-ruda-coupon-used strong,.la-ruda-coupon-used small{display:block}.la-ruda-coupon-used strong{font-size:11px;color:#596157}.la-ruda-coupon-used small{margin-top:3px;color:var(--muted);font-size:9px}
 @media(max-width:760px){.la-ruda-coupon-head{grid-template-columns:1fr}.la-ruda-coupon-stats{display:grid;grid-template-columns:repeat(3,1fr)}.la-ruda-coupon-stats>span{min-width:0}.la-ruda-coupon-search{grid-template-columns:1fr}.la-ruda-order-head-actions{justify-content:flex-start;margin-top:10px}}
 
+
+
+/* V24.9.0 · Refresh visual general + La Ruda simplificado */
+:root{
+    --bg:#f3f5f8;
+    --surface:#ffffff;
+    --surface-soft:#f7f9fc;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --line:#dce3ec;
+    --primary:#d29a1f;
+    --primary-dark:#9f7112;
+    --primary-soft:#fff4d6;
+    --green:#2f7d57;
+    --green-soft:#ecf8f1;
+    --shadow:0 18px 45px rgba(15,23,42,.08);
+    --radius:20px;
+    --sidebar:278px;
+}
+body{background:radial-gradient(circle at top right,rgba(255,227,155,.35),transparent 24rem),linear-gradient(180deg,#f7f9fc 0%,#f1f5f9 100%)}
+.app-shell{grid-template-columns:calc(var(--sidebar) + 18px) 1fr;gap:18px;padding:18px;min-height:100vh}
+.sidebar{inset:18px auto 18px 18px;width:var(--sidebar);border:1px solid rgba(255,255,255,.24);border-radius:28px;background:linear-gradient(180deg,#17212d 0%,#1f2937 100%);box-shadow:0 24px 60px rgba(15,23,42,.24)}
+.brand{padding:10px 12px 22px;border-bottom:1px solid rgba(255,255,255,.1)}
+.brand-icon{width:52px;height:52px;border-radius:18px;background:linear-gradient(135deg,#f3be3c,#de9611);box-shadow:inset 0 -8px 14px rgba(127,74,0,.22),0 10px 24px rgba(232,177,37,.24)}
+.nav-menu{gap:7px;margin-top:24px}
+.nav-menu-tools{display:flex;align-items:center;justify-content:space-between;padding:0 10px 8px;color:#a8b6c9;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.nav-menu-tools button{border:0;background:rgba(255,255,255,.08);color:#fff;width:30px;height:30px;border-radius:10px}
+.nav-menu a{min-height:48px;padding:12px 14px;border-radius:15px;color:#d7dfeb;font-weight:700;letter-spacing:-.01em}
+.nav-menu a span{width:26px;height:26px;border-radius:9px;background:rgba(255,255,255,.08);font-size:15px}
+.nav-menu a:hover{background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.nav-menu a.active{background:linear-gradient(135deg,#fff7da,#ffeab1);color:#1f2937;box-shadow:0 12px 28px rgba(234,184,60,.25)}
+.nav-menu a.active span{background:rgba(31,41,55,.08)}
+.sidebar-user{margin-top:auto;display:flex;align-items:center;gap:12px;padding:16px 12px 8px;border-top:1px solid rgba(255,255,255,.1)}
+.sidebar-user strong{color:#fff}
+.sidebar-user a{display:block;margin-top:2px;color:#bcc7d6;font-size:12px}
+.sidebar-avatar,.user-chip span{display:grid;place-items:center;background:linear-gradient(135deg,#f0b736,#df9d18);color:#1f2937;font-weight:800;box-shadow:0 8px 20px rgba(223,157,24,.25)}
+.sidebar-avatar{width:44px;height:44px;border-radius:14px}
+.sidebar-footer{margin-top:12px;border-top:0;padding:0 12px 12px;color:#94a3b8}
+.main-area{grid-column:2;min-width:0;padding-left:0}
+.topbar{margin-top:2px;min-height:92px;padding:18px 24px;border:1px solid rgba(255,255,255,.62);border-radius:26px;background:rgba(255,255,255,.72);box-shadow:0 18px 40px rgba(15,23,42,.06);backdrop-filter:blur(18px)}
+.topbar-heading h1{font-size:clamp(24px,2vw,34px);letter-spacing:-.04em}
+.topbar-heading p{font-size:13px;color:#64748b}
+.topbar-actions,.topbar-user-menu{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.topbar-user-menu{margin-left:6px}
+.user-chip{display:inline-flex;align-items:center;gap:10px;padding:7px 12px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155;font-weight:700}
+.user-chip span{width:32px;height:32px;border-radius:50%}
+.content{padding:26px 6px 64px;max-width:1880px}
+.panel,.form-card,.entity-card,.dashboard-card,.la-ruda-order-card,.la-ruda-product-card,.published-product-card,.model-3d-card,.parcel-card,.cattle-card,.community-hive-card,.hive-visual-card{border-color:rgba(211,219,230,.9);box-shadow:0 16px 38px rgba(15,23,42,.06)}
+.panel,.form-card,.entity-card{background:rgba(255,255,255,.92)}
+.dashboard-card,.entity-card,.la-ruda-order-card,.la-ruda-product-card,.published-product-card,.model-3d-card,.parcel-card,.cattle-card,.community-hive-card,.hive-visual-card{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.dashboard-card:hover,.entity-card:hover,.la-ruda-order-card:hover,.la-ruda-product-card:hover,.published-product-card:hover,.model-3d-card:hover,.parcel-card:hover,.cattle-card:hover,.community-hive-card:hover,.hive-visual-card:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(15,23,42,.11)}
+.btn{border-radius:13px;min-height:42px;padding:10px 16px;font-weight:780;letter-spacing:-.01em}
+.btn-primary{background:linear-gradient(135deg,#f0b83b,#d29a1f);color:#1f2937;box-shadow:0 10px 22px rgba(210,154,31,.24)}
+.btn-secondary{background:#eef3f9;color:#334155;border:1px solid #dbe3ee}
+.btn-ghost{background:rgba(255,255,255,.72);color:#475569;border:1px solid #d7e0ea}
+.btn-danger{background:#fff1ef;color:#b63a2b;border:1px solid #f6d2cc}
+.icon-button{border-radius:12px}
+.search-field,.filter-bar,.la-ruda-tabs,.livestock-section-tabs,.technical-tabs{border:1px solid #dde5ef;background:rgba(255,255,255,.84);box-shadow:0 10px 24px rgba(15,23,42,.04)}
+.filter-bar,.la-ruda-delivered-filter,.la-ruda-coupon-search{border-radius:18px}
+input,select,textarea{border-color:#d5ddeb;border-radius:12px;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:#e0ac2e;box-shadow:0 0 0 4px rgba(224,172,46,.12)}
+.la-ruda-summary article,.pasture-summary-grid>div{position:relative;overflow:hidden;background:linear-gradient(180deg,#ffffff 0%,#f9fbfd 100%)}
+.la-ruda-summary article::after,.pasture-summary-grid>div::after{content:'';position:absolute;width:78px;height:78px;border-radius:50%;right:-30px;bottom:-34px;background:rgba(210,154,31,.09)}
+.la-ruda-tabs,.livestock-section-tabs,.technical-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:8px;border-radius:18px;margin-bottom:18px}
+.la-ruda-tabs a,.livestock-section-tabs a,.technical-tabs a{padding:10px 14px;border-radius:12px;font-weight:750;color:#475569}
+.la-ruda-tabs a.active,.livestock-section-tabs a.active,.technical-tabs a.active{background:#ffffff;color:#1f2937;box-shadow:0 10px 22px rgba(15,23,42,.08)}
+.models-3d-head-simple{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;background:linear-gradient(135deg,#ffffff,#f7f9fc);border:1px solid #dde6f0}
+.models-3d-head-simple .eyebrow{display:none}
+.models-3d-head-simple h2{margin:0;font-size:1.55rem}
+.models-3d-head-simple p{margin:6px 0 0;color:#64748b;max-width:720px}
+.community-app .sidebar{background:linear-gradient(180deg,#3a2b69 0%,#4f3c87 100%)}
+.community-app .nav-menu a.active{background:linear-gradient(135deg,#f1eaff,#e1d5ff);color:#37295e}
+.community-app .btn-primary{background:linear-gradient(135deg,#8d71d7,#6f5bb7);color:#fff;box-shadow:0 10px 24px rgba(111,91,183,.24)}
+.community-app .user-chip,.community-app .btn-secondary{border-color:#e3daf5;background:#f7f4fd}
+.community-app .sidebar-avatar,.community-app .user-chip span{background:linear-gradient(135deg,#b8a2ef,#8e70d7);color:#241740;box-shadow:0 8px 20px rgba(141,113,215,.26)}
+.livestock-app .sidebar{background:linear-gradient(180deg,#26362a 0%,#334939 100%)}
+.livestock-app .nav-menu a.active{background:linear-gradient(135deg,#eef7e6,#dbeccf);color:#23351f}
+.livestock-app .btn-primary{background:linear-gradient(135deg,#98c06d,#6b9a45);color:#16311d;box-shadow:0 10px 24px rgba(107,154,69,.22)}
+.livestock-app .sidebar-avatar,.livestock-app .user-chip span{background:linear-gradient(135deg,#b4d790,#83b565);color:#193121;box-shadow:0 8px 20px rgba(131,181,101,.28)}
+.app-shell.community-app,.app-shell.livestock-app{grid-template-columns:calc(var(--sidebar) + 18px) 1fr}
+@media(max-width:1200px){.topbar{padding:16px 18px}.content{padding-inline:0}.app-shell{padding:14px;gap:14px}.sidebar{inset:14px auto 14px 14px}}
+@media(max-width:980px){.app-shell,.app-shell.community-app,.app-shell.livestock-app{display:block;padding:0}.sidebar{inset:0 auto 0 0;border-radius:0 24px 24px 0;width:min(82vw,var(--sidebar));transform:translateX(-105%);transition:transform .25s ease}.sidebar.open{transform:translateX(0)}.main-area{padding:14px}.topbar{border-radius:22px}.menu-button{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;background:#fff;border:1px solid #dbe3ed}}
+@media(max-width:640px){.topbar{padding:14px 14px;gap:14px}.topbar-user-menu{width:100%;justify-content:space-between}.topbar-actions{width:100%}.btn{width:auto}.la-ruda-tabs,.livestock-section-tabs,.technical-tabs{overflow:auto;flex-wrap:nowrap}.models-3d-head-simple{flex-direction:column;align-items:flex-start}}
